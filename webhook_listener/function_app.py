@@ -12,7 +12,7 @@ from azure.servicebus.aio import ServiceBusClient
 # Constants and environment variables
 KEY_VAULT_NAME = os.environ["KEY_VAULT_NAME"]
 SECRET_SIGNING_KEY = os.environ["SIGNING_KEY"]
-AUTHORIZED_IPS = os.environ["AUTHORIZED_IPS"].split(',')
+AUTHORIZED_IPS = os.environ["AUTHORIZED_IPS"].strip("[]").split(',')
 KEY_VAULT_URL = f"https://{KEY_VAULT_NAME}.vault.azure.net"
 FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
 TOPIC_NAME = os.environ["SERVICEBUS_TOPIC_NAME"]
