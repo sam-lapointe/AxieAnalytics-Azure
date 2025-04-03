@@ -3,9 +3,10 @@ import logging
 import os
 import hmac
 import hashlib
-from azure.keyvault.secrets import SecretClient
-from azure.identity import DefaultAzureCredential
-from azure.servicebus import ServiceBusClient, ServiceBusMessage
+from azure.keyvault.secrets.aio import SecretClient
+from azure.identity.aio import DefaultAzureCredential
+from azure.servicebus import ServiceBusMessage
+from azure.servicebus.aio import ServiceBusClient
 
 
 # Constants and environment variables
@@ -19,10 +20,21 @@ TOPIC_NAME = os.environ["SERVICEBUS_TOPIC_NAME"]
 # Authenticate to Azure
 credential = DefaultAzureCredential()
 key_vault_client = SecretClient(KEY_VAULT_URL, credential)
-servicebus_client = ServiceBusClient(FULLY_QUALIFIED_NAMESPACE, credential, logging_enable=True)
 
 # Alchemy signing key to validate the signature
-SIGNING_KEY = key_vault_client.get_secret(SECRET_SIGNING_KEY).value
+SIGNING_KEY = None
+
+# Asynchronous function to retrieve the signing key
+async def get_signing_key():
+    global SIGNING_KEY
+    if SIGNING_KEY is None:
+        try:
+            secret = await key_vault_client.get_secret(SECRET_SIGNING_KEY)
+            SIGNING_KEY = secret.value
+            logging.info("Successfully retrieved the signing key.")
+        except Exception:
+            raise
+    return SIGNING_KEY
 
 # Application initialization
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
@@ -39,15 +51,16 @@ def is_valid_signature_for_string_body(body: str, signature: str, signing_key: s
     return signature == digest
 
 
-# Helper function to send message to Azure Service Bus
-def send_single_message(sender, message):
-    message = ServiceBusMessage(message)
-    sender.send_messages(message)
-
-
 @app.route(route="webhook")
-def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
+async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
+
+    # Retrieve the signing key asynchronously
+    try:
+        signing_key = await get_signing_key()
+    except Exception as e:
+        logging.critical(f"Failed to retrieve signing key: {e}")
+        return func.HttpResponse(status_code=500)
 
     source_ip = req.headers.get('x-forwarded-for')
     # Verifies if the request if coming from an authorized IP address
@@ -73,7 +86,7 @@ def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(status_code=400)
     
     # Verify if the signature is valid
-    if not is_valid_signature_for_string_body(req.get_body(), signature, SIGNING_KEY):
+    if not is_valid_signature_for_string_body(req.get_body(), signature, signing_key):
         logging.error("The signature is invalid.")
         return func.HttpResponse(status_code=401)
     
@@ -85,22 +98,24 @@ def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
     # Loop throuh reveived transactions and send a message to Azure Service Bus Topic for every transaction
     try:
         logs = req_body["event"]["data"]["block"]["logs"]
-        transactions = set()
-        for log in logs:
-            transaction = log["transaction"]["hash"]
-            if transaction in transactions:
-                logging.info(f"Transaction {transaction} has already been sent.")
-            else:
-                transactions.add(transaction)
-                message = {
-                    "blockNumber": req_body["event"]["data"]["block"]["number"],
-                    "transactionHash": transaction
-                }
-                with servicebus_client:
-                    sender = servicebus_client.get_topic_sender(topic_name=TOPIC_NAME)
-                    with sender:
-                        send_single_message(sender, str(message))
-                logging.info(f"Transaction {transaction} has been sent.")
+        # Create a list of unique transaction hash
+        transactions = set([log["transaction"]["hash"] for log in logs])
+        async with ServiceBusClient(FULLY_QUALIFIED_NAMESPACE, credential, logging_enable=True) as servicebus_client:
+            async with servicebus_client.get_topic_sender(TOPIC_NAME) as sender:
+                # Prepare all messages
+                messages = [
+                    ServiceBusMessage(
+                        str({
+                            "blockNumber": req_body["event"]["data"]["block"]["number"],
+                            "transactionHash": transaction
+                        })
+                    )
+                    for transaction in transactions
+                ]
+
+                # Send all messages
+                await sender.send_messages(messages)
+                logging.info(f"Sent {len(messages)} messages for transactions: {transactions}")
     except KeyError as k:
         logging.critical(f"Error while creating the message: Key {k} doesn't exist.")
         return func.HttpResponse(status_code=500)
