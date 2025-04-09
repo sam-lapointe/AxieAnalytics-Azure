@@ -12,7 +12,7 @@ from azure.servicebus.aio import ServiceBusClient
 # Constants and environment variables
 KEY_VAULT_NAME = os.environ["KEY_VAULT_NAME"]
 SECRET_SIGNING_KEY = os.environ["SIGNING_KEY"]
-AUTHORIZED_IPS = os.environ["AUTHORIZED_IPS"].strip("[]").split(',')
+AUTHORIZED_IPS = list(filter(None, os.environ["AUTHORIZED_IPS"].strip("[]").split(','))) # List of IP addresses with empty strings removed
 KEY_VAULT_URL = f"https://{KEY_VAULT_NAME}.vault.azure.net"
 FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
 TOPIC_NAME = os.environ["SERVICEBUS_TOPIC_NAME"]
@@ -64,7 +64,7 @@ async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
 
     source_ip = req.headers.get('x-forwarded-for')
     # Verifies if the request if coming from an authorized IP address
-    if source_ip not in AUTHORIZED_IPS:
+    if source_ip not in AUTHORIZED_IPS and len(AUTHORIZED_IPS) != 0:
         logging.error(f"Request coming from unauthorized IP address: {source_ip}")
         return func.HttpResponse(status_code=403)
 
