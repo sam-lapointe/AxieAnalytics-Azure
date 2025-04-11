@@ -9,30 +9,74 @@ from azure.servicebus import ServiceBusMessage
 from azure.servicebus.aio import ServiceBusClient
 
 
-# Constants and environment variables
-KEY_VAULT_NAME = os.environ["KEY_VAULT_NAME"]
-SECRET_SIGNING_KEY = os.environ["SIGNING_KEY"]
-AUTHORIZED_IPS = list(filter(None, os.environ["AUTHORIZED_IPS"].strip("[]").split(','))) # List of IP addresses with empty strings removed
-KEY_VAULT_URL = f"https://{KEY_VAULT_NAME}.vault.azure.net"
-FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
-TOPIC_NAME = os.environ["SERVICEBUS_TOPIC_NAME"]
+class Config:
+    @staticmethod
+    def get_key_vault_url() -> str:
+        key_vault_name = os.getenv("KEY_VAULT_NAME")
+        if not key_vault_name:
+            logging.critical("KEY_VAULT_NAME is not set.")
+            raise ValueError("KEY_VAULT_NAME environment variable is required.")
+        return f"https://{key_vault_name}.vault.azure.net"
+
+    @staticmethod
+    def get_authorized_ips() -> list[str]:
+        authorized_ips = os.getenv("AUTHORIZED_IPS")
+        if not authorized_ips:
+            logging.critical("AUTHORIZED_IPS is not set.")
+            raise ValueError("AUTHORIZED_IPS environment variable is required.")
+        try:
+            return list(filter(None, authorized_ips.strip("[]").split(",")))
+        except Exception:
+            logging.critical("AUTHORIZED_IPS is not a valid list.")
+            raise ValueError("AUTHORIZED_IPS environment variable must be a valid list.")
+        
+    @staticmethod
+    def get_signing_key_name() -> str:
+        signing_key_name = os.getenv("SIGNING_KEY")
+        if not signing_key_name:
+            logging.critical("SIGNING_KEY is not set.")
+            raise ValueError("SIGNING_KEY environment variable is required.")
+        return signing_key_name
+    
+    @staticmethod
+    def get_servicebus_full_namespace() -> str:
+        full_namespace = os.getenv("SERVICEBUS_FULLY_QUALIFIED_NAMESPACE")
+        if not full_namespace:
+            logging.critical("SERVICEBUS_FULLY_QUALIFIED_NAMESPACE is not set.")
+            raise ValueError("SERVICEBUS_FULLY_QUALIFIED_NAMESPACE environment variable is required.")
+        return full_namespace
+        
+    @staticmethod
+    def get_servicebus_topic_name() -> str:
+        topic_name = os.getenv("SERVICEBUS_TOPIC_NAME")
+        if not topic_name:
+            logging.critical("SERVICEBUS_TOPIC_NAME is not set.")
+            raise ValueError("SERVICEBUS_TOPIC_NAME environment variable is required.")
+        return topic_name
+
 
 # Authenticate to Azure
 credential = DefaultAzureCredential()
-key_vault_client = SecretClient(KEY_VAULT_URL, credential)
+
+def get_key_vault_client(credential):
+    key_vault_url = Config.get_key_vault_url()
+    return SecretClient(key_vault_url, credential)
 
 # Alchemy signing key to validate the signature
 SIGNING_KEY = None
 
 # Asynchronous function to retrieve the signing key
-async def get_signing_key():
+async def get_signing_key(credential):
     global SIGNING_KEY
     if SIGNING_KEY is None:
         try:
-            secret = await key_vault_client.get_secret(SECRET_SIGNING_KEY)
+            key_vault_client = get_key_vault_client()
+            secret_name = Config.get_signing_key_name()                                                                                                                                                                                         
+            secret = await key_vault_client.get_secret(secret_name)
             SIGNING_KEY = secret.value
             logging.info("Successfully retrieved the signing key.")
-        except Exception:
+        except Exception as e:
+            logging.error(f"Failed to retrieve signing key: {e}")
             raise
     return SIGNING_KEY
 
@@ -64,7 +108,9 @@ async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
 
     source_ip = req.headers.get('x-forwarded-for')
     # Verifies if the request if coming from an authorized IP address
-    if source_ip not in AUTHORIZED_IPS and len(AUTHORIZED_IPS) != 0:
+    authorized_ips = Config.get_authorized_ips()
+    print(authorized_ips)
+    if source_ip not in authorized_ips and len(authorized_ips) != 0:
         logging.error(f"Request coming from unauthorized IP address: {source_ip}")
         return func.HttpResponse(status_code=403)
 
@@ -100,8 +146,8 @@ async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
         logs = req_body["event"]["data"]["block"]["logs"]
         # Create a list of unique transaction hash
         transactions = set([log["transaction"]["hash"] for log in logs])
-        async with ServiceBusClient(FULLY_QUALIFIED_NAMESPACE, credential, logging_enable=True) as servicebus_client:
-            async with servicebus_client.get_topic_sender(TOPIC_NAME) as sender:
+        async with ServiceBusClient(Config.get_servicebus_full_namespace(), credential, logging_enable=True) as servicebus_client:
+            async with servicebus_client.get_topic_sender(Config.get_servicebus_topic_name()) as sender:
                 # Prepare all messages
                 messages = [
                     ServiceBusMessage(
