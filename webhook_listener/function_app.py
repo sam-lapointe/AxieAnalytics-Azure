@@ -57,20 +57,16 @@ class Config:
 
 # Authenticate to Azure
 credential = DefaultAzureCredential()
-
-def get_key_vault_client(credential):
-    key_vault_url = Config.get_key_vault_url()
-    return SecretClient(key_vault_url, credential)
+key_vault_client = SecretClient(Config.get_key_vault_url(), credential)
 
 # Alchemy signing key to validate the signature
 SIGNING_KEY = None
 
 # Asynchronous function to retrieve the signing key
-async def get_signing_key(credential):
+async def get_signing_key():
     global SIGNING_KEY
     if SIGNING_KEY is None:
         try:
-            key_vault_client = get_key_vault_client()
             secret_name = Config.get_signing_key_name()                                                                                                                                                                                         
             secret = await key_vault_client.get_secret(secret_name)
             SIGNING_KEY = secret.value
@@ -109,7 +105,6 @@ async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
     source_ip = req.headers.get('x-forwarded-for')
     # Verifies if the request if coming from an authorized IP address
     authorized_ips = Config.get_authorized_ips()
-    print(authorized_ips)
     if source_ip not in authorized_ips and len(authorized_ips) != 0:
         logging.error(f"Request coming from unauthorized IP address: {source_ip}")
         return func.HttpResponse(status_code=403)

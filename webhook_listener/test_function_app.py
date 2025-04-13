@@ -1,9 +1,18 @@
+
+import os
 import hmac
 import hashlib
 import json
 import pytest
+import pytest_asyncio
 from azure.functions import HttpRequest
-from function_app import AlchemyWebhook
+
+try:
+    from function_app import AlchemyWebhook
+except ValueError:
+    os.environ["KEY_VAULT_NAME"] = "mock_kv"
+    from function_app import AlchemyWebhook
+
 
 @pytest.fixture
 def mock_config(mocker):
