@@ -8,7 +8,6 @@ trigger:
 
 pool:
   name: OnPrem
-  vmImage: 'ubuntu-latest'
 
 stages:
   - stage: Validate
