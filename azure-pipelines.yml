@@ -23,6 +23,10 @@ stages:
            terraformVersion: 'latest'
 
         - script: |
+            echo $ARM_USE_OIDC
+            echo "Should echo true"
+
+        - script: |
             terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
           displayName: Terraform Init
           workingDirectory: IaC
