@@ -22,15 +22,17 @@ stages:
           inputs:
            terraformVersion: 'latest'
 
+        - task: AzureCLI@2
+          displayName: Login with Azure OIDC
+          inputs:
+            azureSubscription: 'AxieMarket-Dev'
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              echo "Authenticated with Azure OIDC"
+
         - script: |
             terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
-          env:
-            ARM_USE_OIDC: $(ARM_USE_OIDC)
-            ARM_OIDC_AZURE_SERVICE_CONNECTION_ID: $(ARM_OIDC_AZURE_SERVICE_CONNECTION_ID)
-            ARM_USE_AZUREAD: $(ARM_USE_AZUREAD)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
           displayName: Terraform Init
           workingDirectory: IaC
 
@@ -64,7 +66,7 @@ stages:
                 terraformVersion: 'latest'
 
             - script: |
-                terrafrom init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
+                terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
               displayName: Terraform Init
               workingDirectory: IaC
             
@@ -97,7 +99,7 @@ stages:
                 terraformVersion: 'latest'
 
             - script: |
-                terrafrom init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
+                terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
               displayName: Terraform Init
               workingDirectory: IaC
             
@@ -130,7 +132,7 @@ stages:
               terraformVersion: 'latest'
 
            - script: |
-               terrafrom init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
+               terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
              displayName: Terraform Init
              workingDirectory: IaC
           
