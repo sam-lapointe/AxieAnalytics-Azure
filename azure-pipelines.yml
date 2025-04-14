@@ -30,6 +30,7 @@ stages:
             ARM_USE_AZUREAD: $(ARM_USE_AZUREAD)
             ARM_TENANT_ID: $(ARM_TENANT_ID)
             ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
           displayName: Terraform Init
           workingDirectory: IaC
 
