@@ -12,6 +12,8 @@ pool:
 stages:
   - stage: Validate
     displayName: Terraform Validate
+    variables:
+    - group: Dev
     jobs:
       - job: TerraformPlan
         steps:
@@ -19,6 +21,11 @@ stages:
           displayName: Terraform Install
           inputs:
            terraformVersion: 'latest'
+
+        - script: |
+            terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
+          displayName: Terraform Init
+          workingDirectory: IaC
 
         - script: |
             terraform fmt --check
