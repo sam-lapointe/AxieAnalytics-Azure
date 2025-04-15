@@ -67,12 +67,12 @@ stages:
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
             - script: |
-                terraform plan -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
+                terraform plan -input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
               displayName: Terraform Plan
               workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
             - script: |
-                terraform apply -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
+                terraform apply -input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
               displayName: Terraform Apply
               workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
@@ -105,12 +105,12 @@ stages:
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
             - script: |
-                terraform plan -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
+                terraform plan -input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
               displayName: Terraform Plan
               workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
             - script: |
-                terraform apply -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
+                terraform apply -input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
               displayName: Terraform Apply
               workingDirectory: $(System.DefaultWorkingDirectory)/IaC
             
@@ -143,11 +143,11 @@ stages:
                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
           
            - script: |
-               terraform plan -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
+               terraform plan -input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
              displayName: Terraform Plan
              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
            - script: |
-               terraform apply -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
+               terraform apply -input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
              displayName: Terraform Apply
              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
