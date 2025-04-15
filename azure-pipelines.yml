@@ -67,13 +67,6 @@ stages:
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
-            - script: |
-                echo "##vso[task.setvariable variable=TF_VAR_ALCHEMY_SIGNING_KEY;issecret=true]$(ALCHEMY_SIGNING_KEY)"
-                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_ADMIN_PASSWORD;issecret=true]$(POSTGRESQL_ADMIN_PASSWORD)"
-                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_ADMIN_USERNAME;issecret=true]$(POSTGRESQL_ADMIN_USERNAME)"
-                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD;issecret=true]$(POSTGRESQL_WEBHOOK_PASSWORD)"
-                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_WEBHOOK_USERNAME;issecret=true]$(POSTGRESQL_WEBHOOK_USERNAME)"
-              displayName: Set Terraform Environment Variables
             - task: TerraformTaskV4@4
               displayName: Terraform Plan
               inputs:
@@ -82,6 +75,12 @@ stages:
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
 
             - task: TerraformTaskV4@4
               displayName: Terraform Apply
@@ -91,6 +90,12 @@ stages:
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
 
   - stage: DeployStaging
     displayName: Terraform deployment to Staging
@@ -120,15 +125,35 @@ stages:
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
-            - script: |
-                terraform plan -input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan
+            - task: TerraformTaskV4@4
               displayName: Terraform Plan
-              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
+              inputs:
+                provider: 'azurerm'
+                command: 'plan'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Staging'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
 
-            - script: |
-                terraform apply -input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan
+            - task: TerraformTaskV4@4
               displayName: Terraform Apply
-              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
+              inputs:
+                provider: 'azurerm'
+                command: 'apply'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Staging'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
             
   - stage: DeployProd
     displayName: Terraform deployment to Prod
@@ -140,30 +165,50 @@ stages:
     - deployment: DeployProd
       environment: 'Prod'
       strategy:
-       runOnce:
-         deploy:
-           steps:
-           - task: TerraformInstaller@1
-             displayName: Install Terraform
-             inputs:
-               terraformVersion: 'latest'
-           - task: TerraformTaskV4@4
-             inputs:
-               provider: 'azurerm'
-               command: 'init'
-               workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-               backendServiceArm: 'AxieMarket-Prod'
-               backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
-               backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
-               backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
-               backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
-          
-           - script: |
-               terraform plan -input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan
-             displayName: Terraform Plan
-             workingDirectory: $(System.DefaultWorkingDirectory)/IaC
+        runOnce:
+          deploy:
+            steps:
+            - task: TerraformInstaller@1
+              displayName: Install Terraform
+              inputs:
+                terraformVersion: 'latest'
+            - task: TerraformTaskV4@4
+              inputs:
+                provider: 'azurerm'
+                command: 'init'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                backendServiceArm: 'AxieMarket-Prod'
+                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
 
-           - script: |
-               terraform apply -input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan
-             displayName: Terraform Apply
-             workingDirectory: $(System.DefaultWorkingDirectory)/IaC
+            - task: TerraformTaskV4@4
+              displayName: Terraform Plan
+              inputs:
+                provider: 'azurerm'
+                command: 'plan'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Prod'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
+
+            - task: TerraformTaskV4@4
+              displayName: Terraform Apply
+              inputs:
+                provider: 'azurerm'
+                command: 'apply'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Prod'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
