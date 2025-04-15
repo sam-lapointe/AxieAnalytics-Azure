@@ -47,12 +47,6 @@ stages:
     jobs:
     - deployment: DeployDev
       environment: 'Dev'
-      variables:
-        TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
-        TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
-        TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
-        TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
-        TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
       strategy:
         runOnce:
           deploy:
@@ -81,6 +75,12 @@ stages:
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
 
             - task: TerraformTaskV4@4
               displayName: Terraform Apply
@@ -90,6 +90,12 @@ stages:
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
 
   - stage: DeployStaging
     displayName: Terraform deployment to Staging
