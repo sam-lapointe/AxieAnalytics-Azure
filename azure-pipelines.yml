@@ -138,6 +138,7 @@ stages:
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
             - task: TerraformTaskV4@4
+              displayName: Terraform Destroy
               inputs:
                 provider: 'azurerm'
                 command: 'destroy'
@@ -227,6 +228,7 @@ stages:
     
     - deployment: DeleteStaging
       environment: 'Staging'
+      dependsOn: waitForApproval
       strategy:
         runOnce:
           deploy:
@@ -249,6 +251,7 @@ stages:
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
             - task: TerraformTaskV4@4
+              displayName: Terraform Destroy
               inputs:
                 provider: 'azurerm'
                 command: 'destroy'
