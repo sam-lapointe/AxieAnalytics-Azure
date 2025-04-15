@@ -25,18 +25,28 @@ stages:
         - script: |
             terraform init -backend=false
           displayName: Terraform Init
-          workingDirectory: IaC
+          workingDirectory: $(System.DefaultWorkingDirectory)/IaC
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+            backendServiceArm: 'AxieMarket-Dev'
+            backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+            backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+            backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+            backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
 
         - script: |
             terraform fmt --check
           displayName: Terraform Format
-          workingDirectory: IaC
+          workingDirectory: $(System.DefaultWorkingDirectory)/IaC
           continueOnError: true
 
         - script: |
             terraform validate
           displayName: Terraform Validate
-          workingDirectory: IaC
+          workingDirectory: $(System.DefaultWorkingDirectory)/IaC
           
   - stage: DeployDev
     displayName: Terraform deployment to Dev
@@ -56,10 +66,7 @@ stages:
               inputs:
                 terraformVersion: 'latest'
 
-            - script: |
-                terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
-              displayName: Terraform Init
-              workingDirectory: IaC
+            
             
             - script: |
                 terraform plan -var-file=$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
