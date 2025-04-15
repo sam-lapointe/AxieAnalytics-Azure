@@ -61,7 +61,6 @@ stages:
                 command: 'init'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 backendServiceArm: 'AxieMarket-Dev'
-                backendAzureRmSubscriptionId: $(BACKEND_AZURE_SUBSCRIPTION_ID)
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                 backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
@@ -100,7 +99,6 @@ stages:
                 command: 'init'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 backendServiceArm: 'AxieMarket-Staging'
-                backendAzureRmSubscriptionId: $(BACKEND_AZURE_SUBSCRIPTION_ID)
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                 backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
@@ -139,7 +137,6 @@ stages:
                command: 'init'
                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                backendServiceArm: 'AxieMarket-Prod'
-               backendAzureRmSubscriptionId: $(BACKEND_AZURE_SUBSCRIPTION_ID)
                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
