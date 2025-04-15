@@ -56,6 +56,7 @@ stages:
               inputs:
                 terraformVersion: 'latest'
             - task: TerraformTaskV4@4
+              displayName: Terraform Init
               inputs:
                 provider: 'azurerm'
                 command: 'init'
@@ -66,7 +67,15 @@ stages:
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
+            - script: |
+                echo "##vso[task.setvariable variable=TF_VAR_ALCHEMY_SIGNING_KEY;issecret=true]$(TF_VAR_ALCHEMY_SIGNING_KEY)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_ADMIN_PASSWORD;issecret=true]$(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_ADMIN_USERNAME;issecret=true]$(TF_VAR_POSTGRESQL_ADMIN_USERNAME)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD;issecret=true]$(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_WEBHOOK_USERNAME;issecret=true]$(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)"
+              displayName: Set Terraform Environment Variables
             - task: TerraformTaskV4@4
+              displayName: Terraform Plan
               inputs:
                 provider: 'azurerm'
                 command: 'plan'
@@ -75,6 +84,7 @@ stages:
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
 
             - task: TerraformTaskV4@4
+              displayName: Terraform Apply
               inputs:
                 provider: 'azurerm'
                 command: 'apply'
