@@ -47,12 +47,6 @@ stages:
     jobs:
     - deployment: DeployDev
       environment: 'Dev'
-      variables:
-        TF_VAR_ALCHEMY_SIGNING_KEY: $(ALCHEMY_SIGNING_KEY)
-        TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(POSTGRESQL_ADMIN_PASSWORD)
-        TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(POSTGRESQL_ADMIN_USERNAME)
-        TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(POSTGRESQL_WEBHOOK_PASSWORD)
-        TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(POSTGRESQL_WEBHOOK_USERNAME)
       strategy:
         runOnce:
           deploy:
@@ -73,6 +67,13 @@ stages:
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
+            - script: |
+                echo "##vso[task.setvariable variable=TF_VAR_ALCHEMY_SIGNING_KEY;issecret=true]$(ALCHEMY_SIGNING_KEY)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_ADMIN_PASSWORD;issecret=true]$(POSTGRESQL_ADMIN_PASSWORD)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_ADMIN_USERNAME;issecret=true]$(POSTGRESQL_ADMIN_USERNAME)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD;issecret=true]$(POSTGRESQL_WEBHOOK_PASSWORD)"
+                echo "##vso[task.setvariable variable=TF_VAR_POSTGRESQL_WEBHOOK_USERNAME;issecret=true]$(POSTGRESQL_WEBHOOK_USERNAME)"
+              displayName: Set Terraform Environment Variables
             - task: TerraformTaskV4@4
               displayName: Terraform Plan
               inputs:
