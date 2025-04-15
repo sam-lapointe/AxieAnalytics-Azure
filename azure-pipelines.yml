@@ -60,6 +60,7 @@ stages:
               inputs:
                 provider: 'azurerm'
                 command: 'init'
+                commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 backendServiceArm: 'AxieMarket-Dev'
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
@@ -130,6 +131,7 @@ stages:
               inputs:
                 provider: 'azurerm'
                 command: 'init'
+                commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 backendServiceArm: 'AxieMarket-Dev'
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
@@ -174,6 +176,7 @@ stages:
               inputs:
                 provider: 'azurerm'
                 command: 'init'
+                commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 backendServiceArm: 'AxieMarket-Staging'
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
@@ -244,6 +247,7 @@ stages:
               inputs:
                 provider: 'azurerm'
                 command: 'init'
+                commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 backendServiceArm: 'AxieMarket-Staging'
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
@@ -288,6 +292,7 @@ stages:
               inputs:
                 provider: 'azurerm'
                 command: 'init'
+                commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 backendServiceArm: 'AxieMarket-Prod'
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
