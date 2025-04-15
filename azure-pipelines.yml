@@ -66,7 +66,7 @@ stages:
                 backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
                 backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
-            
+
             - task: TerraformTaskV4@4
               displayName: Terraform Plan
               inputs:
@@ -90,6 +90,59 @@ stages:
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
+
+  - stage: DeleteDev
+    displayName: Delete Dev
+    dependsOn: DeployDev
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+    - group: Dev
+    jobs:
+    - job: waitForApproval
+      displayName: Wait approval for deletion of Dev environment
+      pool: server
+      steps:
+      - task: ManualValidation@0
+        inputs:
+          notifyUsers: ''
+          instructions: 'Approve to delete the Dev environment.'
+  
+    - deployment: DeleteDev
+      environment: 'Dev'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: TerraformInstaller@1
+              displayName: Terraform Install
+              inputs:
+                terraformVersion: 'latest'
+            
+            - task: TerraformTaskV4@4
+              displayName: Terraform Init
+              inputs:
+                provider: 'azurerm'
+                command: 'init'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                backendServiceArm: 'AxieMarket-Dev'
+                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
+            
+            - task: TerraformTaskV4@4
+              inputs:
+                provider: 'azurerm'
+                command: 'destroy'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve'
               env:
                 TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
                 TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
@@ -154,7 +207,60 @@ stages:
                 TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
                 TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
                 TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
+
+  - stage: DeleteStaging
+    displayName: Delete Staging
+    dependsOn: DeployStaging
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+    - group: Staging
+    jobs:
+    - job: waitForApproval
+      displayName: Wait approval for deletion of Staging environment
+      pool: server
+      steps:
+      - task: ManualValidation@0
+        inputs:
+          notifyUsers: ''
+          instructions: 'Approve to delete the Staging environment.'
+    
+    - deployment: DeleteStaging
+      environment: 'Staging'
+      strategy:
+        runOnce:
+          deploy:
+            steps:            
+            - task: TerraformInstaller@1
+              displayName: Terraform Install
+              inputs:
+                terraformVersion: 'latest'
             
+            - task: TerraformTaskV4@4
+              displayName: Terraform Init
+              inputs:
+                provider: 'azurerm'
+                command: 'init'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                backendServiceArm: 'AxieMarket-Staging'
+                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
+            
+            - task: TerraformTaskV4@4
+              inputs:
+                provider: 'azurerm'
+                command: 'destroy'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Staging'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
+
   - stage: DeployProd
     displayName: Terraform deployment to Prod
     dependsOn: DeployStaging
