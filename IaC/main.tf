@@ -67,7 +67,7 @@ resource "azurerm_user_assigned_identity" "umi_functionapp_database" {
 module "key_vault_external" {
   source = "./modules/key-vault"
 
-  key_vault_name      = "${var.environment}-axie-kv-external"
+  key_vault_name      = "${var.environment}-axie-kv-ext"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   tags                = local.tags
@@ -85,7 +85,7 @@ module "key_vault_external" {
 module "key_vault_internal" {
   source = "./modules/key-vault"
 
-  key_vault_name      = "${var.environment}-axie-kv-internal"
+  key_vault_name      = "${var.environment}-axie-kv-int"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   tags                = local.tags
@@ -104,7 +104,7 @@ module "key_vault_internal" {
 module "key_vault_database_admins" {
   source = "./modules/key-vault"
 
-  key_vault_name      = "${var.environment}-axie-kv-db-admins"
+  key_vault_name      = "${var.environment}-axie-kv-admins"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   tags                = local.tags
