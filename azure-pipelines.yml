@@ -26,16 +26,6 @@ stages:
             terraform init -backend=false
           displayName: Terraform Init
           workingDirectory: $(System.DefaultWorkingDirectory)/IaC
-        - task: TerraformTaskV4@4
-          inputs:
-            provider: 'azurerm'
-            command: 'init'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-            backendServiceArm: 'AxieMarket-Dev'
-            backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
-            backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
-            backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
-            backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
 
         - script: |
             terraform fmt --check
@@ -65,18 +55,26 @@ stages:
               displayName: Terraform Install
               inputs:
                 terraformVersion: 'latest'
-
-            
+            - task: TerraformTaskV4@4
+              inputs:
+                provider: 'azurerm'
+                command: 'init'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                backendServiceArm: 'AxieMarket-Dev'
+                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
             - script: |
                 terraform plan -var-file=$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
               displayName: Terraform Plan
-              workingDirectory: IaC
+              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
             - script: |
                 terraform apply -var-file=$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
               displayName: Terraform Apply
-              workingDirectory: IaC
+              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
   - stage: DeployStaging
     displayName: Terraform deployment to Staging
@@ -95,21 +93,26 @@ stages:
               displayName: Terraform Install
               inputs:
                 terraformVersion: 'latest'
-
-            - script: |
-                terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
-              displayName: Terraform Init
-              workingDirectory: IaC
+            - task: TerraformTaskV4@4
+              inputs:
+                provider: 'azurerm'
+                command: 'init'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                backendServiceArm: 'AxieMarket-Staging'
+                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
             
             - script: |
                 terraform plan -var-file=$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
               displayName: Terraform Plan
-              workingDirectory: IaC
+              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
             - script: |
                 terraform apply -var-file=$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
               displayName: Terraform Apply
-              workingDirectory: IaC
+              workingDirectory: $(System.DefaultWorkingDirectory)/IaC
             
   - stage: DeployProd
     displayName: Terraform deployment to Prod
@@ -127,19 +130,24 @@ stages:
            - task: TerraformInstaller@1
              displayName: Install Terraform
              inputs:
-              terraformVersion: 'latest'
-
-           - script: |
-               terraform init -backend-config="storage_account_name=$(TFSTATE_STORAGE_ACCOUNT)" -backend-config="container_name=axiemarket-$(ENVIRONMENT)" -backend-config="key=$(ENVIRONMENT).tfstate"
-             displayName: Terraform Init
-             workingDirectory: IaC
+               terraformVersion: 'latest'
+           - task: TerraformTaskV4@4
+             inputs:
+               provider: 'azurerm'
+               command: 'init'
+               workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+               backendServiceArm: 'AxieMarket-Prod'
+               backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+               backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+               backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+               backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
           
            - script: |
                terraform plan -var-file=$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT)-tfplan
              displayName: Terraform Plan
-             workingDirectory: IaC
+             workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
            - script: |
                terraform apply -var-file=$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT)-tfplan
              displayName: Terraform Apply
-             workingDirectory: IaC
+             workingDirectory: $(System.DefaultWorkingDirectory)/IaC
