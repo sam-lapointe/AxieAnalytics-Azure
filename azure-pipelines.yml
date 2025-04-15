@@ -115,6 +115,7 @@ stages:
   
     - deployment: DeleteDev
       environment: 'Dev'
+      dependsOn: waitForApproval
       strategy:
         runOnce:
           deploy:
