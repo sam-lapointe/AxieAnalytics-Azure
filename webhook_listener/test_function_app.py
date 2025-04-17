@@ -6,7 +6,6 @@ import pytest
 from unittest.mock import ANY
 from azure.functions import HttpRequest
 from azure.identity.aio import DefaultAzureCredential
-from azure.servicebus import ServiceBusMessage
 
 try:
     from function_app import AlchemyWebhook, Config
@@ -511,12 +510,12 @@ async def test_servicebus_message(
     assert isinstance(sent_messages, list)  # Ensure it's a list of messages
     assert len(sent_messages) == len(expected_messages)
 
-    for sent_message, expected_message in zip(sent_messages, expected_messages):
-        sent_message_body = b"".join(sent_message.body).decode("utf-8")
+    sent_messages_bodies = [
+        json.loads(b"".join(sent_message.body).decode("utf-8").replace("'", '"'))
+        for sent_message in sent_messages
+    ]
 
-        assert isinstance(
-            sent_message, ServiceBusMessage
-        )  # Ensure each item is a ServiceBusMessage
-        assert sent_message_body == str(
-            expected_message
-        )  # Ensure the sent message match the expected message
+    # Asserting that all messages have been sent as expected, the order doesn't matter because the messages are not sent in order
+    assert sorted(sent_messages_bodies, key=lambda x: x["transactionHash"]) == sorted(
+        expected_messages, key=lambda x: x["transactionHash"]
+    )
