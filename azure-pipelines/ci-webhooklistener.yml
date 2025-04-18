@@ -1,0 +1,29 @@
+trigger: none
+
+pool:
+  name: OnPrem
+
+variables:
+- group: SonarQube
+- group: Python
+
+jobs:
+  - job: Tests
+        
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+          versionSpec: $(PYTHON_VERSION)
+
+    - script: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        pip install -r requirement-dev.txt
+      displayName: Install Dependencies
+      workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
+    
+    - script: |
+        pytest test_function_app.py
+      displayName: Unit Tests
+      workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
