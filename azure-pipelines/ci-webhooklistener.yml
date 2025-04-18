@@ -46,21 +46,19 @@ jobs:
       displayName: Check lint
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
 
-    - task: SonarQubePrepare@7
-      inputs:
-        SonarQube: $(SONARQUBE_SERVICE_CONNECTION_NAME)
-        scannerMode: 'cli'
-        configMode: 'manual'
-        cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-        cliProjectName: $(SONARQUBE_PROJECT_NAME)
-        cliSources: $(System.DefaultWorkingDirectory)/webhook_listener
-        extraProperties: |
-          sonar.branch.name=
+    - script: |
+        if ! sonar-scanner -v > /dev/null 2>&1; then
+          echo "❌ sonar-scanner CLI must be installed on the Self-Hosted Agent."
+        else
+          sonar-scanner -v
+        fi
+      displayName: Check sonar-scanner version
 
-    - task: SonarQubeAnalyze@7
-      inputs:
-        jdkversion: 'JAVA_HOME_17_X64'
-
-    - task: SonarQubePublish@7
-      inputs:
-        pollingTimeoutSec: '300'
+    - script: |
+        sonar-scanner \
+          -D sonar.projectKey=$(SONARQUBE_PROJECT_KEY) \
+          -D sonar.projectName=$(SONARQUBE_PROJECT_NAME) \
+          -D sonar.sources=$(System.DefaultWorkingDirectory)/webhook_listener \
+          -D sonar.host.url=$(SONARQUBE_HOST_URL) \
+          -D sonar.token=$(SONARQUBE_TOKEN)
+      displayName: SonarQube Scanner
