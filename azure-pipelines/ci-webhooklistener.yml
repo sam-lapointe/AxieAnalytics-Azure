@@ -48,6 +48,8 @@ jobs:
         cliSources: $(System.DefaultWorkingDirectory)/webhook_listener
 
     - task: SonarQubeAnalyze@7
+      inputs:
+        jdkversion: 'JAVA_HOME_17_X64'
 
     - task: SonarQubePublish@7
       inputs:
