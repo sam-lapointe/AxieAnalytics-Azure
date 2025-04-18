@@ -27,3 +27,28 @@ jobs:
         pytest test_function_app.py
       displayName: Unit Tests
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
+
+    - script: |
+        ruff format --check --diff *.py
+      displayName: Check formatting
+      workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
+
+    - script: |
+        ruff check *.py
+      displayName: Check lint
+      workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
+
+    - task: SonarQubePrepare@7
+      inputs:
+        SonarQube: $(SONARQUBE_SERVICE_CONNECTION_NAME)
+        scannerMode: 'cli'
+        configMode: 'manual'
+        cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+        cliProjectName: $(SONARQUBE_PROJECT_NAME)
+        cliSources: $(System.DefaultWorkingDirectory)/webhook_listener
+
+    - task: SonarQubeAnalyze@7
+
+    - task: SonarQubePublish@7
+      inputs:
+        pollingTimeoutSec: '300'
