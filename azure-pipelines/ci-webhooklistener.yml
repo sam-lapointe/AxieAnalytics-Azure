@@ -29,16 +29,19 @@ jobs:
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
     
     - script: |
+        source venv/bin/activate
         python$(PYTHON_VERSION) -m pytest test_function_app.py
       displayName: Unit Tests
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
 
     - script: |
+        source venv/bin/activate
         ruff format --check --diff *.py
       displayName: Check formatting
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
 
     - script: |
+        source venv/bin/activate
         ruff check *.py
       displayName: Check lint
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
