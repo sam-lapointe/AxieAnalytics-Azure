@@ -13,7 +13,7 @@ jobs:
     steps:
     - script: |
         if ! python$(PYTHON_VERSION) > /dev/null 2>&1; then
-          echo "❌ python$(PYTHON_VERSION) must be installed on the Self-Hosted Agent.
+          echo "❌ python$(PYTHON_VERSION) must be installed on the Self-Hosted Agent."
           exit 1
         else
           python$(PYTHON_VERSION) --version
