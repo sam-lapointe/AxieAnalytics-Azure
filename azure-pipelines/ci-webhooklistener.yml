@@ -24,7 +24,7 @@ jobs:
         python$(PYTHON_VERSION) -m venv venv
         source venv/bin/activate
         pip install -r requirements.txt
-        pip install -r requirement-dev.txt
+        pip install -r requirements-dev.txt
       displayName: Install Dependencies
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
     
