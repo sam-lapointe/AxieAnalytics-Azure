@@ -29,7 +29,7 @@ jobs:
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
     
     - script: |
-        pytest test_function_app.py
+        python$(PYTHON_VERSION) -m pytest test_function_app.py
       displayName: Unit Tests
       workingDirectory: $(System.DefaultWorkingDirectory)/webhook_listener
 
