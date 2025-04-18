@@ -11,12 +11,17 @@ jobs:
   - job: Tests
         
     steps:
-    - task: UsePythonVersion@0
-      inputs:
-          versionSpec: $(PYTHON_VERSION)
+    - script: |
+        if ! python$(PYTHON_VERSION) > /dev/null 2>&1; then
+          echo "❌ python$(PYTHON_VERSION) must be installed on the Self-Hosted Agent.
+          exit 1
+        else
+          python$(PYTHON_VERSION) --version
+        fi
+      displayName: Check Python Version
 
     - script: |
-        python -m venv venv
+        python$(PYTHON_VERSION) -m venv venv
         source venv/bin/activate
         pip install -r requirements.txt
         pip install -r requirement-dev.txt
