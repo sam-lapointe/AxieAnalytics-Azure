@@ -54,6 +54,8 @@ jobs:
         cliProjectKey: $(SONARQUBE_PROJECT_KEY)
         cliProjectName: $(SONARQUBE_PROJECT_NAME)
         cliSources: $(System.DefaultWorkingDirectory)/webhook_listener
+        extraProperties: |
+          sonar.branch.name=
 
     - task: SonarQubeAnalyze@7
       inputs:
