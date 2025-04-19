@@ -127,7 +127,7 @@ def mock_get_signing_key(mocker, signing_key):
 def mock_dependencies(
     mock_config, mock_key_vault_client, mock_get_signing_key, mock_servicebus
 ):
-    pass
+    pass  # Used to initialize multiple fixtures from 1 fixture in the tests.
 
 
 @pytest.fixture
