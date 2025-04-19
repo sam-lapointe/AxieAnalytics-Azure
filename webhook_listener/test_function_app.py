@@ -374,7 +374,7 @@ async def test_request_body(
     "request_body, expected_messages",
     [
         (
-            # One transaction
+            # One transaction hash
             {
                 "webhookId": "wh_kpy9f3j05p4b3hh8",
                 "id": "whevt_fjlzk3zu8uq1p0q1",
