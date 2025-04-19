@@ -62,3 +62,19 @@ jobs:
           -D sonar.host.url=$(SONARQUBE_HOST_URL) \
           -D sonar.token=$(SONARQUBE_TOKEN)
       displayName: SonarQube Scanner
+
+    - task: ArchiveFiles@2
+      displayName: Build Artifact
+      inputs:
+       rootFolderOrFile: $(System.DefaultWorkingDirectory)/webhook_listener
+       includeRootFolder: false
+       archiveType: "zip"
+       archiveFile: "$(Build.ArtifactStagingDirectory)/webhook_listener.zip"
+       replaceExistingArchive: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifact
+      inputs:
+        PathtoPublish: "$(Build.ArtifactStagingDirectory)/webhook_listener.zip"
+        ArtifactName: "webhook_listener"
+        publishLocation: Container
