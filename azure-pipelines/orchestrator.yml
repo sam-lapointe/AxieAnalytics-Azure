@@ -19,12 +19,14 @@ stages:
             echo "##[group]Checking which folders changed..."
             git fetch origin main
             git diff --name-only origin/main...HEAD > changed.txt
+            cat changed.txt
             echo "##[endgroup]"
 
             echo "##[group]Set Variables..."
-            if grep -q "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI]true";fi
-            if grep -q "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI]true";fi
+            if grep "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI]true";fi
+            if grep "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI]true";fi
             echo "##[endgroup]"
+          displayName: Check Changes
 
   - stage: RunCIPipelines
     dependsOn: DetermineChangedDirs
@@ -113,11 +115,16 @@ stages:
                 TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
 
     - job: DeployDevCode
+      dependsOn:
+      - DeployDevInfra
       steps:
       - script: |
           echo "TO DO: Publish the services artifacts to the Azure Functions."
 
     - job: DevTesting
+      dependsOn:
+      - DeployDevInfra
+      - DeployDevCode
       steps:
       - script: |
           echo "TO DO: End to end testing."
