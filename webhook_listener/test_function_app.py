@@ -260,7 +260,7 @@ async def test_allow_all_ips(
             400,
         ),
         (
-            # No logs
+            # Missing logs
             {
                 "webhookId": "wh_kpy9f3j05p4b3hh8",
                 "id": "whevt_fjlzk3zu8uq1p0q1",
@@ -281,7 +281,7 @@ async def test_allow_all_ips(
             500,
         ),
         (
-            # No transaction hash in logs[0]
+            # Missing transaction hash in logs[0]
             {
                 "webhookId": "wh_kpy9f3j05p4b3hh8",
                 "id": "whevt_fjlzk3zu8uq1p0q1",
@@ -312,7 +312,7 @@ async def test_allow_all_ips(
             500,
         ),
         (
-            # No block number
+            # Missing Block Number
             {
                 "webhookId": "wh_kpy9f3j05p4b3hh8",
                 "id": "whevt_fjlzk3zu8uq1p0q1",
