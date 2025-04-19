@@ -34,25 +34,20 @@ stages:
       - job: IaCCI
         condition: eq(variables['runIACCI'], 'true')
         steps:
-          - task: InvokeRESTAPI@1
+          - script: |
+              curl -X POST \
+                -H "Authorization: Bearer $(System.AccessToken)" \
+                -H "Content-Type: application/json" \
+                "https://dev.azure.com/$(System.Organization)/$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_IAC)/runs?api-version=7.1"
             displayName: Trigger IaC CI
-            inputs:
-              serviceConnection: $(SERVICE_CONNECTION_NAME_ORCHESTRATOR)
-              method: POST
-              urlSuffix: "pipelines/$(PIPELINE_ID_IAC)/runs?api-version=7.1"
-              headers: |
-                Authorization: Bearer $(System.AccessToken)
-              waitForCompletion: "true"
+
 
       - job: WebhookListenerCI
         condition: eq(variables['runWebhookListenerCI'], 'true')
         steps:
-          - task: InvokeRESTAPI@1
+          - script: |
+              curl -X POST \
+              -H "Authorization: Bearer $(System.AccessToken)" \
+              -H "Content-Type: application/json" \
+              "https://dev.azure.com/$(System.Organization)/$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
             displayName: Trigger WebhookListener CI
-            inputs:
-              serviceConnection: $(SERVICE_CONNECTION_NAME_ORCHESTRATOR)
-              method: POST
-              urlSuffix: "pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
-              headers: |
-                Authorization: Bearer $(System.AccessToken)
-              waitForCompletion: "true"
