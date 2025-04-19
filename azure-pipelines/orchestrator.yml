@@ -13,41 +13,154 @@ pool:
 stages:
   - stage: DetermineChangedDirs
     jobs:
-      - job: CheckChanges
-        steps:
-          - script: |
-              echo "##[group]Checking which folders changed..."
-              git fetch origin main
-              git diff --name-only origin/main...HEAD > changed.txt
-              echo "##[endgroup]"
+    - job: CheckChanges
+      steps:
+        - script: |
+            echo "##[group]Checking which folders changed..."
+            git fetch origin main
+            git diff --name-only origin/main...HEAD > changed.txt
+            echo "##[endgroup]"
 
-              echo "##[group]Set Variables..."
-              if grep -q "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI]true";fi
-              if grep -q "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI]true";fi
-              echo "##[endgroup]"
+            echo "##[group]Set Variables..."
+            if grep -q "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI]true";fi
+            if grep -q "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI]true";fi
+            echo "##[endgroup]"
 
   - stage: RunCIPipelines
     dependsOn: DetermineChangedDirs
     variables:
     - group: Orchestrator
     jobs:
-      - job: IaCCI
-        condition: eq(variables['runIACCI'], 'true')
-        steps:
-          - script: |
-              curl -X POST \
-                -H "Authorization: Bearer $(System.AccessToken)" \
-                -H "Content-Type: application/json" \
-                "https://dev.azure.com/$(System.Organization)/$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_IAC)/runs?api-version=7.1"
-            displayName: Trigger IaC CI
-
-
-      - job: WebhookListenerCI
-        condition: eq(variables['runWebhookListenerCI'], 'true')
-        steps:
-          - script: |
-              curl -X POST \
+    - job: IaCCI
+      condition: eq(variables['runIACCI'], 'true')
+      steps:
+        - script: |
+            curl -X POST \
               -H "Authorization: Bearer $(System.AccessToken)" \
               -H "Content-Type: application/json" \
-              "https://dev.azure.com/$(System.Organization)/$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
-            displayName: Trigger WebhookListener CI
+              "https://dev.azure.com/$(System.Organization)/$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_IAC)/runs?api-version=7.1"
+          displayName: Trigger IaC CI
+
+
+    - job: WebhookListenerCI
+      condition: eq(variables['runWebhookListenerCI'], 'true')
+      steps:
+        - script: |
+            curl -X POST \
+            -H "Authorization: Bearer $(System.AccessToken)" \
+            -H "Content-Type: application/json" \
+            "https://dev.azure.com/$(System.Organization)/$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
+          displayName: Trigger WebhookListener CI
+
+  - stage: DeployDev
+    displayName: Deployment to Dev
+    dependsOn: RunCIPipelines
+    condition: succeeded()
+    variables:
+    - group: Dev
+    jobs:
+    - deployment: DeployDevInfra
+      environment: 'Dev'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: TerraformInstaller@1
+              displayName: Terraform Install
+              inputs:
+                terraformVersion: 'latest'
+            - task: TerraformTaskV4@4
+              displayName: Terraform Init
+              inputs:
+                provider: 'azurerm'
+                command: 'init'
+                commandOptions: '-reconfigure'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                backendServiceArm: 'AxieMarket-Dev'
+                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
+
+            - task: TerraformTaskV4@4
+              displayName: Terraform Plan
+              inputs:
+                provider: 'azurerm'
+                command: 'plan'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
+
+            - task: TerraformTaskV4@4
+              displayName: Terraform Apply
+              inputs:
+                provider: 'azurerm'
+                command: 'apply'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
+
+    - job: DeployDevCode
+      steps:
+      - script: |
+          echo "TO DO: Publish the services artifacts to the Azure Functions."
+
+    - job: DevTesting
+      steps:
+      - script: |
+          echo "TO DO: End to end testing."
+
+    - deployment: DeleteDev
+      environment: 'Dev'
+      dependsOn:
+      - DeployDevInfra
+      - DeployDevCode
+      - DevTesting
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: TerraformInstaller@1
+              displayName: Terraform Install
+              inputs:
+                terraformVersion: 'latest'
+            
+            - task: TerraformTaskV4@4
+              displayName: Terraform Init
+              inputs:
+                provider: 'azurerm'
+                command: 'init'
+                commandOptions: '-reconfigure'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                backendServiceArm: 'AxieMarket-Dev'
+                backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
+                backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+                backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                backendAzureRmKey: $(BACKEND_AZURE_KEY_NAME)
+            
+            - task: TerraformTaskV4@4
+              displayName: Terraform Destroy
+              inputs:
+                provider: 'azurerm'
+                command: 'destroy'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve'
+              env:
+                TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
+                TF_VAR_POSTGRESQL_ADMIN_PASSWORD: $(TF_VAR_POSTGRESQL_ADMIN_PASSWORD)
+                TF_VAR_POSTGRESQL_ADMIN_USERNAME: $(TF_VAR_POSTGRESQL_ADMIN_USERNAME)
+                TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+                TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
