@@ -38,17 +38,11 @@ stages:
     dependsOn: DetermineChangedDirs
     variables:
     - group: Orchestrator
-    - name: runIACCI
-      value: $(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'])
-    - name: runWebhookListenerCI
-      value: $(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runWebhookListenerCI'])
-
     jobs:
     - job: IaCCI
-      condition: eq(variables['runIACCI'], true)
+      condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], true)
       steps:
         - script: |
-            echo "Run IAC Pipeline: $(runIACCI)"
             curl -X POST \
               -H "Authorization: Bearer $(System.AccessToken)" \
               -H "Content-Type: application/json" \
@@ -56,10 +50,9 @@ stages:
           displayName: Trigger IaC CI
 
     - job: WebhookListenerCI
-      condition: eq(variables['runWebhookListenerCI'], true)
+      condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runWebhookListenerCI'], true)
       steps:
         - script: |
-            echo "Run WebhookListener Pipeline: $(runWebhookListenerCI)"
             curl -X POST \
             -H "Authorization: Bearer $(System.AccessToken)" \
             -H "Content-Type: application/json" \
