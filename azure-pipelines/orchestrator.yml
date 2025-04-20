@@ -21,22 +21,16 @@ stages:
 
         - script: |
             echo "##[group]Checking which folders changed..."
-            git log --oneline
             git diff --name-only HEAD^ > changed.txt
-            cat changed.txt
+            echo "Changes: $(cat changed.txt)"
             echo "##[endgroup]"
 
             echo "##[group]Set Variables..."
-            if grep "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI]true";fi
-            if grep "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI]true";fi
+            if grep "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI;isOutput=true]true";fi
+            if grep "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI;isOutput=true]true";fi
             echo "##[endgroup]"
-            
-            echo "##[group]Tests"
-            cat changed.txt
-            echo "$(runIACCI)"
-            echo "$(runWebhookListernerCI)"
-            echo "##[group]Tests"
           displayName: Check Changes
+          name: CheckChanges
 
   - stage: RunCIPipelines
     dependsOn: DetermineChangedDirs
@@ -44,7 +38,7 @@ stages:
     - group: Orchestrator
     jobs:
     - job: IaCCI
-      condition: eq(variables['runIACCI'], 'true')
+      condition: eq(dependencies.DetermineChangedDirs.outputs['CheckChanges.runIACCI'], 'true')
       steps:
         - script: |
             echo "Run IAC Pipeline: $(runIACCI)"
@@ -56,7 +50,7 @@ stages:
 
 
     - job: WebhookListenerCI
-      condition: eq(variables['runWebhookListenerCI'], 'true')
+      condition: eq(dependencies.DetermineChangedDirs.outputs['CheckChanges.runWebhookListenerCI'], 'true')
       steps:
         - script: |
             echo "Run WebhookListener Pipeline: $(runWebhookListenerCI)"
