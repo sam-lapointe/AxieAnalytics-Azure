@@ -15,9 +15,13 @@ stages:
     jobs:
     - job: CheckChanges
       steps:
+        - checkout: self
+          persistCredentials: true
+          fetchDepth: 0
+
         - script: |
             echo "##[group]Checking which folders changed..."
-            git diff --name-only $(Build.SourceBranchName)^ > changed.txt
+            git diff --name-only origin/main...HEAD > changed.txt
             echo "##[endgroup]"
 
             echo "##[group]Set Variables..."
