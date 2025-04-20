@@ -30,7 +30,7 @@ stages:
             if grep "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI;isOutput=true]true";fi
             echo "##[endgroup]"
           displayName: Check Changes
-          name: CheckChanges
+          name: changesVars
 
   - stage: RunCIPipelines
     dependsOn: DetermineChangedDirs
@@ -38,7 +38,7 @@ stages:
     - group: Orchestrator
     jobs:
     - job: IaCCI
-      condition: eq(dependencies.DetermineChangedDirs.outputs['CheckChanges.runIACCI'], 'true')
+      condition: eq(dependencies.DetermineChangedDirs.outputs['CheckChanges.changesVars.runIACCI'], 'true')
       steps:
         - script: |
             echo "Run IAC Pipeline: $(runIACCI)"
@@ -50,7 +50,7 @@ stages:
 
 
     - job: WebhookListenerCI
-      condition: eq(dependencies.DetermineChangedDirs.outputs['CheckChanges.runWebhookListenerCI'], 'true')
+      condition: eq(dependencies.DetermineChangedDirs.outputs['CheckChanges.changesVars.runWebhookListenerCI'], 'true')
       steps:
         - script: |
             echo "Run WebhookListener Pipeline: $(runWebhookListenerCI)"
