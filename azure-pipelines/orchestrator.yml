@@ -39,9 +39,9 @@ stages:
     variables:
     - group: Orchestrator
     - name: runIACCI
-      value: stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI']
+      value: $(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'])
     - name: runWebhookListenerCI
-      value: stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runWebhookListenerCI']
+      value: $(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runWebhookListenerCI'])
 
     jobs:
     - job: IaCCI
