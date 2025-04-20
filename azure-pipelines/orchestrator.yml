@@ -17,17 +17,20 @@ stages:
       steps:
         - script: |
             echo "##[group]Checking which folders changed..."
-            git fetch origin main
             git diff --name-only origin/main...HEAD > changed.txt
-            cat changed.txt
             echo "##[endgroup]"
 
             echo "##[group]Set Variables..."
             if grep "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI]true";fi
             if grep "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI]true";fi
             echo "##[endgroup]"
+            
+            echo "##[group]Tests"
+            git log --oneline
+            cat changed.txt
             echo "$(runIACCI)"
-            echo "$(runWebhookListenerCI)"
+            echo "$(runWebhookListernerCI)"
+            echo "##[group]Tests"
           displayName: Check Changes
 
   - stage: RunCIPipelines
