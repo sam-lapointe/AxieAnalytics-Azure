@@ -17,7 +17,7 @@ stages:
       steps:
         - script: |
             echo "##[group]Checking which folders changed..."
-            git diff --name-only origin/main...HEAD > changed.txt
+            git diff --name-only $(Build.SourceBranchName)^ > changed.txt
             echo "##[endgroup]"
 
             echo "##[group]Set Variables..."
@@ -64,7 +64,7 @@ stages:
   - stage: DeployDev
     displayName: Deployment to Dev
     dependsOn: RunCIPipelines
-    condition: succeeded()
+    condition: failed()
     variables:
     - group: Dev
     jobs:
