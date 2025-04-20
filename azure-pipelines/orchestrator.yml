@@ -26,8 +26,8 @@ stages:
             if grep "IaC/" changed.txt; then echo "##vso[task.setvariable variable=runIACCI]true";fi
             if grep "webhook_listener/" changed.txt; then echo "##vso[task.setvariable variable=runWebhookListenerCI]true";fi
             echo "##[endgroup]"
-            echo $(runIACCI)
-            echo $(runWebhookListenerCI)
+            echo "$(runIACCI)"
+            echo "$(runWebhookListenerCI)"
           displayName: Check Changes
 
   - stage: RunCIPipelines
@@ -39,6 +39,7 @@ stages:
       condition: eq(variables['runIACCI'], 'true')
       steps:
         - script: |
+            echo "Run IAC Pipeline: $(runIACCI)"
             curl -X POST \
               -H "Authorization: Bearer $(System.AccessToken)" \
               -H "Content-Type: application/json" \
@@ -50,6 +51,7 @@ stages:
       condition: eq(variables['runWebhookListenerCI'], 'true')
       steps:
         - script: |
+            echo "Run WebhookListener Pipeline: $(runWebhookListenerCI)"
             curl -X POST \
             -H "Authorization: Bearer $(System.AccessToken)" \
             -H "Content-Type: application/json" \
