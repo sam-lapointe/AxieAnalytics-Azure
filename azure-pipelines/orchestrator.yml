@@ -26,7 +26,7 @@ stages:
             echo "##[endgroup]"
 
             echo "##[group]Set Variables..."
-            if grep "IaC/" changed.txt; then runIACCI=true"; else runIACCI=false;fi
+            if grep "IaC/" changed.txt; then runIACCI=true; else runIACCI=false;fi
             echo "##vso[task.setvariable variable=runIACCI;isOutput=true]$runIACCI"
             if grep "webhook_listener/" changed.txt; then runWebhookListenerCI=true; else runWebhookListenerCI=false;fi
             echo "##vso[task.setvariable variable=runWebhookListenerCI;isOutput=true]$runWebhookListenerCI"
