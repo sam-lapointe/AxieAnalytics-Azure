@@ -42,6 +42,7 @@ stages:
     dependsOn: DetermineChangedDirs
     variables:
     - group: Orchestrator
+    - group: Service-WebhookListener
     jobs:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
@@ -52,6 +53,8 @@ stages:
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runWebhookListenerCI'], 'true')
       steps:
         - template: ci-webhooklistener.yml
+          parameters:
+            artifactName: $(WEBHOOK_ARTIFACT_NAME)
 
   - stage: DeployDev
     displayName: Deployment to Dev
@@ -77,7 +80,7 @@ stages:
                 command: 'init'
                 commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                backendServiceArm: 'AxieMarket-Dev'
+                backendServiceArm: $(SERVICE_CONNECTION_NAME)
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                 backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
@@ -89,7 +92,7 @@ stages:
                 provider: 'azurerm'
                 command: 'plan'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                environmentServiceNameAzureRM: $(SERVICE_CONNECTION_NAME)
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
               env:
                 TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
@@ -104,7 +107,7 @@ stages:
                 provider: 'azurerm'
                 command: 'apply'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                environmentServiceNameAzureRM: $(SERVICE_CONNECTION_NAME)
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
               env:
                 TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
@@ -116,9 +119,27 @@ stages:
     - job: DeployDevCode
       dependsOn:
       - DeployDevInfra
+      variables:
+      - group: Dev
+      - group: Service-WebhookListener
       steps:
-      - script: |
-          echo "TO DO: Publish the services artifacts to the Azure Functions."
+      - task: AzureFunctionApp@2
+        inputs:
+          connectedServiceNameARM: $(SERVICE_CONNECTION_NAME)
+          resourceGroupName: $(RESOURCE_GROUP_NAME)
+          appType: 'functionAppLinux'
+          appName: "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)"
+          package: $(WEBHOOK_ARTIFACT_NAME)
+          deployToSlotOrASE: true
+          slotName: staging
+      - task: AzureAppServiceManage@0
+        inputs:
+          azureSubscription: $(SERVICE_CONNECTION_NAME)
+          ResourceGroupName: $(RESOURCE_GROUP_NAME)
+          Action: 'Swap Slots'
+          WebAppName: "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)"
+          SourceSlot: staging
+          SwapWithProduction: true
 
     - job: DevTesting
       dependsOn:
@@ -128,12 +149,22 @@ stages:
       - script: |
           echo "TO DO: End to end testing."
 
+    - job: WaitForApprovalDeletion
+      displayName: Wait approval for deletion of Dev environment
+      pool: server
+      steps:
+      - task: ManualValidation@0
+        inputs:
+          notifyUsers: ''
+          instructions: 'Approve to delete the Dev environment.'
+
     - deployment: DeleteDev
       environment: 'Dev'
       dependsOn:
       - DeployDevInfra
       - DeployDevCode
       - DevTesting
+      - WaitForApprovalDeletion
       strategy:
         runOnce:
           deploy:
@@ -150,7 +181,7 @@ stages:
                 command: 'init'
                 commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                backendServiceArm: 'AxieMarket-Dev'
+                backendServiceArm: $(SERVICE_CONNECTION_NAME)
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                 backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
@@ -162,7 +193,7 @@ stages:
                 provider: 'azurerm'
                 command: 'destroy'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                environmentServiceNameAzureRM: $(SERVICE_CONNECTION_NAME)
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve'
               env:
                 TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
