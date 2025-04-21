@@ -72,3 +72,9 @@ steps:
     PathtoPublish: "$(Build.ArtifactStagingDirectory)/webhook_listener.zip"
     ArtifactName: ${{ parameters.artifactName }}
     publishLocation: Container
+
+- script: |
+    echo "Listing Current Directory"
+    ls -la
+    echo "Listing Pipeline Workspace"
+    ls -la $(Pipeline.Workspace)
