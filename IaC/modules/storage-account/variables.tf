@@ -12,7 +12,3 @@ variable "location" {
 
 variable "tags" {
 }
-
-variable "file_share_contributor_ids" {
-  type = list(string)
-}

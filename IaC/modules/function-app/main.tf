@@ -43,9 +43,10 @@ resource "azurerm_linux_function_app" "function_app" {
 }
 
 resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
-  name                 = "staging"
-  function_app_id      = azurerm_linux_function_app.function_app.id
-  storage_account_name = var.storage_account_name
+  name                       = "staging"
+  function_app_id            = azurerm_linux_function_app.function_app.id
+  storage_account_name       = var.storage_account_name
+  storage_account_access_key = var.storage_account_access_key
 
   site_config {
     application_stack {

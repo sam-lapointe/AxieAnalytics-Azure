@@ -127,11 +127,6 @@ module "function_app_storage_account" {
   resource_group_name  = data.azurerm_resource_group.rg.name
   location             = data.azurerm_resource_group.rg.location
   tags                 = local.tags
-
-  file_share_contributor_ids = [
-    azurerm_user_assigned_identity.umi_functionapp_external.principal_id,
-    azurerm_user_assigned_identity.umi_functionapp_internal.principal_id
-  ]
 }
 
 module "webhook_function_app" {
