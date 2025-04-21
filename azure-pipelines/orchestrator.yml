@@ -63,6 +63,7 @@ stages:
               -d "{}" \
               "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
             )
+            echo $response
             runId=$(echo $response | grep -o -m1 'id:[0-9]\+' | cut -d':' -f2)
             echo $runId
           displayName: Trigger WebhookListener CI
