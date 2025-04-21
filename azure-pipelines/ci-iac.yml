@@ -1,27 +1,20 @@
-trigger: none
+steps:
+  - task: TerraformInstaller@1
+    displayName: Terraform Install
+    inputs:
+      terraformVersion: 'latest'
 
-pool:
-  name: OnPrem
+  - script: |
+      terraform init -backend=false
+    displayName: Terraform Init
+    workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
-jobs:
-  - job: ValidateTerraform
-    steps:
-      - task: TerraformInstaller@1
-        displayName: Terraform Install
-        inputs:
-         terraformVersion: 'latest'
+  - script: |
+      terraform fmt --check
+    displayName: Terraform Format
+    workingDirectory: $(System.DefaultWorkingDirectory)/IaC
 
-      - script: |
-          terraform init -backend=false
-        displayName: Terraform Init
-        workingDirectory: $(System.DefaultWorkingDirectory)/IaC
-
-      - script: |
-          terraform fmt --check
-        displayName: Terraform Format
-        workingDirectory: $(System.DefaultWorkingDirectory)/IaC
-
-      - script: |
-          terraform validate
-        displayName: Terraform Validate
-        workingDirectory: $(System.DefaultWorkingDirectory)/IaC
+  - script: |
+      terraform validate
+    displayName: Terraform Validate
+    workingDirectory: $(System.DefaultWorkingDirectory)/IaC
