@@ -149,6 +149,12 @@ stages:
       - script: |
           echo "TO DO: End to end testing."
 
+  - stage: DeleteDevInfra
+    displayName: Delete Dev Infra
+    dependsOn: DeployDev
+    variables:
+    - group: Dev
+    jobs:
     - job: WaitForApprovalDeletion
       displayName: Wait approval for deletion of Dev environment
       pool: server
@@ -161,9 +167,6 @@ stages:
     - deployment: DeleteDev
       environment: 'Dev'
       dependsOn:
-      - DeployDevInfra
-      - DeployDevCode
-      - DevTesting
       - WaitForApprovalDeletion
       strategy:
         runOnce:
