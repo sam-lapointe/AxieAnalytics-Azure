@@ -80,7 +80,7 @@ stages:
                 command: 'init'
                 commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                backendServiceArm: $(SERVICE_CONNECTION_NAME)
+                backendServiceArm: 'AxieMarket-Dev'
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                 backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
@@ -92,7 +92,7 @@ stages:
                 provider: 'azurerm'
                 command: 'plan'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                environmentServiceNameAzureRM: $(SERVICE_CONNECTION_NAME)
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -out=$(ENVIRONMENT).tfplan'
               env:
                 TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
@@ -107,7 +107,7 @@ stages:
                 provider: 'azurerm'
                 command: 'apply'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                environmentServiceNameAzureRM: $(SERVICE_CONNECTION_NAME)
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve $(ENVIRONMENT).tfplan'
               env:
                 TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
@@ -125,7 +125,7 @@ stages:
       steps:
       - task: AzureFunctionApp@2
         inputs:
-          connectedServiceNameARM: $(SERVICE_CONNECTION_NAME)
+          connectedServiceNameARM: 'AxieMarket-Dev'
           resourceGroupName: $(RESOURCE_GROUP_NAME)
           appType: 'functionAppLinux'
           appName: "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)"
@@ -134,7 +134,7 @@ stages:
           slotName: staging
       - task: AzureAppServiceManage@0
         inputs:
-          azureSubscription: $(SERVICE_CONNECTION_NAME)
+          azureSubscription: 'AxieMarket-Dev'
           ResourceGroupName: $(RESOURCE_GROUP_NAME)
           Action: 'Swap Slots'
           WebAppName: "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)"
@@ -181,7 +181,7 @@ stages:
                 command: 'init'
                 commandOptions: '-reconfigure'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                backendServiceArm: $(SERVICE_CONNECTION_NAME)
+                backendServiceArm: 'AxieMarket-Dev'
                 backendAzureRmResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                 backendAzureRmStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                 backendAzureRmContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
@@ -193,7 +193,7 @@ stages:
                 provider: 'azurerm'
                 command: 'destroy'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
-                environmentServiceNameAzureRM: $(SERVICE_CONNECTION_NAME)
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
                 commandOptions: '-input=false -var-file=./env/$(ENVIRONMENT).tfvars -auto-approve'
               env:
                 TF_VAR_ALCHEMY_SIGNING_KEY: $(TF_VAR_ALCHEMY_SIGNING_KEY)
