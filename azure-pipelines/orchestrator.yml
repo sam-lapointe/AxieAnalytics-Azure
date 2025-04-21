@@ -50,7 +50,7 @@ stages:
               "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_IAC)/runs?api-version=7.1"
             )
             runId=$(echo $response | grep -o '"id":[0-9]\+' | cut -d':' -f2 | tail -n 1)
-            echo $runId
+            echo "Run ID: $runId"
           displayName: Trigger IaC CI
 
     - job: WebhookListenerCI
@@ -63,9 +63,13 @@ stages:
               -d "{}" \
               "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
             )
-            echo $response
             runId=$(echo $response | grep -o '"id":[0-9]\+' | cut -d':' -f2 | tail -n 1)
-            echo $runId
+            echo "Run ID: $runId"
+
+            status=$(curl -s -H "Authorization: Bearer $(System.AccessToken)" \
+              "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs/$runId?api-version=7.1"
+            )
+            echo "Build Status: $status"
           displayName: Trigger WebhookListener CI
 
   - stage: DeployDev
