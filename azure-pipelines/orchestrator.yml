@@ -138,7 +138,7 @@ stages:
               --resource-group $(RESOURCE_GROUP_NAME) \
               --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
               --slot staging\
-              --src $(WEBHOOK_ARTIFACT_NAME)
+              --src "$(Pipeline.Workspace)/$(WEBHOOK_ARTIFACT_NAME)/$(WEBHOOK_ARTIFACT_NAME).zip"
       - task: AzureAppServiceManage@0
         inputs:
           azureSubscription: 'AxieMarket-Dev'
