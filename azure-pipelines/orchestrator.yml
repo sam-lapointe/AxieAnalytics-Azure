@@ -42,41 +42,12 @@ stages:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
       steps:
-        - script: |
-            response=$(curl -X POST \
-              -H "Authorization: Bearer $(System.AccessToken)" \
-              -H "Content-Type: application/json" \
-              -d "{}" \
-              "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_IAC)/runs?api-version=7.1"
-            )
-            runId=$(echo $response | grep -o '"id":[0-9]\+' | cut -d':' -f2 | tail -n 1)
-            echo "Run ID: $runId"
-          displayName: Trigger IaC CI
+        - template: ci-iac.yml
 
     - job: WebhookListenerCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runWebhookListenerCI'], 'true')
       steps:
-        - script: |
-            runResponse=$(curl -X POST \
-              -H "Authorization: Bearer $(System.AccessToken)" \
-              -H "Content-Type: application/json" \
-              -d "{}" \
-              "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
-            )
-            runId=$(echo $runResponse | grep -o '"id":[0-9]\+' | cut -d':' -f2 | tail -n 1)
-            echo "Run ID: $runId"
-            
-            while true; do
-              stateResponse=$(curl -s -H "Authorization: Bearer $(System.AccessToken)" \
-                "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs/$runId?api-version=7.1"
-              )
-              echo "State Response: $statusResponse"
-              state=$(echo $stateResponse | grep -o -m 1 '"state":[a-zA-Z]\+' | cut -d':' -f2)
-              echo "Build State: $state"
-
-              sleep 10  # Wait 10 seconds before checking again
-            done
-          displayName: Trigger WebhookListener CI
+        - template: ci-webhooklistener.yml
 
   - stage: DeployDev
     displayName: Deployment to Dev
