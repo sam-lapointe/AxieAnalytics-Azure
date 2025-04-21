@@ -43,22 +43,28 @@ stages:
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
       steps:
         - script: |
-            curl -X POST \
+            response=$(curl -X POST \
               -H "Authorization: Bearer $(System.AccessToken)" \
               -H "Content-Type: application/json" \
               -d "{}" \
               "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_IAC)/runs?api-version=7.1"
+            )
+            runId=$(echo $response | grep -o -m1 'id:[0-9]\+' | cut -d':' -f2')
+            echo $runId
           displayName: Trigger IaC CI
 
     - job: WebhookListenerCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runWebhookListenerCI'], 'true')
       steps:
         - script: |
-            curl -X POST \
+            response=$(curl -X POST \
             -H "Authorization: Bearer $(System.AccessToken)" \
             -H "Content-Type: application/json" \
             -d "{}" \
             "$(System.CollectionUri)$(System.TeamProject)/_apis/pipelines/$(PIPELINE_ID_WEBHOOK_LISTENER)/runs?api-version=7.1"
+            )
+            runId=$(echo $response | grep -o -m1 'id:[0-9]\+' | cut -d':' -f2')
+            echo $runId
           displayName: Trigger WebhookListener CI
 
   - stage: DeployDev
