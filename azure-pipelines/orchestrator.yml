@@ -123,15 +123,17 @@ stages:
       - group: Dev
       - group: Service-WebhookListener
       steps:
-      - task: AzureFunctionApp@2
+      - task: AzureCli@2
         inputs:
-          connectedServiceNameARM: 'AxieMarket-Dev'
-          resourceGroupName: $(RESOURCE_GROUP_NAME)
-          appType: 'functionAppLinux'
-          appName: "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)"
-          package: $(WEBHOOK_ARTIFACT_NAME)
-          deployToSlotOrASE: true
-          slotName: staging
+          azureSubscription: 'AxieMarket-Dev'
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az functionapp deployment source config-zip \
+              --resource-group $(RESOURCE_GROUP_NAME) \
+              --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
+              --slot staging\
+              --src $(WEBHOOK_ARTIFACT_NAME)
       - task: AzureAppServiceManage@0
         inputs:
           azureSubscription: 'AxieMarket-Dev'
