@@ -41,3 +41,30 @@ resource "azurerm_linux_function_app" "function_app" {
     identity_ids = var.user_managed_identities
   }
 }
+
+resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
+  name                 = "staging"
+  function_app_id      = azurerm_linux_function_app.function_app.id
+  storage_account_name = var.storage_account_name
+
+  site_config {
+    application_stack {
+      python_version = var.python_version
+    }
+
+    dynamic "ip_restriction" {
+      for_each = var.authorized_ips
+      content {
+        ip_address = "${ip_restriction.value}/32"
+        action     = "Allow"
+      }
+    }
+  }
+
+  app_settings = var.app_settings
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = var.user_managed_identities
+  }
+}
