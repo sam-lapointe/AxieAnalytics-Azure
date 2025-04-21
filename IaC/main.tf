@@ -131,6 +131,14 @@ resource "azurerm_storage_account" "func_storage_account" {
   allow_nested_items_to_be_public = false
 }
 
+resource "azurerm_role_assignment" "storage_file_data_SMB_share_contributor" {
+  scope                = azurerm_storage_account.func_storage_account.id
+  role_definition_name = "Storage File Data SMB Share Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+
+  depends_on = [azurerm_storage_account.func_storage_account]
+}
+
 module "webhook_function_app" {
   source = "./modules/function-app"
 
