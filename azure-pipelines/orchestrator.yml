@@ -10,6 +10,10 @@ trigger:
 pool:
   name: OnPrem
 
+variables:
+  - group: SonarQube
+  - group: Python
+
 stages:
   - stage: DetermineChangedDirs
     jobs:
@@ -41,9 +45,6 @@ stages:
     jobs:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
-      variables:
-      - group: SonarQube
-      - group: Python
       steps:
         - template: ci-iac.yml
 
@@ -55,7 +56,7 @@ stages:
   - stage: DeployDev
     displayName: Deployment to Dev
     dependsOn: RunCIPipelines
-    condition: failed()
+    condition: succeeded()
     variables:
     - group: Dev
     jobs:
