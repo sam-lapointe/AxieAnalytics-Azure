@@ -129,8 +129,8 @@ module "function_app_storage_account" {
   tags                 = local.tags
 
   file_share_contributor_ids = [
-    azurerm_user_assigned_identity.umi_functionapp_external,
-    azurerm_user_assigned_identity.umi_functionapp_internal
+    azurerm_user_assigned_identity.umi_functionapp_external.principal_id,
+    azurerm_user_assigned_identity.umi_functionapp_internal.principal_id
   ]
 }
 
