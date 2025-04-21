@@ -41,6 +41,9 @@ stages:
     jobs:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
+      variables:
+      - group: SonarQube
+      - group: Python
       steps:
         - template: ci-iac.yml
 
