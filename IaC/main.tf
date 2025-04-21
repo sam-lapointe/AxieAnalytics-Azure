@@ -120,23 +120,18 @@ module "key_vault_database_admins" {
   depends_on = [azurerm_user_assigned_identity.umi_functionapp_database]
 }
 
-resource "azurerm_storage_account" "func_storage_account" {
-  name                = "${var.environment}axie${substr(var.subscription_id, 0, 4)}"
-  resource_group_name = data.azurerm_resource_group.rg.name
-  location            = data.azurerm_resource_group.rg.location
-  tags                = local.tags
+module "function_app_storage_account" {
+  source = "./modules/storage-account"
 
-  account_tier                    = "Standard"
-  account_replication_type        = "LRS"
-  allow_nested_items_to_be_public = false
-}
+  storage_account_name = "${var.environment}axie${substr(var.subscription_id, 0, 4)}"
+  resource_group_name  = data.azurerm_resource_group.rg.name
+  location             = data.azurerm_resource_group.rg.location
+  tags                 = local.tags
 
-resource "azurerm_role_assignment" "storage_file_data_SMB_share_contributor" {
-  scope                = azurerm_storage_account.func_storage_account.id
-  role_definition_name = "Storage File Data SMB Share Contributor"
-  principal_id         = data.azurerm_client_config.current.object_id
-
-  depends_on = [azurerm_storage_account.func_storage_account]
+  file_share_contributor_ids = [
+    azurerm_user_assigned_identity.umi_functionapp_external,
+    azurerm_user_assigned_identity.umi_functionapp_internal
+  ]
 }
 
 module "webhook_function_app" {
@@ -148,8 +143,8 @@ module "webhook_function_app" {
   location            = data.azurerm_resource_group.rg.location
   tags                = local.tags
 
-  storage_account_name       = azurerm_storage_account.func_storage_account.name
-  storage_account_access_key = azurerm_storage_account.func_storage_account.primary_access_key
+  storage_account_name       = module.function_app_storage_account.storage_account_name
+  storage_account_access_key = module.function_app_storage_account.primary_access_key
   umi_key_vault              = azurerm_user_assigned_identity.umi_functionapp_external.id
   user_managed_identities    = [azurerm_user_assigned_identity.umi_functionapp_external.id]
   python_version             = "3.11"
@@ -163,7 +158,7 @@ module "webhook_function_app" {
   }
 
   depends_on = [
-    azurerm_storage_account.func_storage_account,
+    module.function_app_storage_account,
     azurerm_user_assigned_identity.umi_functionapp_external,
     module.service_bus
   ]
@@ -178,14 +173,14 @@ module "store_sales_function_app" {
   location            = data.azurerm_resource_group.rg.location
   tags                = local.tags
 
-  storage_account_name       = azurerm_storage_account.func_storage_account.name
-  storage_account_access_key = azurerm_storage_account.func_storage_account.primary_access_key
+  storage_account_name       = module.function_app_storage_account.storage_account_name
+  storage_account_access_key = module.function_app_storage_account.primary_access_key
   umi_key_vault              = azurerm_user_assigned_identity.umi_functionapp_internal.id
   user_managed_identities    = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
   python_version             = "3.11"
 
   depends_on = [
-    azurerm_storage_account.func_storage_account,
+    module.function_app_storage_account,
     azurerm_user_assigned_identity.umi_functionapp_internal
   ]
 }
