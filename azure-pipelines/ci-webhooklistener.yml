@@ -1,5 +1,6 @@
 steps:
 - script: |
+    echo "Python Version: $(PYTHON_VERSION)"
     if ! python$(PYTHON_VERSION) --version > /dev/null 2>&1; then
       echo "❌ python$(PYTHON_VERSION) must be installed on the Self-Hosted Agent."
       exit 1
