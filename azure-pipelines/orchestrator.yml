@@ -123,6 +123,11 @@ stages:
       - group: Dev
       - group: Service-WebhookListener
       steps:
+      - script: |
+          echo "Listing Pipeline Workspace"
+          ls -la $(Pipeline.Workspace)
+          echo "Listing Pipeline Workspace/webhook_listener"
+          ls -la $(Pipeline.Workspace)/webhook_listener
       - task: AzureCli@2
         inputs:
           azureSubscription: 'AxieMarket-Dev'
