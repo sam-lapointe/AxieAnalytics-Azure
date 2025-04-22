@@ -53,12 +53,6 @@ resource "azurerm_linux_function_app" "function_app" {
     type = "UserAssigned"
     identity_ids = var.user_managed_identities
   }
-
-  lifecycle {
-    ignore_changes = [
-      app_settings["WEBSITE_RUN_FROM_PACKAGE"]  # This must be defined in app_settings variable. Empty string is valid.
-    ]
-  }
 }
 
 resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
@@ -89,11 +83,5 @@ resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
   identity {
     type = "UserAssigned"
     identity_ids = var.user_managed_identities
-  }
-
-  lifecycle {
-    ignore_changes = [
-      app_settings["WEBSITE_RUN_FROM_PACKAGE"]  # This must be defined in app_settings variable. Empty string is valid.
-    ]
   }
 }

@@ -162,7 +162,6 @@ module "webhook_function_app" {
     "AUTHORIZED_IPS"                       = jsonencode(var.authorized_ips)
     "SERVICEBUS_FULLY_QUALIFIED_NAMESPACE" = module.service_bus.endpoint
     "SERVICEBUS_TOPIC_NAME"                = "sales"
-    "WEBSITE_RUN_FROM_PACKAGE"             = ""
     "SCM_DO_BUILD_DURING_DEPLOYMENT"       = "true"
   }
 
