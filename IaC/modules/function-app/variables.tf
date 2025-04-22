@@ -19,6 +19,7 @@ variable "location" {
 }
 
 variable "tags" {
+  type = map(string)
 }
 
 variable "log_workspace_id" {

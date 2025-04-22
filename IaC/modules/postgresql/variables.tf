@@ -11,6 +11,7 @@ variable "location" {
 }
 
 variable "tags" {
+  type = map(string)
 }
 
 variable "administrator_username" {

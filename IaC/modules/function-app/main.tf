@@ -1,3 +1,13 @@
+locals {
+  tags_to_add = {
+    "hidden-link: /app-insights-conn-string"         = ""
+    "hidden-link: /app-insights-instrumentation-key" = ""
+    "hidden-link: /app-insights-resource-id"         = ""
+  }
+
+  tags_func = merge(var.tags, local.tags_to_add)
+}
+
 resource "azurerm_service_plan" "service_plan" {
   name                = var.service_plan_name
   resource_group_name = var.resource_group_name
@@ -22,7 +32,7 @@ resource "azurerm_linux_function_app" "function_app" {
   name                = var.function_app_name
   resource_group_name = var.resource_group_name
   location            = var.location
-  tags                = var.tags
+  tags                = local.tags_func
 
   storage_account_name            = var.storage_account_name
   storage_account_access_key      = var.storage_account_access_key
@@ -57,6 +67,7 @@ resource "azurerm_linux_function_app" "function_app" {
 
 resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
   name                       = "staging"
+  tags                       = local.tags_func
   function_app_id            = azurerm_linux_function_app.function_app.id
   storage_account_name       = var.storage_account_name
   storage_account_access_key = var.storage_account_access_key
