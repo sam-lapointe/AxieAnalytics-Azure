@@ -8,6 +8,16 @@ resource "azurerm_service_plan" "service_plan" {
   sku_name = "Y1"
 }
 
+resource "azurerm_application_insights" "app_insights" {
+  name                = var.app_insights_name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  tags                = var.tags
+
+  workspace_id = var.log_workspace_id
+  application_type = "web"
+}
+
 resource "azurerm_linux_function_app" "function_app" {
   name                = var.function_app_name
   resource_group_name = var.resource_group_name
@@ -24,6 +34,9 @@ resource "azurerm_linux_function_app" "function_app" {
     application_stack {
       python_version = var.python_version
     }
+
+    application_insights_connection_string = azurerm_application_insights.app_insights.connection_string
+    application_insights_key               = azurerm_application_insights.app_insights.instrumentation_key
 
     dynamic "ip_restriction" {
       for_each = var.authorized_ips
@@ -58,6 +71,9 @@ resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
     application_stack {
       python_version = var.python_version
     }
+
+    application_insights_connection_string = azurerm_application_insights.app_insights.connection_string
+    application_insights_key               = azurerm_application_insights.app_insights.instrumentation_key
 
     dynamic "ip_restriction" {
       for_each = var.authorized_ips

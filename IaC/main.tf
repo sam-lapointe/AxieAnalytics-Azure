@@ -129,15 +129,27 @@ module "function_app_storage_account" {
   tags                 = local.tags
 }
 
+resource "azurerm_log_analytics_workspace" "logs_workspace" {
+  name                = "${var.environment}-axie-logs"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  tags                = local.tags
+
+  sku               = "PerGB2018"
+  retention_in_days = 30
+}
+
 module "webhook_function_app" {
   source = "./modules/function-app"
 
   service_plan_name   = "${var.environment}-axie-webhook-sp"
   function_app_name   = "${var.environment}-axie-webhook-func"
+  app_insights_name   = "${var.environment}-axie-webhook-ai"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   tags                = local.tags
 
+  log_workspace_id           = azurerm_log_analytics_workspace.logs_workspace.id
   storage_account_name       = module.function_app_storage_account.storage_account_name
   storage_account_access_key = module.function_app_storage_account.primary_access_key
   umi_key_vault              = azurerm_user_assigned_identity.umi_functionapp_external.id
@@ -165,10 +177,12 @@ module "store_sales_function_app" {
 
   service_plan_name   = "${var.environment}-axie-store-sales-sp"
   function_app_name   = "${var.environment}-axie-store-sales-func"
+  app_insights_name   = "${var.environment}-axie-store-sales-ai"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   tags                = local.tags
 
+  log_workspace_id           = azurerm_log_analytics_workspace.logs_workspace.id
   storage_account_name       = module.function_app_storage_account.storage_account_name
   storage_account_access_key = module.function_app_storage_account.primary_access_key
   umi_key_vault              = azurerm_user_assigned_identity.umi_functionapp_internal.id

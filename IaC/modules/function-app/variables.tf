@@ -3,7 +3,11 @@ variable "service_plan_name" {
 }
 
 variable "function_app_name" {
-    type = string
+  type = string
+}
+
+variable "app_insights_name" {
+  type = string
 }
 
 variable "resource_group_name" {
@@ -17,27 +21,31 @@ variable "location" {
 variable "tags" {
 }
 
+variable "log_workspace_id" {
+  type = string
+}
+
 variable "storage_account_name" {
-    description = "The storage account name which will be used by this Function App."
-    type        = string
+  description = "The storage account name which will be used by this Function App."
+  type        = string
 }
 
 variable "storage_account_access_key" {
-    description = "The access key of the storage account which will be used by this Function App."
-    type        = string
-    sensitive   = true
+  description = "The access key of the storage account which will be used by this Function App."
+  type        = string
+  sensitive   = true
 }
 
 variable "umi_key_vault" {
-    description = "The User Managed Identity to use to access Key Vault."
-    type        = string
-    default     = ""
+  description = "The User Managed Identity to use to access Key Vault."
+  type        = string
+  default     = ""
 }
 
 variable "user_managed_identities" {
-    description = "List of IDs for User Managed Identities to assign to the Function App."
-    type        = list(string)
-    default     = []
+  description = "List of IDs for User Managed Identities to assign to the Function App."
+  type        = list(string)
+  default     = []
 }
 
 variable "authorized_ips" {
