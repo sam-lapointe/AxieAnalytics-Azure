@@ -122,7 +122,7 @@ async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
     # Verify if the Alchemy signature is in the header
     if not signature:
         logging.error("Missing signature in headers.")
-        return func.HttpResponse(status_code=400)
+        return func.HttpResponse(status_code=400, body={"Error": "Invalid Signature"})
 
     # Get the body content
     try:
