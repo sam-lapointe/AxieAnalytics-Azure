@@ -163,6 +163,7 @@ module "webhook_function_app" {
     "SERVICEBUS_FULLY_QUALIFIED_NAMESPACE" = module.service_bus.endpoint
     "SERVICEBUS_TOPIC_NAME"                = "sales"
     "SCM_DO_BUILD_DURING_DEPLOYMENT"       = "true"
+    "AZURE_CLIENT_ID"                      = azurerm_user_assigned_identity.umi_functionapp_external.id
   }
 
   depends_on = [
