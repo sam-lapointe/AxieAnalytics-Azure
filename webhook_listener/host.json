@@ -8,7 +8,9 @@
       }
     },
     "logLevel": {
-      "default": "Information"
+      "default": "Information",
+      "Host.Results": "Information",
+      "Function": "Information"
     }
   },
   "extensionBundle": {
