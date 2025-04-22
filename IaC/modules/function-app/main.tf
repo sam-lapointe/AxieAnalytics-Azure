@@ -110,5 +110,9 @@ resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
       tags["hidden-link: /app-insights-instrumentation-key"],
       tags["hidden-link: /app-insights-resource-id"]
     ]
+    create_before_destroy = false
+    replace_triggered_by = [
+      azurerm_linux_function_app.function_app
+    ]
   }
 }
