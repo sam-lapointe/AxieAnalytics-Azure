@@ -177,11 +177,13 @@ stages:
         inputs:
           notifyUsers: ''
           instructions: 'Approve to delete the Dev environment.'
+          onTimeout: resume
 
     - deployment: DeleteDev
       environment: 'Dev'
       dependsOn:
       - WaitForApprovalDeletion
+      condition: succeeded()
       strategy:
         runOnce:
           deploy:
