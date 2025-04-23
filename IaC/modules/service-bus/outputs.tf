@@ -1,3 +1,3 @@
 output "endpoint" {
-  value = azurerm_servicebus_namespace.servicebus_namespace.endpoint
+  value = replace(azurerm_servicebus_namespace.servicebus_namespace.endpoint, ":443/", "")
 }
