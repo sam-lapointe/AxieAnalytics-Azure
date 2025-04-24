@@ -63,7 +63,7 @@ steps:
       --user $(id -u):$(id -g) \
       -v $(System.DefaultWorkingDirectory)/webhook_listener:/repo \
       -v $(System.DefaultWorkingDirectory)/oryx_output:/output \
-      mcr.microsoft.com/oryx/build:latest \
+      mcr.microsoft.com/oryx/python:$(PYTHON_VERSION) \
       /bin/bash -c "oryx build /repo -o /output --platform python --platform-version $(PYTHON_VERSION)"
   displayName: Build with Oryx
 
