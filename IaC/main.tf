@@ -162,7 +162,8 @@ module "webhook_function_app" {
     "AUTHORIZED_IPS"                       = jsonencode(var.authorized_ips)
     "SERVICEBUS_FULLY_QUALIFIED_NAMESPACE" = module.service_bus.endpoint
     "SERVICEBUS_TOPIC_NAME"                = "sales"
-    "WEBSITE_RUN_FROM_PACKAGE"             = 1
+    "ENABLE_ORYX_BUILD"                    = "true"
+    "SCM_DO_BUILD_DURING_DEPLOYMENT"       = "true"
     "AZURE_CLIENT_ID"                      = azurerm_user_assigned_identity.umi_functionapp_external.client_id
   }
 

@@ -6,3 +6,5 @@ __queuestorage__
 local.settings.json
 test
 .venv
+.pytest_cache
+.ruff_cache
