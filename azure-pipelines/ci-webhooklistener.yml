@@ -57,10 +57,19 @@ steps:
       -D sonar.token=$(SONARQUBE_TOKEN)
   displayName: SonarQube Scanner
 
+- script: |
+    mkdir -p oryx_output
+    docker run --rm \
+      -v $(System.DefaultWorkingDirectory)/webhook_listener:/repo \
+      -v $(System.DefaultWorkingDirectory)/oryx_output:/output \
+      mcr.microsoft.com/oryx/build:latest \
+      /bin/bash -c "oryx build /repo -o /output"
+  displayName: Build with Oryx
+
 - task: ArchiveFiles@2
-  displayName: Build Artifact
+  displayName: Build Zip Artifact
   inputs:
-    rootFolderOrFile: $(System.DefaultWorkingDirectory)/webhook_listener
+    rootFolderOrFile: $(System.DefaultWorkingDirectory)/oryx_output
     includeRootFolder: false
     archiveType: "zip"
     archiveFile: "$(Build.ArtifactStagingDirectory)/webhook_listener.zip"

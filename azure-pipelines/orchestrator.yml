@@ -135,7 +135,7 @@ stages:
               --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
               --slot staging \
               --src "$(Pipeline.Workspace)/$(WEBHOOK_ARTIFACT_NAME)/$(WEBHOOK_ARTIFACT_NAME).zip" \
-              --build-remote true
+              --build-remote false
 
       - script: |
           sleep 60
