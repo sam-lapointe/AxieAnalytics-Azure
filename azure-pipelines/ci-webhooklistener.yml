@@ -64,7 +64,7 @@ steps:
       -v $(System.DefaultWorkingDirectory)/webhook_listener:/repo \
       -v $(System.DefaultWorkingDirectory)/oryx_output:/output \
       mcr.microsoft.com/oryx/build:latest \
-      /bin/bash -c "oryx build /repo -o /output"
+      /bin/bash -c "oryx build /repo -o /output -p python --platform-version $(PYTHON_VERSION)"
   displayName: Build with Oryx
 
 - task: ArchiveFiles@2
