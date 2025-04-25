@@ -164,7 +164,6 @@ module "webhook_function_app" {
     "SERVICEBUS_TOPIC_NAME"                = "sales"
     "SCM_DO_BUILD_DURING_DEPLOYMENT"       = "true"
     "AZURE_CLIENT_ID"                      = azurerm_user_assigned_identity.umi_functionapp_external.client_id
-    "TEST"                                 = "Test2"
   }
 
   depends_on = [
