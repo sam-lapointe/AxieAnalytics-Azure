@@ -138,21 +138,21 @@ stages:
               --build-remote true
 
       - script: |
-          sleep 60
-        displayName: Wait 1 minute
+          sleep 120
+        displayName: Wait 2 minutes
 
-      # - task: AzureCLI@2
-      #   displayName: Swap webhook_listener to production slot
-      #   inputs:
-      #    azureSubscription: 'AxieMarket-Dev'
-      #    scriptType: bash
-      #    scriptLocation: inlineScript
-      #    inlineScript: |
-      #      az functionapp deployment slot swap \
-      #        --resource-group $(RESOURCE_GROUP_NAME) \
-      #        --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
-      #        --slot staging \
-      #        --target-slot production
+      - task: AzureCLI@2
+        displayName: Swap webhook_listener to production slot
+        inputs:
+         azureSubscription: 'AxieMarket-Dev'
+         scriptType: bash
+         scriptLocation: inlineScript
+         inlineScript: |
+           az functionapp deployment slot swap \
+             --resource-group $(RESOURCE_GROUP_NAME) \
+             --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
+             --slot staging \
+             --target-slot production
 
     - job: DevTesting
       dependsOn:
