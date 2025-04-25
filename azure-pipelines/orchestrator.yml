@@ -138,8 +138,8 @@ stages:
               --build-remote true
 
       - script: |
-          sleep 120
-        displayName: Wait 2 minutes
+          sleep 60
+        displayName: Wait 1 minute
 
       - task: AzureCLI@2
         displayName: Swap webhook_listener to production slot
