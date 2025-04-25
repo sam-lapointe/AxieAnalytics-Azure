@@ -179,6 +179,12 @@ stages:
           instructions: 'Approve to delete the Dev environment.'
           onTimeout: resume
 
+    - script: |
+        echo "$(dependencies.WaitForApprovalDeletion.result)"
+      dependsOn:
+      - WaitForApprovalDeletion
+      displayName: Output Approval Result
+
     - deployment: DeleteDev
       environment: 'Dev'
       dependsOn:
