@@ -91,11 +91,11 @@ resource "azurerm_linux_function_app" "function_app" {
   }
 }
 
-resource "null_resource" "trigger_modification" {
-  triggers = {
-    modification_tracking = local.modification_tracking
-  }
-}
+# resource "null_resource" "trigger_modification" {
+#   triggers = {
+#     modification_tracking = local.modification_tracking
+#   }
+# }
 
 resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
   name                       = "staging"
@@ -136,9 +136,9 @@ resource "azurerm_linux_function_app_slot" "function_app_staging_slot" {
       tags["hidden-link: /app-insights-instrumentation-key"],
       tags["hidden-link: /app-insights-resource-id"]
     ]
-    create_before_destroy = false
-    replace_triggered_by = [
-      null_resource.trigger_modification
-    ]
+    # create_before_destroy = false
+    # replace_triggered_by = [
+    #   null_resource.trigger_modification
+    # ]
   }
 }
