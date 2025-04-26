@@ -133,26 +133,25 @@ stages:
             az functionapp deployment source config-zip \
               --resource-group $(RESOURCE_GROUP_NAME) \
               --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
-              --slot staging \
               --src "$(Pipeline.Workspace)/$(WEBHOOK_ARTIFACT_NAME)/$(WEBHOOK_ARTIFACT_NAME).zip" \
               --build-remote true
 
-      - script: |
-          sleep 60
-        displayName: Wait 1 minute
+      # - script: |
+      #     sleep 60
+      #   displayName: Wait 1 minute
 
-      - task: AzureCLI@2
-        displayName: Swap webhook_listener to production slot
-        inputs:
-         azureSubscription: 'AxieMarket-Dev'
-         scriptType: bash
-         scriptLocation: inlineScript
-         inlineScript: |
-           az functionapp deployment slot swap \
-             --resource-group $(RESOURCE_GROUP_NAME) \
-             --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
-             --slot staging \
-             --target-slot production
+      # - task: AzureCLI@2
+      #   displayName: Swap webhook_listener to production slot
+      #   inputs:
+      #    azureSubscription: 'AxieMarket-Dev'
+      #    scriptType: bash
+      #    scriptLocation: inlineScript
+      #    inlineScript: |
+      #      az functionapp deployment slot swap \
+      #        --resource-group $(RESOURCE_GROUP_NAME) \
+      #        --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
+      #        --slot staging \
+      #        --target-slot production
 
     - job: DevTesting
       dependsOn:
