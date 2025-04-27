@@ -86,6 +86,11 @@ resource "azurerm_linux_function_app" "function_app" {
   }
 }
 
+# There are currently problems with staging slot when updating its settings.
+# 1. Recreating the staging slot solves the problem of updating its settings. 
+#    However this is causing issues for uploading the code with build-remote to the staging slot.
+# For the time being, only production slot will be used which may cause interruptions at the deployments but shouldn't be an issue for most services.
+
 # resource "null_resource" "trigger_modification" {
 #   triggers = {
 #     modification_tracking = local.modification_tracking
