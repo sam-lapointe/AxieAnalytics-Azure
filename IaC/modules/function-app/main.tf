@@ -79,11 +79,6 @@ resource "azurerm_linux_function_app" "function_app" {
   # Must ignore all changes that can cause downtime.
   lifecycle {
     ignore_changes = [
-      app_settings,
-      site_config,
-      identity,
-      storage_account_name,
-      storage_account_access_key,
       tags["hidden-link: /app-insights-conn-string"],
       tags["hidden-link: /app-insights-instrumentation-key"],
       tags["hidden-link: /app-insights-resource-id"]
