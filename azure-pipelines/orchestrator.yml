@@ -6,6 +6,10 @@ trigger:
     include:
       - IaC/**
       - webhook_listener/**
+      - database_config/**
+    exclude:
+      - '**/README.md'
+      - '**/docs/**'
 
 pool:
   name: OnPrem
@@ -128,7 +132,6 @@ stages:
           liquibase --url=jdbc:postgresql://$(host):5432/axie_market \
             --username=$(TF_VAR_POSTGRESQL_ADMIN_USERNAME) \
             --password=$(TF_VAR_POSTGRESQL_ADMIN_PASSWORD) \
-            --changeLogFile=./changelogs/master.yaml \
             --param=webhook_listener_username=$(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME) \
             --param=webhook_listener_password=$(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD) \
             update
@@ -158,6 +161,7 @@ stages:
       dependsOn:
       - DeployDevInfra
       - DeployDevCode
+      - ConfigureDevDB
       steps:
       - script: |
           echo "TO DO: End to end testing."
@@ -168,6 +172,7 @@ stages:
       - DeployDevInfra
       - DeployDevCode
       - TestDev
+      - ConfigureDevDB
       condition: succeededOrFailed()
       pool: server
       steps:
