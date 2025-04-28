@@ -20,8 +20,14 @@ variable "ALCHEMY_SIGNING_KEY" {
   sensitive = true
 }
 
-variable "authorized_ips" {
+variable "webhook_authorized_ips" {
   description = "List of allowed IP addresses to interact with the Azure Function App webhook listener."
+  type        = list(string)
+  default     = []
+}
+
+variable "POSTGRESQL_AUTHORIZED_IPS" {
+  description = "List of allowed IP addresses to connect to the PostgreSQL database."
   type        = list(string)
   default     = []
 }

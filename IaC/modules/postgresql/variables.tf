@@ -52,3 +52,9 @@ variable "fw_allow_azure_services" {
   type = bool
   default = true
 }
+
+variable "authorized_ips" {
+  description = "List of allowed IP addresses to connect to the database."
+  type        = list(string)
+  default     = []
+}

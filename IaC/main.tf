@@ -155,11 +155,11 @@ module "webhook_function_app" {
   umi_key_vault              = azurerm_user_assigned_identity.umi_functionapp_external.id
   user_managed_identities    = [azurerm_user_assigned_identity.umi_functionapp_external.id]
   python_version             = "3.11"
-  authorized_ips             = var.authorized_ips
+  authorized_ips             = var.webhook_authorized_ips
   app_settings = {
     "KEY_VAULT_NAME"                       = module.key_vault_external.key_vault_name
     "SIGNING_KEY"                          = local.ALCHEMY_SIGNING_KEY_NAME
-    "AUTHORIZED_IPS"                       = jsonencode(var.authorized_ips)
+    "AUTHORIZED_IPS"                       = jsonencode(var.webhook_authorized_ips)
     "SERVICEBUS_FULLY_QUALIFIED_NAMESPACE" = module.service_bus.endpoint
     "SERVICEBUS_TOPIC_NAME"                = "sales"
     "SCM_DO_BUILD_DURING_DEPLOYMENT"       = "true"
@@ -235,4 +235,5 @@ module "postgresql_server" {
   storage_tier            = "P4"
   postgresql_version      = 16
   fw_allow_azure_services = true
+  authorized_ips          = var.POSTGRESQL_AUTHORIZED_IPS
 }

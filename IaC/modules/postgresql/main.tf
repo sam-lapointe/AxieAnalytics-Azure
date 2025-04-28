@@ -27,3 +27,11 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "postgresql_allow_az
   start_ip_address = "0.0.0.0"
   end_ip_address   = "0.0.0.0"
 }
+
+resource "azurerm_postgresql_flexible_server_firewall_rule" "postgresql_authorized_ips" {
+  count            = length(var.authorized_ips)
+  name             = "authorized-ip-${count.index}"
+  server_id        = azurerm_postgresql_flexible_server.postgresql_server.id
+  start_ip_address = var.authorized_ips[count.index]
+  end_ip_address   = var.authorized_ips[count.index]
+}
