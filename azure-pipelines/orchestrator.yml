@@ -122,6 +122,15 @@ stages:
                 TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
                 TF_VAR_POSTGRESQL_AUTHORIZED_IPS: $(TF_VAR_POSTGRESQL_AUTHORIZED_IPS)
 
+            - task: TerraformTask@5
+              displayName: Terraform Output
+              inputs:
+                provider: 'azurerm'
+                command: 'output'
+                workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
+                environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                commandOptions: '-json'
+
     - job: ConfigureDevDB
       dependsOn:
       - DeployDevInfra
