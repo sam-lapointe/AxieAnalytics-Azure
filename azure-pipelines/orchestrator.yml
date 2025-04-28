@@ -200,8 +200,10 @@ stages:
       condition: succeededOrFailed()
       steps:
       - script: |
-          echo "$(dependencies.WaitForApprovalDeletion.result)"
+          echo "Validation Result: $VALIDATION_RESULT"
         displayName: Output Validation Result
+        env:
+          VALIDATION_RESULT: $(dependencies.WaitForApprovalDeletion.result)
 
     - deployment: DeleteDev
       environment: 'Dev'
