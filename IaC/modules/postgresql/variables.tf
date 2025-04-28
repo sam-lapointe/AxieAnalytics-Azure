@@ -57,4 +57,5 @@ variable "authorized_ips" {
   description = "List of allowed IP addresses to connect to the database."
   type        = list(string)
   default     = []
+  sensitive   = true
 }

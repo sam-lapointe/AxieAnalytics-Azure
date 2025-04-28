@@ -30,6 +30,7 @@ variable "POSTGRESQL_AUTHORIZED_IPS" {
   description = "List of allowed IP addresses to connect to the PostgreSQL database."
   type        = list(string)
   default     = []
+  sensitive   = true
 }
 
 variable "POSTGRESQL_ADMIN_USERNAME" {
