@@ -129,7 +129,6 @@ stages:
                 command: 'output'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 environmentServiceNameAzureRM: 'AxieMarket-Dev'
-                commandOptions: '-json'
 
     - job: ConfigureDevDB
       dependsOn:
@@ -198,12 +197,12 @@ stages:
       dependsOn:
       - WaitForApprovalDeletion
       condition: succeededOrFailed()
+      variables:
+        VALIDATION_RESULT: $[dependencies.WaitForApprovalDeletion.result]
       steps:
       - script: |
           echo "Validation Result: $VALIDATION_RESULT"
         displayName: Output Validation Result
-        env:
-          VALIDATION_RESULT: $(dependencies.WaitForApprovalDeletion.result)
 
     - deployment: DeleteDev
       environment: 'Dev'
