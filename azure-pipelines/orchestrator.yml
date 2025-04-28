@@ -118,6 +118,22 @@ stages:
                 TF_VAR_POSTGRESQL_WEBHOOK_USERNAME: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
                 TF_VAR_POSTGRESQL_AUTHORIZED_IPS: $(TF_VAR_POSTGRESQL_AUTHORIZED_IPS)
 
+    - job: ConfigureDevDB
+      dependsOn:
+      - DeployDevInfra
+      variables:
+      - group: Dev
+      steps:
+      - script: |
+          liquibase --url=jdbc:postgresql://$(host):5432/axie_market \
+            --username=$(TF_VAR_POSTGRESQL_ADMIN_USERNAME) \
+            --password=$(TF_VAR_POSTGRESQL_ADMIN_PASSWORD) \
+            --changeLogFile=./changelogs/master.yaml \
+            --param=webhook_listener_username=$(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME) \
+            --param=webhook_listener_password=$(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD) \
+            update
+        workingDirectory: '$(System.DefaultWorkingDirectory)/database_config'
+
     - job: DeployDevCode
       dependsOn:
       - DeployDevInfra
@@ -138,7 +154,7 @@ stages:
               --src "$(Pipeline.Workspace)/$(WEBHOOK_ARTIFACT_NAME)/$(WEBHOOK_ARTIFACT_NAME).zip" \
               --build-remote true
 
-    - job: DevTesting
+    - job: TestDev
       dependsOn:
       - DeployDevInfra
       - DeployDevCode
@@ -146,15 +162,13 @@ stages:
       - script: |
           echo "TO DO: End to end testing."
 
-  - stage: DeleteDevInfra
-    displayName: Delete Dev Infra
-    dependsOn: DeployDev
-    condition: succeededOrFailed()
-    variables:
-    - group: Dev
-    jobs:
     - job: WaitForApprovalDeletion
       displayName: Wait approval for deletion of Dev environment
+      dependsOn:
+      - DeployDevInfra
+      - DeployDevCode
+      - TestDev
+      condition: succeededOrFailed()
       pool: server
       steps:
       - task: ManualValidation@0
@@ -167,6 +181,7 @@ stages:
       displayName: Output Validation Result
       dependsOn:
       - WaitForApprovalDeletion
+      condition: succeededOrFailed()
       steps:
       - script: |
           echo "$(dependencies.WaitForApprovalDeletion.result)"
