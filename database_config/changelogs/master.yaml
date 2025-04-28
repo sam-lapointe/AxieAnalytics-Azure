@@ -1,7 +1,10 @@
 databaseChangeLog:
-  - include:
+- include:
     file: 01-create-tables.yaml
-  - include:
+    relativeToChangelogFile: true
+- include:
     file: 02-create-users.yaml
-  - include:
+    relativeToChangelogFile: true
+- include:
     file: 03-grant-permissions.yaml
+    relativeToChangelogFile: true

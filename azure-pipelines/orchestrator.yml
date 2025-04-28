@@ -132,10 +132,12 @@ stages:
           liquibase --url=jdbc:postgresql://$(host):5432/axie_market \
             --username=$(TF_VAR_POSTGRESQL_ADMIN_USERNAME) \
             --password=$(TF_VAR_POSTGRESQL_ADMIN_PASSWORD) \
-            --param=webhook_listener_username=$(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME) \
-            --param=webhook_listener_password=$(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD) \
             update
         workingDirectory: '$(System.DefaultWorkingDirectory)/database_config'
+        displayName: Configuration with Liquibase
+        env:
+          webhook_listener_username: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
+          webhook_listener_password: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
 
     - job: DeployDevCode
       dependsOn:
