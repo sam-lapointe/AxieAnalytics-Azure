@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+    id: grant-permissions-webhook-listener-user
+    author: "Samuel Lapointe"
+    changes:
+      - sql:
+        dbms: 'postgresql'
+        sql: |
+          DO
+          $do$
+          BEGIN
+            GRANT INSERT ON TABLE axie_sales TO ${webhook_listener_username};
+          END
+          $do$;

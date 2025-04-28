@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+    id: create-webhook-listener-user
+    author: "Samuel Lapointe"
+    changes:
+      - sql:
+        dbms: 'postgresql'
+        sql: |
+          DO
+          $do$
+          BEGIN
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${webhook_listener_username}') THEN
+              CREATE ROLE ${webhook_listener_username} WITH LOGIN PASSWORD '${webhook_listener_password}';
+            END IF;
+          END
+          $do$;

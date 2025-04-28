@@ -1,0 +1,174 @@
+databaseChangeLog:
+  - changeSet:
+    id: create-axieSales-table
+    author: "Samuel Lapointe"
+    changes:
+      - createTable:
+        tableName: axie_sales
+        columns:
+          - column:
+            name: "id"
+            type: "serial"
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              nullable: false
+          - column:
+            name: "transaction_hash"
+            type: "char(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "block_number"
+            type: "int"
+            constraints:
+              nullable: false
+          - column:
+            name: "axie_id"
+            type: "int"
+            constraints:
+              nullable: false
+          - column:
+            name: "price_eth"
+            type: "double precision"
+            constraints:
+              nullable: false
+          - column:
+            name: "sale_date"
+            type: "timestamp"
+            constraints:
+              nullable: false
+          - column:
+            name: "processed_date"
+            type: "timestamp"
+            constraints:
+              nullable: false
+
+  - changeSet:
+    id: create-axies-table
+    author: "Samuel Lapointe"
+    changes:
+      - createTable:
+        tableName: "axies"
+        columns:
+          - column:
+            name: "id"
+            type: "serial"
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              nullable: false
+          - column:
+            name: "transaction_hash"
+            type: "char(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "axie_id"
+            type: "int"
+            constraints:
+              nullable: false
+          - column:
+            name: "level"
+            type: "smallint"
+            constraints:
+              nullable: false
+          - column:
+            name: "xp"
+            type: "bigint"
+            constraints:
+              nullable: false
+          - column:
+            name: "breed_count"
+            type: "smallint"
+            constraints:
+              nullable: false
+          - column:
+            name: "image_url"
+            type: "varchar(2048)"
+            constraints:
+              nullable: false
+          - column:
+            name: "class"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "eyes_id"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "ears_id"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "mouth_id"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "horn_id"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "back_id"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "tail_id"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "body_shape_id"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+          - column:
+            name: "collection_title"
+            type: "varchar(64)"
+            constraints:
+              nullable: true
+
+  - changeSet:
+      id: create-axieParts-table
+      author: "Samuel Lapointe"
+      changes:
+        - createTable:
+          tableName: axie_parts
+          columns:
+            - column:
+              name: "id"
+              type: "varchar(64)"
+              constraints:
+                primaryKey: true
+                nullable: false
+            - column:
+              name: "class"
+              type: "varchar(64)"
+              constraints:
+                nullable: false
+            - column:
+              name: "name"
+              type: "varchar(64)"
+              constraints:
+                nullable: false
+            - column:
+              name: "stage"
+              type: "smallint"
+              constraints:
+                nullable: false
+            - column:
+              name: "type"
+              type: "varchar(64)"
+              constraints:
+                nullable: false
+            - column:
+              name: "special_genes"
+              type: "varchar(64)"
+              constraints:
+                nullable: true

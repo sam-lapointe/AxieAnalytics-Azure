@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+    file: 01-create-tables.yaml
+  - include:
+    file: 02-create-users.yaml
+  - include:
+    file: 03-grant-permissions.yaml
