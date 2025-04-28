@@ -35,3 +35,11 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "postgresql_authoriz
   start_ip_address = var.authorized_ips[count.index]
   end_ip_address   = var.authorized_ips[count.index]
 }
+
+resource "azurerm_postgresql_flexible_server_database" "databases" {
+  count     = length(var.databases)
+  name      = var.databases[count.index]
+  server_id = azurerm_postgresql_flexible_server.postgresql_server.id
+  collation = "en_US.utf8"
+  charset   = "UTF8"
+}

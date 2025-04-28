@@ -236,4 +236,5 @@ module "postgresql_server" {
   postgresql_version      = 16
   fw_allow_azure_services = true
   authorized_ips          = var.POSTGRESQL_AUTHORIZED_IPS
+  databases               = ["axie_market"]
 }

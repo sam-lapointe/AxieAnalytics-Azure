@@ -59,3 +59,9 @@ variable "authorized_ips" {
   default     = []
   sensitive   = true
 }
+
+variable "databases" {
+  description = "List of databases name."
+  type        = list(string)
+  default     = []
+}
