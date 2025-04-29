@@ -129,15 +129,31 @@ stages:
                 command: 'output'
                 workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
                 environmentServiceNameAzureRM: 'AxieMarket-Dev'
+                commandOptions: '-out=$(ENVIRONMENT).tfoutput'
+
+            - script: |
+                tfoutput=$(cat $ENVIRONMENT.tfoutput)
+                echo $tfoutput
+                echo $ENVIRONMENT
+
+                for key in $(echo "$tfoutput" | jq -r "keys[]"); do
+                  value=$(echo "$tfoutput" | jq -r ".$key.value")
+                  echo "Setting pipeline variable for: $key"
+                  echo "##vso[task.setvariable variable=$key;isOutput=true]$value"
+                done
+              name: SetTerraformOutputsVariables
+              displayName: Set Terraform Outputs as Variables"
+              workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
 
     - job: ConfigureDevDB
       dependsOn:
       - DeployDevInfra
       variables:
       - group: Dev
+        database_hostname: $[dependencies.deployDevInfra.outputs['SetTerraformOutputsVariables.database_hostname']]
       steps:
       - script: |
-          liquibase --url=jdbc:postgresql://$(host):5432/axie_market \
+          liquibase --url=jdbc:postgresql://$(database_hostname):5432/axie_market \
             --username=$(TF_VAR_POSTGRESQL_ADMIN_USERNAME) \
             --password=$(TF_VAR_POSTGRESQL_ADMIN_PASSWORD) \
             update
