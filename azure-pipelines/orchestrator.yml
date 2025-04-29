@@ -150,7 +150,8 @@ stages:
       - DeployDevInfra
       variables:
       - group: Dev
-        database_hostname: $[dependencies.deployDevInfra.outputs['SetTerraformOutputsVariables.database_hostname']]
+      - name: database_hostname
+        value: $[dependencies.deployDevInfra.outputs['SetTerraformOutputsVariables.database_hostname']]
       steps:
       - script: |
           liquibase --url=jdbc:postgresql://$(database_hostname):5432/axie_market \
