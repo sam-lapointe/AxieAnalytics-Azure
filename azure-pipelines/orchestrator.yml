@@ -214,7 +214,7 @@ stages:
       environment: 'Dev'
       dependsOn:
       - WaitForApprovalDeletion
-      condition: succeeded()
+      condition: eq(dependencies.WaitForApprovalDeletion.result, 'Succeeded')
       strategy:
         runOnce:
           deploy:
