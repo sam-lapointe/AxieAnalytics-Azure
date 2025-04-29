@@ -131,7 +131,7 @@ stages:
                   value=$(echo "$tfoutput" | jq -r ".$key.value")
                   echo "Setting pipeline variable for: $key:$value"
                   echo "##vso[task.setvariable variable=$key;isOutput=true]$value"
-                  echo $(database_hostname)
+                  echo "Database: $(database_hostname)"
                 done
               name: SetTerraformOutputsVariables
               displayName: Set Terraform Outputs as Variables"
