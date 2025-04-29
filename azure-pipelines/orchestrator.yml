@@ -146,7 +146,7 @@ stages:
       variables:
       - group: Dev
       - name: database_hostname
-        value: $[ dependencies.DeployDevInfra.outputs['SetTerraformOutputsVariables.database_hostname'] ]
+        value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.database_hostname']]
       steps:
       - script: |
           echo "Database: $(database_hostname)"
