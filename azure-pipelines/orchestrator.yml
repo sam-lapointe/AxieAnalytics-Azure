@@ -124,8 +124,6 @@ stages:
 
             - script: |
                 tfoutput=$(terraform output -json)
-                echo $tfoutput
-                echo $ENVIRONMENT
 
                 for key in $(echo "$tfoutput" | jq -r "keys[]"); do
                   value=$(echo "$tfoutput" | jq -r ".$key.value")
@@ -136,10 +134,6 @@ stages:
               displayName: Set Terraform Outputs as Variables"
               workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
 
-            - script: |
-                echo "Database Hostname: $(SetTerraformOutputsVariables.database_hostname)"
-              displayName: Test Pipeline Variable
-
     - job: ConfigureDevDB
       dependsOn:
       - DeployDevInfra
@@ -149,8 +143,7 @@ stages:
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.database_hostname']]
       steps:
       - script: |
-          echo "Database: $(database_hostname)"
-          liquibase --url=jdbc:postgresql://$(database_hostname):5432/axie_market \
+          liquibase --url=jdbc:postgresql://$(database_hostname).postgres.database.azure.com:5432/axie_market \
             --username=$(TF_VAR_POSTGRESQL_ADMIN_USERNAME) \
             --password=$(TF_VAR_POSTGRESQL_ADMIN_PASSWORD) \
             update
