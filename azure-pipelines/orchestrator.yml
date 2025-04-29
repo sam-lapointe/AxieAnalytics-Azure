@@ -137,7 +137,7 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/IaC'
 
             - script: |
-                echo "Database Hostname: $(database_hostname)"
+                echo "Database Hostname: $(SetTerraformOutputsVariables.database_hostname)"
               displayName: Test Pipeline Variable
 
     - job: ConfigureDevDB
