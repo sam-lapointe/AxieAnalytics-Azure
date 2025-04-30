@@ -172,3 +172,42 @@ databaseChangeLog:
                   type: "varchar(64)"
                   constraints:
                     nullable: true
+
+- changeSet:
+      id: create-contracts-table
+      author: "Samuel Lapointe"
+      changes:
+       - createTable:
+            tableName: contracts
+            columns:
+              - column:
+                  name: "contract_address"
+                  type: "char(42)"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "contract_name"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "abi"
+                  type: "text"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "is_proxy"
+                  type: "boolean"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "implementation_address"
+                  type: "char(42)"
+                  constraints:
+                    nullable: true
+              - column:
+                  name: "added_date"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
