@@ -197,6 +197,7 @@ stages:
           notifyUsers: ''
           instructions: 'Approve to delete the Dev environment.'
           onTimeout: resume
+        continueOnError: true
 
     - job: OutputValidationResult
       displayName: Output Validation Result
