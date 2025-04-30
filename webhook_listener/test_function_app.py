@@ -409,6 +409,7 @@ async def test_request_body(
                 {
                     "blockNumber": 44153279,
                     "transactionHash": "0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+                    "timestamp": 1744312821,
                 },
             ],
         ),
@@ -459,10 +460,12 @@ async def test_request_body(
                 {
                     "blockNumber": 44262595,
                     "transactionHash": "0xe0e037c4d46a0af225996f837c99a3ddda1cf8cf317780cbbd393b61414818be",
+                    "timestamp": 1744640793,
                 },
                 {
                     "blockNumber": 44262595,
                     "transactionHash": "0x6e74a5ffc57de196ec3bf733f59df20ff786e94d9f490afbf44a443908443200",
+                    "timestamp": 1744640793,
                 },
             ],
         ),
