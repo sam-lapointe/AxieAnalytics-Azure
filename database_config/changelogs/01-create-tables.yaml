@@ -39,11 +39,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: "processed_date"
-                  type: "timestamp"
-                  constraints:
-                    nullable: false
-              - column:
                   name: "created_at"
                   type: "timestamp"
                   constraints:
