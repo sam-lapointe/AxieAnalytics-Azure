@@ -43,6 +43,16 @@ databaseChangeLog:
                   type: "timestamp"
                   constraints:
                     nullable: false
+              - column:
+                  name: "created_at"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "modified_at"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
 
 - changeSet:
       id: create-axies-table
@@ -133,6 +143,16 @@ databaseChangeLog:
                   type: "varchar(64)"
                   constraints:
                     nullable: true
+              - column:
+                  name: "created_at"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "modified_at"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
 
 - changeSet:
       id: create-axieParts-table
@@ -172,6 +192,16 @@ databaseChangeLog:
                   type: "varchar(64)"
                   constraints:
                     nullable: true
+              - column:
+                  name: "created_at"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "modified_at"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
 
 - changeSet:
       id: create-contracts-table
@@ -207,7 +237,12 @@ databaseChangeLog:
                   constraints:
                     nullable: true
               - column:
-                  name: "added_date"
+                  name: "created_at"
+                  type: "timestamp"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "modified_at"
                   type: "timestamp"
                   constraints:
                     nullable: false
