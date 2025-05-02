@@ -220,7 +220,7 @@ module "service_bus" {
       sender_ids = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id]
       subscriptions = [
         {
-          subscription_name = "store_axies",
+          subscription_name  = "store_axies",
           max_delivery_count = 3
         }
       ]
