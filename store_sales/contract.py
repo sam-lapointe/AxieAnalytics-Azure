@@ -1,11 +1,8 @@
 import asyncpg
 import logging
 import aiohttp
-import time
+from datetime import datetime, timezone
 from web3 import Web3, AsyncWeb3
-
-
-NOT_PROXY_VERSION_NUMBER = 255  # Indicates a non-proxy contract
 
 
 class ContractNotFoundError(Exception):
@@ -120,31 +117,41 @@ class Contract:
 
             async with self.__http_client.get(contract_url) as contract_response:
                 contract_data = await contract_response.json()
+                logging.info(contract_data)
 
             abi = abi_data["result"]["output"]["abi"]
 
             """
-            The contract verifiedName or proxyVersion might not be returned depending of the contract creator.
-            Because this application is monitoring only SkyMavis contracts for AxieInfinity, these values are returned.
-            If this is no longer the case, an alternative will need to be implemented to verify if the contract is a Proxy.
-            The contract_name is not very important and could be set to Unnamed if missing.
+            The contract verifiedName might not be returned depending if it was verified by RoninExplorer.
             """
-            contract_name = contract_data["result"]["contract"]["verifiedName"]
-            contract_proxy_version = contract_data["result"]["contract"]["proxyVersion"]
-            is_contract_proxy = False if contract_proxy_version == NOT_PROXY_VERSION_NUMBER else True
-            implementation_address = await self.__w3.eth.get_storage_at(self.get_checksum_contract_address, self.__eip1967_slot).hex()[24:]
+            try:
+                contract_name = contract_data["result"]["contract"]["verifiedName"]
+            except KeyError:
+                contract_name = "Unnamed"
+            
+            """
+            This is verifying if the contract is a proxy using the EIP 1967 standard for proxy contracts.
+            If the proxy contract was not created using this standard, it will not be detected as a proxy contract.
+            """
+            implementation_address_raw = await self.__w3.eth.get_storage_at(self.__contract_address, self.__eip1967_slot)
+            if implementation_address_raw.hex() == ("0" * 64):
+                is_contract_proxy = False
+                implementation_address = None
+            else:
+                is_contract_proxy = True
+                implementation_address = implementation_address_raw.hex()[24:]
 
-            current_epoch_time = int(time.time() * 1000)
+            current_time_utc = datetime.now(timezone.utc)
 
-            contract = (
-                self.__contract_address,
-                contract_name,
-                abi,
-                is_contract_proxy,
-                implementation_address,
-                current_epoch_time,
-                current_epoch_time,
-            )
+            contract = {
+                "contract_address": self.__contract_address,
+                "contract_name": contract_name,
+                "abi": str(abi),
+                "is_contract_proxy": is_contract_proxy,
+                "implementation_address": implementation_address,
+                "created_at": current_time_utc,
+                "modified_at": current_time_utc,
+            }
 
             # Add the contract to the database.
             logging.info(f"[__add_contract_data] Adding contract {self.__contract_address} ({contract_name}) to the database...")
@@ -158,9 +165,12 @@ class Contract:
                     implementation_address,
                     created_at,
                     modified_at                      
-                )                       
+                )
+                VALUES (
+                    $1, $2, $3, $4, $5, $6, $7
+                )
                 ''',
-                contract
+                *contract.values
             )
             logging.info(f"[__add_contract_data] Successfully added contract {self.__contract_address} ({contract_name}) to the database.")
  

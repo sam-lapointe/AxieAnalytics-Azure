@@ -35,7 +35,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: "sale_date"
-                  type: "timestamp"
+                  type: "bigint"
                   constraints:
                     nullable: false
               - column:
