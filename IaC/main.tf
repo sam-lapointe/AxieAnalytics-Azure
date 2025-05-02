@@ -28,9 +28,9 @@ locals {
   }
 
   # Enter each secret name that will be created in Azure Key Vault here to centrally manage them for Key Vault and Functions Apps
-  ALCHEMY_SIGNING_KEY_NAME         = "alchemy-signing-key"
-  POSTGRESQL_ADMIN_USERNAME_NAME   = "postgres-admin-username"
-  POSTGRESQL_ADMIN_PASSWORD_NAME   = "postgres-admin-password"
+  ALCHEMY_SIGNING_KEY_NAME       = "alchemy-signing-key"
+  POSTGRESQL_ADMIN_USERNAME_NAME = "postgres-admin-username"
+  POSTGRESQL_ADMIN_PASSWORD_NAME = "postgres-admin-password"
   POSTGRESQL_SALES_USERNAME_NAME = "postgres-sales-username"
   POSTGRESQL_SALES_PASSWORD_NAME = "postgres-sales-password"
 }
