@@ -47,13 +47,36 @@ class Config:
         return subscription_name
     
     @staticmethod
-    def get_pg_connection_string(key_vault_client: SecretClient) -> str:
-        pg_connection_string = os.getenv("PG_CONNECTION_STRING")
-        if not pg_connection_string:
-            logging.critical("PG_CONNECTION_STRING is not set.")
-            raise ValueError("PG_CONNECTION_STRING environment variable is required.")
-        return pg_connection_string
+    async def get_pg_connection_string(key_vault_client: SecretClient) -> str:
+        try:
+            # Retrieve environment variables
+            kv_pg_username = os.getenv("KV_PG_USERNAME")
+            kv_pg_password = os.getenv("KV_PG_PASSWORD")
+            pg_host = os.getenv("PG_HOST")
+
+            # Validate required environment variables
+            if not kv_pg_username:
+                logging.critical("KV_PG_USERNAME is not set.")
+                raise ValueError("KV_PG_USERNAME environment variable is required.")
+            if not kv_pg_password:
+                logging.critical("KV_PG_PASSWORD is not set.")
+                raise ValueError("KV_PG_PASSWORD environment variable is required.")
+            if not pg_host:
+                logging.critical("PG_HOST is not set.")
+                raise ValueError("PG_HOST environment variable is required.")
+
+            pg_username = await key_vault_client.get_secret(kv_pg_username)
+            pg_password = await key_vault_client.get_secret(kv_pg_password)
+            
+            connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}"
+            return connection_string
+
+        except Exception as e:
+            logging.error(f"Error constructing PostgreSQL connection string: {e}")
+            raise e
+
     
+    # Validate required environment variables
     @staticmethod
     def get_node_provider() -> str:
         node_provider_url = os.getenv("NODE_PROVIDER")
@@ -71,6 +94,9 @@ key_vault_client = SecretClient(Config.get_key_vault_url(), credential)
 servicebus_topic_subscription_name = Config.get_servicebus_topic_subscription_name()
 servicebus_topic_name = Config.get_servicebus_topic_name()
 
+# Initialize dependencies
+conn = asyncpg.connect(dsn=Config.get_pg_connection_string(key_vault_client), ssl="require")  # PostgreSQL connection
+w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider()))  # Ronin Node provider
 
 app = func.FunctionApp()
 
@@ -83,10 +109,6 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
     transaction_hash = message_body["transactionHash"]
     block_number = message_body["blockNumber"]
     block_timestamp = message_body["blockTimestamp"]
-
-    # Initialize dependencies
-    conn = await asyncpg.connect(dsn=Config.get_pg_connection_string, ssl="require")  # PostgreSQL connection
-    w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider))  # Ronin Node provider
 
     # Call Transaction class to get the sales list from a transaction hash.
     async with aiohttp.ClientSession() as http_client:

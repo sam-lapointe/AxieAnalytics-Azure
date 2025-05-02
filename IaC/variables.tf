@@ -43,12 +43,12 @@ variable "POSTGRESQL_ADMIN_PASSWORD" {
   sensitive = true
 }
 
-variable "POSTGRESQL_WEBHOOK_USERNAME" {
+variable "POSTGRESQL_SALES_USERNAME" {
   type      = string
   sensitive = true
 }
 
-variable "POSTGRESQL_WEBHOOK_PASSWORD" {
+variable "POSTGRESQL_SALES_PASSWORD" {
   type      = string
   sensitive = true
 }

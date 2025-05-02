@@ -150,8 +150,8 @@ stages:
         workingDirectory: '$(System.DefaultWorkingDirectory)/database_config'
         displayName: Configuration with Liquibase
         env:
-          webhook_listener_username: $(TF_VAR_POSTGRESQL_WEBHOOK_USERNAME)
-          webhook_listener_password: $(TF_VAR_POSTGRESQL_WEBHOOK_PASSWORD)
+          store_sales_username: $(TF_VAR_POSTGRESQL_SALES_USERNAME)
+          store_sales_password: $(TF_VAR_POSTGRESQL_SALES_PASSWORD)
 
     - job: DeployDevCode
       dependsOn:

@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: create-webhook-listener-user
+      id: create-store-sales-user
       author: "Samuel Lapointe"
       changes:
         - sql:
@@ -10,8 +10,8 @@ databaseChangeLog:
               DO
               $$
               BEGIN
-                IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${webhook_listener_username}') THEN
-                  CREATE ROLE ${webhook_listener_username} WITH LOGIN PASSWORD '${webhook_listener_password}';
+                IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${store_sales_username}') THEN
+                  CREATE ROLE ${store_sales_username} WITH LOGIN PASSWORD '${store_sales_password}';
                 END IF;
               END
               $$;

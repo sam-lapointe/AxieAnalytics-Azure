@@ -31,8 +31,8 @@ locals {
   ALCHEMY_SIGNING_KEY_NAME         = "alchemy-signing-key"
   POSTGRESQL_ADMIN_USERNAME_NAME   = "postgres-admin-username"
   POSTGRESQL_ADMIN_PASSWORD_NAME   = "postgres-admin-password"
-  POSTGRESQL_WEBHOOK_USERNAME_NAME = "postgres-webhook-username"
-  POSTGRESQL_WEBHOOK_PASSWORD_NAME = "postgres-webhook-password"
+  POSTGRESQL_SALES_USERNAME_NAME = "postgres-sales-username"
+  POSTGRESQL_SALES_PASSWORD_NAME = "postgres-sales-password"
 }
 
 data "azurerm_client_config" "current" {
@@ -94,8 +94,8 @@ module "key_vault_internal" {
   secrets_user_ids    = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id]
   secrets_officer_ids = [data.azurerm_client_config.current.object_id]
   secrets = {
-    (local.POSTGRESQL_WEBHOOK_USERNAME_NAME) = var.POSTGRESQL_WEBHOOK_USERNAME
-    (local.POSTGRESQL_WEBHOOK_PASSWORD_NAME) = var.POSTGRESQL_WEBHOOK_PASSWORD
+    (local.POSTGRESQL_SALES_USERNAME_NAME) = var.POSTGRESQL_SALES_USERNAME
+    (local.POSTGRESQL_SALES_PASSWORD_NAME) = var.POSTGRESQL_SALES_PASSWORD
   }
 
   depends_on = [azurerm_user_assigned_identity.umi_functionapp_internal]

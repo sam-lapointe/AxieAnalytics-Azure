@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: grant-permissions-webhook-listener-user
+      id: grant-permissions-store-sales-user
       author: "Samuel Lapointe"
       changes:
         - sql:
@@ -10,6 +10,6 @@ databaseChangeLog:
               DO
               $$
               BEGIN
-                GRANT INSERT ON TABLE axie_sales TO ${webhook_listener_username};
+                GRANT INSERT ON TABLE axie_sales TO ${store_sales_username};
               END
               $$;
