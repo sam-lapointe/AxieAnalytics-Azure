@@ -11,5 +11,6 @@ databaseChangeLog:
               $$
               BEGIN
                 GRANT INSERT ON TABLE axie_sales TO ${store_sales_username};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE contracts TO ${store_sales_username};
               END
               $$;
