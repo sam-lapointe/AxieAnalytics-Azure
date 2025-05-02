@@ -17,6 +17,8 @@ class StoreSales:
     """
     def add_to_db(self):
         print("Adding to DB...")
+        for sale in self.__sales_list:
+            print(sale)
         pass
 
 
