@@ -165,7 +165,7 @@ async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
                                     "number"
                                 ],
                                 "transactionHash": transaction,
-                                "timestamp": req_body["event"]["data"]["block"][
+                                "blockTimestamp": req_body["event"]["data"]["block"][
                                     "timestamp"
                                 ],
                             }

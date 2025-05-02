@@ -16,6 +16,7 @@ class Transaction:
 
 
     async def __get_receipt(self, transaction_hash):
+        """Returns the transaction receipt."""
         try:
             receipt = await self.__w3.eth.get_transaction_receipt(transaction_hash)
             return receipt
@@ -24,8 +25,13 @@ class Transaction:
             logging.error(f"[__get_receipt] An unexpected error occured while retrieving receipt for transaction {transaction_hash}: {e}")
             raise e
     
-
+    """
+    This might be better as a classmethod.
+    """
     async def process_logs(self, transaction_hash) -> list:
+        """
+        Looks for specifc data in the logs and returns a list of the sold prices and assets IDs.
+        """
         try:
             logging.info(f"[__process_logs] Processing logs for transaction {transaction_hash}...")
             receipt = await self.__get_receipt(transaction_hash)
@@ -63,7 +69,7 @@ class Transaction:
             """
             All events in a transaction are in the same order wheter it contains multiple sales or only one.
             First there is the currency transfer and swaps if needed, then the asset transfer and it is repeated 
-            in this order if there are many sales in the transaction.
+            in this order if there are many sales   in the transaction.
             """
             sales_list = [{"price_weth": price, "axie_id": axie_id} for price, axie_id in zip(prices, axies)]
             return sales_list

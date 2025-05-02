@@ -168,20 +168,6 @@ class Contract:
             logging.error(f"[__add_contract_data] An unexpected error occured while retrieving contract {self.__contract_address} ({contract_name}) or adding it to the database: {e}")
             raise e  
 
-    # TODO: Delete method if not used
-    def get_contract_address(self) -> str:
-        """
-        Returns the checksum contract address.
-        """
-        return self.__contract_address
-    
-    # TODO: Delete method if not used
-    def get_contract_abi(self) -> dict:
-        """
-        Returns the contract ABI.
-        """
-        return self.__abi
-
 
     def get_event_name(self, topic: str) -> str:
         """
