@@ -81,7 +81,6 @@ class Config:
             pg_password = quote_plus(pg_password_secret.value)
 
             connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}"
-            print(connection_string)
             return connection_string
 
         except Exception as e:
@@ -124,9 +123,10 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
 
     # Call Transaction class to get the sales list from a transaction hash.
     async with aiohttp.ClientSession() as http_client:
-        print("Calling Transaction().process_log()...")
         transaction = Transaction(conn, w3, http_client)
         sales_list = await transaction.process_logs(transaction_hash)
+
+    logging.info(f"Sales List: {sales_list}")
 
     # TODO: Call the StoreSales class to store the sales in the database
     store_sales = StoreSales(conn, sales_list, block_number, block_timestamp)

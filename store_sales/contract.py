@@ -1,11 +1,15 @@
 import asyncpg
 import logging
 import aiohttp
+import ast
 from datetime import datetime, timezone
 from web3 import Web3, AsyncWeb3
 
 
 class ContractNotFoundError(Exception):
+    pass
+
+class EventNotFoundError(Exception):
     pass
 
 
@@ -80,12 +84,12 @@ class Contract:
             # TODO: Set object variables
             self.__name = contract_data["contract_name"]
             self.__is_proxy = contract_data["is_proxy"]
-            self.__abi = contract_data["abi"]
+            self.__abi = ast.literal_eval(contract_data["abi"])
             self.__contract = self.__w3.eth.contract(address=self.__contract_address, abi=self.__abi)
             implementation_address = contract_data["implementation_address"]
 
             if self.__is_proxy:
-                logging.info(f"[__get_contract_data] Contract {self.__contract_address} ({self.__name}) is a proxy. Fetching implementation contract at {self.__implementation}.")
+                logging.info(f"[__get_contract_data] Contract {self.__contract_address} ({self.__name}) is a proxy. Fetching implementation contract at {implementation_address}.")
                 if not implementation_address:
                     raise ValueError(f"Implementation address is missing for proxy contract {self.__contract_address} ({self.__name}).")
                 
@@ -139,7 +143,7 @@ class Contract:
                 implementation_address = None
             else:
                 is_contract_proxy = True
-                implementation_address = implementation_address_raw.hex()[24:]
+                implementation_address = f"0x{implementation_address_raw.hex()[24:]}"
 
             current_time_utc = datetime.now(timezone.utc)
 
@@ -170,7 +174,7 @@ class Contract:
                     $1, $2, $3, $4, $5, $6, $7
                 )
                 ''',
-                *contract.values
+                *contract.values()
             )
             logging.info(f"[__add_contract_data] Successfully added contract {self.__contract_address} ({contract_name}) to the database.")
  
@@ -179,13 +183,20 @@ class Contract:
             raise e  
 
 
+    def get_contract_address(self):
+        return self.__contract_address
+
+
     def get_event_name(self, topic: str) -> str:
         """
         Returns the event name using the topic.
         """
+        logging.info(f"[get_event_data] Retrieving event name for topic {topic}...")
         if self.__is_proxy:
+            logging.info(f"[get_event_name] Successfuly returned event name for topic {topic}.")
             return self.__implementation.get_event_name(topic)
         else:
+            logging.info(f"[get_event_name] Successfuly returned event name for topic {topic}.")
             return self.__contract.get_event_by_topic(topic).name
 
 
@@ -193,6 +204,7 @@ class Contract:
         """
         Returns the decoded log data in a dictionnary.
         """
+        logging.info(f"[get_event_data] Retrieving event data for topic {topic}...")
         event_name = self.get_event_name(topic)
 
         if self.__is_proxy:
@@ -200,4 +212,22 @@ class Contract:
         else:
             event_class = getattr(self.__contract.events, event_name)
 
+        logging.info(f"[get_event_data] Successfuly returned event data for topic {topic}.")
         return event_class.process_log(log)
+
+
+    def get_event_signature_hash(self, event_name):
+        if self.__is_proxy:
+            logging.info(f"[get_event_signature_hash] Retrieving signature hash for {event_name} event in contract {self.__implementation.__contract_address} ({self.__implementation.__name})")
+            event_signature = self.__implementation.__contract.find_events_by_name(event_name)
+            if not event_signature:
+                logging.error(f"[get_event_signature_hash] The '{event_name}' event was not found in the implementation contract {self.__implementation.__contract_address} ({self.__implementation.__name}).")
+                raise EventNotFoundError(f"The '{event_name}' event was not found in the implementation contract {self.__implementation.__contract_address} ({self.__implementation.__name}).")
+        else:
+            logging.info(f"[get_event_signature_hash] Retrieving signature hash for {event_name} event in contract {self.__contract_address} ({self.__name})")
+            event_signature = self.__contract.find_events_by_name(event_name)
+            if not event_signature:
+                logging.error(f"[get_event_signature_hash] The '{event_name}' event was not found in the contract {self.__contract_address} ({self.__name}).")
+                raise EventNotFoundError(f"The '{event_name}' event was not found in the contract {self.__contract_address} ({self.__name}).")
+
+        return event_signature[0].topic

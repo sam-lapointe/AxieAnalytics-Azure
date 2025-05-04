@@ -16,12 +16,10 @@ class StoreSales:
     This might be better as a classmethod.
     """
     def add_to_db(self):
-        print("Adding to DB...")
         for sale in self.__sales_list:
-            print(sale)
+            logging.info("Added: {sale}")
         pass
 
 
     def send_topic_message(self):
-        print("Sending message to topic...")
-        pass
+        logging.info("Sending message to Axies topic...")
