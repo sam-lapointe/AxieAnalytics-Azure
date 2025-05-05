@@ -7,5 +7,4 @@ azure-identity
 azure-keyvault-secrets
 aiohttp
 asyncpg
-sqlalchemy[asyncio]
 web3

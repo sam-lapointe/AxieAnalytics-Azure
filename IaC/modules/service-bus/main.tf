@@ -7,6 +7,15 @@ locals {
       }
     ]
   ])
+
+  receiver_role_assignments = flatten([
+    for topic in var.topics : [
+      for receiver_id in topic.receiver_ids : {
+        topic_name = topic.topic_name
+        receiver_id = receiver_id
+      }
+    ]
+  ])
 }
 
 resource "azurerm_servicebus_namespace" "servicebus_namespace" {
@@ -56,4 +65,14 @@ resource "azurerm_role_assignment" "servicebus_data_sender" {
   scope                = azurerm_servicebus_topic.topic[each.value.topic_name].id
   role_definition_name = "Azure Service Bus Data Sender"
   principal_id         = each.value.sender_id
+}
+
+resource "azurerm_role_assignment" "servicebus_data_receiver" {
+  for_each = {
+    for idx, pair in local.receiver_role_assignments : idx => pair
+  }
+
+  scope                = azurerm_servicebus_topic.topic[each.value.topic_name].id
+  role_definition_name = "Azure Service Bus Data Receiver"
+  principal_id         = each.value.receiver_id
 }

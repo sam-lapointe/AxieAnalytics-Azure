@@ -49,10 +49,10 @@ class Config:
 
     @staticmethod
     def get_servicebus_topic_sales_subscription_name() -> str:
-        subscription_name = os.getenv("SERVICEBUS_TOPIC_SUBSCRIPTION_NAME")
+        subscription_name = os.getenv("SERVICEBUS_SALES_SUBSCRIPTION_NAME")
         if not subscription_name:
-            logging.critical("SERVICEBUS_TOPIC_SUBSCRIPTION_NAME is not set.")
-            raise ValueError("SERVICEBUS_TOPIC_SUBSCRIPTION_NAME environment variable is required.")
+            logging.critical("SERVICEBUS_SALES_SUBSCRIPTION_NAME is not set.")
+            raise ValueError("SERVICEBUS_SALES_SUBSCRIPTION_NAME environment variable is required.")
         return subscription_name
     
     @staticmethod
@@ -62,6 +62,8 @@ class Config:
             kv_pg_username = os.getenv("KV_PG_USERNAME")
             kv_pg_password = os.getenv("KV_PG_PASSWORD")
             pg_host = os.getenv("PG_HOST")
+            pg_port = os.getenv("PG_PORT")
+            pg_database = os.getenv("PG_DATABASE")
 
             # Validate required environment variables.
             if not kv_pg_username:
@@ -73,14 +75,20 @@ class Config:
             if not pg_host:
                 logging.critical("PG_HOST is not set.")
                 raise ValueError("PG_HOST environment variable is required.")
-
+            if not pg_port:
+                logging.critical("PG_PORT is not set.")
+                raise ValueError("PG_PORT environment variable is required.")
+            if not pg_database:
+                logging.critical("PG_DATABASE is not set.")
+                raise ValueError("PG_DATABASE environment variable is required.")
+            
             # Retrieves the PostgreSQL Credentials from Key Vault and URL encodes them.
             pg_username_secret = await key_vault_client.get_secret(kv_pg_username)
             pg_password_secret = await key_vault_client.get_secret(kv_pg_password)
             pg_username = quote_plus(pg_username_secret.value)
             pg_password = quote_plus(pg_password_secret.value)
 
-            connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}"
+            connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
             return connection_string
 
         except Exception as e:

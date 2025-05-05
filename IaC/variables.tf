@@ -20,6 +20,11 @@ variable "ALCHEMY_SIGNING_KEY" {
   sensitive = true
 }
 
+variable "ALCHEMY_NODE_PROVIDER" {
+  type      = string
+  sensitive = true
+}
+
 variable "webhook_authorized_ips" {
   description = "List of allowed IP addresses to interact with the Azure Function App webhook listener."
   type        = list(string)

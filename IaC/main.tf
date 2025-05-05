@@ -33,6 +33,15 @@ locals {
   POSTGRESQL_ADMIN_PASSWORD_NAME = "postgres-admin-password"
   POSTGRESQL_SALES_USERNAME_NAME = "postgres-sales-username"
   POSTGRESQL_SALES_PASSWORD_NAME = "postgres-sales-password"
+
+  # Servicebus
+  SERVICEBUS_TOPIC_SALES_NAME   = "sales"
+  SERVICEBUS_TOPIC_AXIES_NAME   = "axies"
+  STORE_SALES_SUBSCRIPTION_NAME = "store_sales"
+  STORE_AXIES_SUBSCRIPTION_NAME = "store_axies"
+
+  # Databases
+  AXIEMARKET_DATABASE = "axie_market"
 }
 
 data "azurerm_client_config" "current" {
@@ -189,10 +198,24 @@ module "store_sales_function_app" {
   umi_key_vault              = azurerm_user_assigned_identity.umi_functionapp_internal.id
   user_managed_identities    = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
   python_version             = "3.11"
+  app_settings = {
+    "KEY_VAULT_NAME"                       = module.key_vault_internal.key_vault_name
+    "SERVICEBUS_FULLY_QUALIFIED_NAMESPACE" = module.service_bus.endpoint
+    "SERVICEBUS_TOPIC_SALES_NAME"          = local.SERVICEBUS_TOPIC_SALES_NAME
+    "SERVICEBUS_TOPIC_AXIES_NAME"          = local.SERVICEBUS_TOPIC_AXIES_NAME
+    "SERVICEBUS_SALES_SUBSCRIPTION_NAME"   = local.STORE_SALES_SUBSCRIPTION_NAME
+    "KV_PG_USERNAME"                       = local.POSTGRESQL_SALES_USERNAME_NAME
+    "KV_PG_PASSWORD"                       = local.POSTGRESQL_SALES_PASSWORD_NAME
+    "PG_HOST"                              = "${module.postgresql_server.hostname}.postgres.database.azure.com"
+    "PG_PORT"                              = 5432
+    "PG_DATABASE"                          = local.AXIEMARKET_DATABASE
+    "NODE_PROVIDER"                        = var.ALCHEMY_NODE_PROVIDER
+  }
 
   depends_on = [
     module.function_app_storage_account,
-    azurerm_user_assigned_identity.umi_functionapp_internal
+    azurerm_user_assigned_identity.umi_functionapp_internal,
+    module.service_bus
   ]
 }
 
@@ -206,21 +229,23 @@ module "service_bus" {
 
   topics = [
     {
-      topic_name = "sales",
-      sender_ids = [azurerm_user_assigned_identity.umi_functionapp_external.principal_id],
+      topic_name   = local.SERVICEBUS_TOPIC_SALES_NAME,
+      sender_ids   = [azurerm_user_assigned_identity.umi_functionapp_external.principal_id],
+      receiver_ids = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id],
       subscriptions = [
         {
-          subscription_name  = "store_sales",
+          subscription_name  = local.STORE_SALES_SUBSCRIPTION_NAME,
           max_delivery_count = 3
         }
       ]
     },
     {
-      topic_name = "axies",
-      sender_ids = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id]
+      topic_name   = local.SERVICEBUS_TOPIC_AXIES_NAME,
+      sender_ids   = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id],
+      receiver_ids = [],
       subscriptions = [
         {
-          subscription_name  = "store_axies",
+          subscription_name  = local.STORE_AXIES_SUBSCRIPTION_NAME,
           max_delivery_count = 3
         }
       ]
@@ -246,5 +271,5 @@ module "postgresql_server" {
   postgresql_version      = 16
   fw_allow_azure_services = true
   authorized_ips          = var.POSTGRESQL_AUTHORIZED_IPS
-  databases               = ["axie_market"]
+  databases               = [local.AXIEMARKET_DATABASE]
 }

@@ -22,8 +22,9 @@ variable "servicebus_sku" {
 variable "topics" {
     description = "List of topics with allowed principal IDs to send data and their subscription configurations."
     type = list(object({
-        topic_name = string
-        sender_ids = list(string)
+        topic_name   = string
+        sender_ids   = list(string)
+        receiver_ids = list(string)
         subscriptions = list(object({
             subscription_name = string
             max_delivery_count = number
