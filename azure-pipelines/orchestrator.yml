@@ -186,7 +186,7 @@ stages:
           inlineScript: |
             az functionapp deployment source config-zip \
               --resource-group $(RESOURCE_GROUP_NAME) \
-              --name "$(webhook_function_name)" \
+              --name "$(WEBHOOK_FUNCTION_APP_NAME)" \
               --src "$(Pipeline.Workspace)/$(WEBHOOK_ARTIFACT_NAME)/$(WEBHOOK_ARTIFACT_NAME).zip" \
               --build-remote true
 
@@ -199,7 +199,7 @@ stages:
           inlineScript: |
             az functionapp deployment source config-zip \
               --resource-group $(RESOURCE_GROUP_NAME) \
-              --name "$(webhook_function_name)" \
+              --name "$(SALES_FUNCTION_APP_NAME)" \
               --src "$(Pipeline.Workspace)/$(SALES_ARTIFACT_NAME)/$(SALES_ARTIFACT_NAME).zip" \
               --build-remote true
 
