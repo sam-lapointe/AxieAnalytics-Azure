@@ -2,6 +2,7 @@ import asyncpg
 import logging
 import aiohttp
 import ast
+from asyncpg.exceptions import UniqueViolationError
 from datetime import datetime, timezone
 from web3 import Web3, AsyncWeb3
 
@@ -19,14 +20,10 @@ class Contract:
     Represents a smart contract and provides methods to interact with it.
     """
 
-    # Class-level set to track visited contracts addresses.
-    visited_contracts_addresses = set()
-
     def __init__(
         self,
         conn: asyncpg.Connection,
         w3: AsyncWeb3,
-        http_client: aiohttp.ClientSession,
         contract_address: str,
     ):
         self.__eip1967_slot = (
@@ -34,7 +31,6 @@ class Contract:
         )
         self.__conn = conn
         self.__w3 = w3
-        self.__http_client = http_client
         self.__contract_address = Web3.to_checksum_address(contract_address)
         self.__name = None
         self.__is_proxy = None
@@ -47,34 +43,37 @@ class Contract:
         cls,
         conn: asyncpg.Connection,
         w3: AsyncWeb3,
-        http_client: aiohttp.ClientSession,
         contract_address: str,
+        visited_contracts_addresses: set = None  # Shared context for recursion tracking
     ):
         """
         Factory method to create and initialize a Contract instance asynchronously.
         """
+        
+        if visited_contracts_addresses is None:
+            visited_contracts_addresses = set()
+
+        # Check for infinite recursion
+        if contract_address in visited_contracts_addresses:
+            raise ValueError(
+                f"Infinite recursion detected for contract {contract_address}."
+            )
+        visited_contracts_addresses.add(contract_address)
 
         # Create an instance of the class
-        instance = cls(conn, w3, http_client, contract_address)
+        instance = cls(conn, w3, contract_address)
 
         # Perform asynchronous initialization
-        await instance.__get_contract_data()
+        await instance.__get_contract_data(visited_contracts_addresses)
 
         return instance
 
-    async def __get_contract_data(self) -> None:
+    async def __get_contract_data(self, visited_contracts_addresses: set) -> None:
         """
         Retrieves the contract data from the database or call __add_contract_data if it isn't in the database.
         It then set the object's variables.
         """
         try:
-            # Check for infinite recursion
-            if self.__contract_address in Contract.visited_contracts_addresses:
-                raise ValueError(
-                    f"Infinite recursion detected for contract {self.__contract_address}."
-                )
-            Contract.visited_contracts_addresses.add(self.__contract_address)
-
             # Retrieve contract data from database.
             contract_data = await self.__conn.fetchrow(
                 "SELECT * FROM contracts WHERE contract_address = $1",
@@ -99,7 +98,7 @@ class Contract:
                         f"Contract {self.__contract_address} is not in the database after calling self.__add_contract_data()."
                     )
 
-            # TODO: Set object variables
+            # Set object variables
             self.__name = contract_data["contract_name"]
             self.__is_proxy = contract_data["is_proxy"]
             self.__abi = ast.literal_eval(contract_data["abi"])
@@ -119,14 +118,14 @@ class Contract:
 
                 # Create an instance of the implementation contract
                 self.__implementation = await Contract.create(
-                    self.__conn, self.__w3, self.__http_client, implementation_address
+                    self.__conn,
+                    self.__w3,
+                    implementation_address,
+                    visited_contracts_addresses,
                 )
         except Exception as e:
             logging.error(f"[__get_contract_data] An unexpected error occured: {e}")
             raise e
-        finally:
-            # Remove the address from the visited set after processing
-            Contract.visited_contracts_addresses.discard(self.__contract_address)
 
     async def __add_contract_data(self) -> None:
         """
@@ -141,12 +140,13 @@ class Contract:
             contract_url = f"https://skynet-api.roninchain.com/ronin/explorer/v2/accounts/{self.__contract_address}"
 
             # Get contract data from roninchain.com.
-            async with self.__http_client.get(abi_url) as abi_response:
-                abi_data = await abi_response.json()
+            async with aiohttp.ClientSession() as http_client:
+                async with http_client.get(abi_url) as abi_response:
+                    abi_data = await abi_response.json()
 
-            async with self.__http_client.get(contract_url) as contract_response:
-                contract_data = await contract_response.json()
-                logging.info(contract_data)
+                async with http_client.get(contract_url) as contract_response:
+                    contract_data = await contract_response.json()
+                    logging.info(contract_data)
 
             abi = abi_data["result"]["output"]["abi"]
 
@@ -188,26 +188,29 @@ class Contract:
             logging.info(
                 f"[__add_contract_data] Adding contract {self.__contract_address} ({contract_name}) to the database..."
             )
-            await self.__conn.execute(
-                """
-                INSERT INTO contracts(
-                    contract_address,
-                    contract_name,
-                    abi,
-                    is_proxy,
-                    implementation_address,
-                    created_at,
-                    modified_at                      
+            try:
+                await self.__conn.execute(
+                    """
+                    INSERT INTO contracts(
+                        contract_address,
+                        contract_name,
+                        abi,
+                        is_proxy,
+                        implementation_address,
+                        created_at,
+                        modified_at                      
+                    )
+                    VALUES (
+                        $1, $2, $3, $4, $5, $6, $7
+                    )
+                    """,
+                    *contract.values(),
                 )
-                VALUES (
-                    $1, $2, $3, $4, $5, $6, $7
+                logging.info(
+                    f"[__add_contract_data] Successfully added contract {self.__contract_address} ({contract_name}) to the database."
                 )
-                """,
-                *contract.values(),
-            )
-            logging.info(
-                f"[__add_contract_data] Successfully added contract {self.__contract_address} ({contract_name}) to the database."
-            )
+            except UniqueViolationError:
+                logging.info(f"[__add_contract_data] Contract {self.__contract_address} is already in the database. Skipped.")
 
         except Exception as e:
             logging.error(

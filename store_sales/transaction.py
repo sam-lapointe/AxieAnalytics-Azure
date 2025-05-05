@@ -1,6 +1,5 @@
 import asyncpg
 import logging
-import aiohttp
 from contract import Contract
 from web3 import Web3, AsyncWeb3
 
@@ -14,11 +13,9 @@ class Transaction:
         self,
         conn: asyncpg.Connection,
         w3: AsyncWeb3,
-        http_client: aiohttp.ClientSession,
     ):
         self.__conn = conn
         self.__w3 = w3
-        self.__http_client = http_client
 
     async def __get_receipt(self, transaction_hash) -> dict:
         """Returns the transaction receipt."""
@@ -47,7 +44,6 @@ class Transaction:
             weth_contract = await Contract.create(
                 self.__conn,
                 self.__w3,
-                self.__http_client,
                 "0xc99a6a985ed2cac1ef41640596c5a5f9f4e19ef5",
             )
             weth_contract_address = weth_contract.get_contract_address()
@@ -58,7 +54,6 @@ class Transaction:
             axie_proxy_contract = await Contract.create(
                 self.__conn,
                 self.__w3,
-                self.__http_client,
                 "0x32950db2a7164ae833121501c797d79e7b79d74c",
             )
             axie_proxy_contract_address = axie_proxy_contract.get_contract_address()
@@ -114,6 +109,10 @@ class Transaction:
                     logging.info(
                         f"[process_logs] Found Axie transfer. Added Axie {axie_id} to the list of axies."
                     )
+            
+            if len(prices) > len(axies):
+                # This make sure that the last price is removed if no asset was found for that sale.
+                prices.pop()
 
             """
             All events in a transaction are in the same order wheter it contains multiple sales or only one.

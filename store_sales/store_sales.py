@@ -1,5 +1,6 @@
 import asyncpg
 import logging
+from asyncpg.exceptions import UniqueViolationError
 from datetime import datetime, timezone
 from azure.servicebus import ServiceBusMessage
 from azure.servicebus.aio import ServiceBusClient
@@ -33,7 +34,7 @@ class StoreSales:
         Go through the list of sales and add each of them to the database.
         """
         if not self.__sales_list:
-            logging.warning("Sales list is empty. No data to add to DB.")
+            logging.warning("[add_to_db] Sales list is empty. No data to add to DB.")
             return
 
         for sale in self.__sales_list:
@@ -50,35 +51,38 @@ class StoreSales:
                     "modified_at": current_time_utc,
                 }
 
-                await self.__conn.execute(
-                    """
-                    INSERT INTO contracts(
-                        block_number,
-                        transaction_hash,
-                        sale_date,
-                        price_eth,
-                        axie_id,
-                        created_at,
-                        modified_at                      
+                try:
+                    await self.__conn.execute(
+                        """
+                        INSERT INTO axie_sales(
+                            block_number,
+                            transaction_hash,
+                            sale_date,
+                            price_eth,
+                            axie_id,
+                            created_at,
+                            modified_at                      
+                        )
+                        VALUES (
+                            $1, $2, $3, $4, $5, $6, $7
+                        )
+                        """,
+                        *axie_sale.values(),
                     )
-                    VALUES (
-                        $1, $2, $3, $4, $5, $6, $7
-                    )
-                    """,
-                    *axie_sale.values(),
-                )
-                logging.info(f"Added to DB Axie sale: {axie_sale}")
+                    logging.info(f"[add_to_db] Added to DB Axie sale: {axie_sale}")
+                except UniqueViolationError:
+                    logging.info(f"[add_to_db] This axie sale already exists in the database: {axie_sale}")
 
-                self.__send_topic_message()
+                await self.__send_topic_message(axie_sale)
 
             except Exception as e:
                 logging.error(
-                    f"An unexpected error occured while adding to DB Axie sale {sale}: {e}"
+                    f"[add_to_db] An unexpected error occured while adding to DB Axie sale {axie_sale}: {e}"
                 )
                 raise e
 
         logging.info(
-            f"All sales were added to the database successfuly for transaction {self.__transaction_hash}."
+            f"[add_to_db] All sales were added to the database successfuly for transaction {self.__transaction_hash}."
         )
         return
 
@@ -96,10 +100,10 @@ class StoreSales:
                 }
 
                 # Send message to the Axies topic.
-                await sender.send_messages(ServiceBusMessage(message))
-                logging.info(f"Sent message: {message}")
+                await sender.send_messages(ServiceBusMessage(str(message)))
+            logging.info(f"[__send_topic_message] Sent message: {message}")
         except Exception as e:
             logging.error(
-                f"An unexpected error occured while sending message to axies topic for {axie_sale}: {e}"
+                f"[__send_topic_message] An unexpected error occured while sending message to axies topic for {axie_sale}: {e}"
             )
             raise e

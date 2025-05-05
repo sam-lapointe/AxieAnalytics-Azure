@@ -2,7 +2,6 @@ import azure.functions as func
 import logging
 import os
 import ast
-import aiohttp
 import asyncpg
 from transaction import Transaction
 from store_sales import StoreSales
@@ -95,7 +94,7 @@ class Config:
             pg_username = quote_plus(pg_username_secret.value)
             pg_password = quote_plus(pg_password_secret.value)
 
-            connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
+            connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}.postgres.database.azure.com:{pg_port}/{pg_database}"
             return connection_string
 
         except Exception as e:
@@ -150,12 +149,7 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
     )  # Ronin Node provider
 
     # Call Transaction class to get the sales list from a transaction hash.
-    async with aiohttp.ClientSession() as http_client:
-        sales_list = await Transaction(conn, w3, http_client).process_logs(
-            transaction_hash
-        )
-
-    logging.info(f"Sales List: {sales_list}")
+    sales_list = await Transaction(conn, w3).process_logs(transaction_hash)
 
     # Call the StoreSales class to store the sales in the database and send message to the axies topic.
     async with ServiceBusClient(

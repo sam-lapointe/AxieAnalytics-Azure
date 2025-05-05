@@ -15,7 +15,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: "transaction_hash"
-                  type: "char(64)"
+                  type: "char(66)"
                   constraints:
                     nullable: false
               - column:
@@ -48,6 +48,10 @@ databaseChangeLog:
                   type: "timestamptz"
                   constraints:
                     nullable: false
+       - addUniqueConstraint:
+           tableName: axie_sales
+           columnNames: transaction_hash, axie_id
+           constraintName: unique_axie_sale_transaction
 
 - changeSet:
       id: create-axies-table
@@ -65,7 +69,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: "transaction_hash"
-                  type: "char(64)"
+                  type: "char(66)"
                   constraints:
                     nullable: false
               - column:
@@ -148,6 +152,10 @@ databaseChangeLog:
                   type: "timestamptz"
                   constraints:
                     nullable: false
+       - addUniqueConstraint:
+           tableName: axies
+           columnNames: transaction_hash, axie_id
+           constraintName: unique_axie_sale
 
 - changeSet:
       id: create-axieParts-table
