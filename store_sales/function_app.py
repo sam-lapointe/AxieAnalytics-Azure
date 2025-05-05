@@ -36,15 +36,19 @@ class Config:
         topic_sales_name = os.getenv("SERVICEBUS_TOPIC_SALES_NAME")
         if not topic_sales_name:
             logging.critical("SERVICEBUS_TOPIC_SALES_NAME is not set.")
-            raise ValueError("SERVICEBUS_TOPIC_SALES_NAME environment variable is required.")
+            raise ValueError(
+                "SERVICEBUS_TOPIC_SALES_NAME environment variable is required."
+            )
         return topic_sales_name
-    
+
     @staticmethod
     def get_servicebus_topic_axies_name() -> str:
         topic_axies_name = os.getenv("SERVICEBUS_TOPIC_AXIES_NAME")
         if not topic_axies_name:
             logging.critical("SERVICEBUS_TOPIC_AXIES_NAME is not set.")
-            raise ValueError("SERVICEBUS_TOPIC_AXIES_NAME environment variable is required.")
+            raise ValueError(
+                "SERVICEBUS_TOPIC_AXIES_NAME environment variable is required."
+            )
         return topic_axies_name
 
     @staticmethod
@@ -52,9 +56,11 @@ class Config:
         subscription_name = os.getenv("SERVICEBUS_SALES_SUBSCRIPTION_NAME")
         if not subscription_name:
             logging.critical("SERVICEBUS_SALES_SUBSCRIPTION_NAME is not set.")
-            raise ValueError("SERVICEBUS_SALES_SUBSCRIPTION_NAME environment variable is required.")
+            raise ValueError(
+                "SERVICEBUS_SALES_SUBSCRIPTION_NAME environment variable is required."
+            )
         return subscription_name
-    
+
     @staticmethod
     async def get_pg_connection_string(key_vault_client: SecretClient) -> str:
         try:
@@ -81,7 +87,7 @@ class Config:
             if not pg_database:
                 logging.critical("PG_DATABASE is not set.")
                 raise ValueError("PG_DATABASE environment variable is required.")
-            
+
             # Retrieves the PostgreSQL Credentials from Key Vault and URL encodes them.
             pg_username_secret = await key_vault_client.get_secret(kv_pg_username)
             pg_password_secret = await key_vault_client.get_secret(kv_pg_password)
@@ -110,24 +116,37 @@ credential = DefaultAzureCredential()
 key_vault_client = SecretClient(Config.get_key_vault_url(), credential)
 
 # Servicebus Variables
-servicebus_topic_sales_subscription_name = Config.get_servicebus_topic_sales_subscription_name()
+servicebus_topic_sales_subscription_name = (
+    Config.get_servicebus_topic_sales_subscription_name()
+)
 servicebus_topic_sales_name = Config.get_servicebus_topic_sales_name()
 
 app = func.FunctionApp()
 
-@app.service_bus_topic_trigger(arg_name="azservicebus", subscription_name=servicebus_topic_sales_subscription_name,
-                               topic_name=servicebus_topic_sales_name, connection="ServiceBusConnection") 
+
+@app.service_bus_topic_trigger(
+    arg_name="azservicebus",
+    subscription_name=servicebus_topic_sales_subscription_name,
+    topic_name=servicebus_topic_sales_name,
+    connection="ServiceBusConnection",
+)
 async def store_axie_sales(azservicebus: func.ServiceBusMessage):
-    message_body = ast.literal_eval(azservicebus.get_body().decode('utf-8'))
-    logging.info('Python ServiceBus Topic trigger processed a message: %s', message_body)
+    message_body = ast.literal_eval(azservicebus.get_body().decode("utf-8"))
+    logging.info(
+        "Python ServiceBus Topic trigger processed a message: %s", message_body
+    )
 
     transaction_hash = message_body["transactionHash"]
     block_number = message_body["blockNumber"]
     block_timestamp = message_body["blockTimestamp"]
 
     # Initialize dependencies
-    conn = await asyncpg.connect(dsn=await Config.get_pg_connection_string(key_vault_client), ssl="require")  # PostgreSQL connection
-    w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider()))  # Ronin Node provider
+    conn = await asyncpg.connect(
+        dsn=await Config.get_pg_connection_string(key_vault_client), ssl="require"
+    )  # PostgreSQL connection
+    w3 = AsyncWeb3(
+        AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider())
+    )  # Ronin Node provider
 
     # Call Transaction class to get the sales list from a transaction hash.
     async with aiohttp.ClientSession() as http_client:
