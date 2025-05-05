@@ -221,7 +221,7 @@ class Contract:
             )
             raise e
 
-    def get_contract_address(self):
+    def get_contract_address(self) -> str:
         return self.__contract_address
 
     def get_event_name(self, topic: str) -> str:
@@ -257,7 +257,7 @@ class Contract:
         )
         return event_class.process_log(log)
 
-    def get_event_signature_hash(self, event_name):
+    def get_event_signature_hash(self, event_name) -> str:
         if self.__is_proxy:
             logging.info(
                 f"[get_event_signature_hash] Retrieving signature hash for {event_name} event in contract {self.__implementation.__contract_address} ({self.__implementation.__name})"

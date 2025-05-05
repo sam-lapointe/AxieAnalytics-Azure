@@ -50,6 +50,7 @@ stages:
     variables:
     - group: Orchestrator
     - group: Service-WebhookListener
+    - group: Service-StoreSales
     jobs:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')

@@ -22,7 +22,7 @@ class StoreSales:
         self.__block_timestamp = block_timestamp
         self.__transaction_hash = transaction_hash
 
-    async def add_to_db(self):
+    async def add_to_db(self) -> None:
         if not self.__sales_list:
             logging.warning("Sales list is empty. No data to add to DB.")
             return
@@ -61,12 +61,18 @@ class StoreSales:
                 logging.info(f"Added to DB Axie sale: {axie_sale}")
 
                 self.__send_topic_message()
+
             except Exception as e:
                 logging.error(
                     f"An unexpected error occured while adding to DB Axie sale {sale}: {e}"
                 )
                 raise e
 
-    def __send_topic_message(self):
+        logging.info(
+            f"All sales were added to the database successfuly for transaction {self.__transaction_hash}."
+        )
+        return
+
+    def __send_topic_message(self, axie_sale) -> None:
         logging.info("Sending message to axies topic...")
         pass

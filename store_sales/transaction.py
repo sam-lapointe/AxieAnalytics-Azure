@@ -20,7 +20,7 @@ class Transaction:
         self.__w3 = w3
         self.__http_client = http_client
 
-    async def __get_receipt(self, transaction_hash):
+    async def __get_receipt(self, transaction_hash) -> dict:
         """Returns the transaction receipt."""
         try:
             receipt = await self.__w3.eth.get_transaction_receipt(transaction_hash)
