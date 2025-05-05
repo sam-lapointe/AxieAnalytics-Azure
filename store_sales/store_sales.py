@@ -29,6 +29,9 @@ class StoreSales:
         self.__transaction_hash = transaction_hash
 
     async def add_to_db(self) -> None:
+        """
+        Go through the list of sales and add each of them to the database.
+        """
         if not self.__sales_list:
             logging.warning("Sales list is empty. No data to add to DB.")
             return
@@ -80,6 +83,9 @@ class StoreSales:
         return
 
     async def __send_topic_message(self, axie_sale) -> None:
+        """
+        For each sale, sends a message to axies topic.
+        """
         try:
             async with self.__servicebus_client.get_topic_sender(
                 self.__axies_topic_name
@@ -89,6 +95,7 @@ class StoreSales:
                     "axie_id": axie_sale["axie_id"],
                 }
 
+                # Send message to the Axies topic.
                 await sender.send_messages(ServiceBusMessage(message))
                 logging.info(f"Sent message: {message}")
         except Exception as e:

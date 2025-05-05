@@ -17,12 +17,6 @@ class EventNotFoundError(Exception):
 class Contract:
     """
     Represents a smart contract and provides methods to interact with it.
-
-    Attributes:
-        conn: Database connection object.
-        w3: Web3 instance for interacting with the Ethereum blockchain.
-        http_client: HTTP client for making API requests.
-        contract_address: The address of the contract.
     """
 
     # Class-level set to track visited contracts addresses.
