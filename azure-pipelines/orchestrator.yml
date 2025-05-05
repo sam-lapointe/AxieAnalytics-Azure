@@ -38,6 +38,8 @@ stages:
             echo "##vso[task.setvariable variable=runIACCI;isOutput=true]$runIACCI"
             if grep "webhook_listener/" changed.txt; then runWebhookListenerCI=true; else runWebhookListenerCI=false;fi
             echo "##vso[task.setvariable variable=runWebhookListenerCI;isOutput=true]$runWebhookListenerCI"
+            if grep "store_sales/" changed.txt; then runStoreSalesCI=true; else runStoreSalesCI=false;fi
+            echo "##vso[task.setvariable variable=runStoreSalesCI;isOutput=true]$runStoreSalesCI"
             echo "##[endgroup]"
           displayName: Check Changes
           name: CheckChanges
@@ -59,6 +61,13 @@ stages:
         - template: ci-webhooklistener.yml
           parameters:
             artifactName: $(WEBHOOK_ARTIFACT_NAME)
+
+    - job: StoreSalesCI
+      condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runStoreSalesCI'], 'true')
+      steps:
+        - template: ci-storesales.yml
+          parameters:
+            artifactName: $(SALES_ARTIFACT_NAME)
 
   - stage: DeployDev
     displayName: Deployment to Dev
@@ -105,6 +114,7 @@ stages:
                 TF_VAR_POSTGRESQL_SALES_PASSWORD: $(TF_VAR_POSTGRESQL_SALES_PASSWORD)
                 TF_VAR_POSTGRESQL_SALES_USERNAME: $(TF_VAR_POSTGRESQL_SALES_USERNAME)
                 TF_VAR_POSTGRESQL_AUTHORIZED_IPS: $(TF_VAR_POSTGRESQL_AUTHORIZED_IPS)
+                TF_VAR_ALCHEMY_NODE_PROVIDER: $(TF_VAR_ALCHEMY_NODE_PROVIDER)
 
             - task: TerraformTaskV4@4
               displayName: Terraform Apply
@@ -121,6 +131,7 @@ stages:
                 TF_VAR_POSTGRESQL_SALES_PASSWORD: $(TF_VAR_POSTGRESQL_SALES_PASSWORD)
                 TF_VAR_POSTGRESQL_SALES_USERNAME: $(TF_VAR_POSTGRESQL_SALES_USERNAME)
                 TF_VAR_POSTGRESQL_AUTHORIZED_IPS: $(TF_VAR_POSTGRESQL_AUTHORIZED_IPS)
+                TF_VAR_ALCHEMY_NODE_PROVIDER: $(TF_VAR_ALCHEMY_NODE_PROVIDER)
 
             - script: |
                 tfoutput=$(terraform output -json)
@@ -159,6 +170,11 @@ stages:
       variables:
       - group: Dev
       - group: Service-WebhookListener
+      - group: Service-StoreSales
+      - name: WEBHOOK_FUNCTION_APP_NAME
+        value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.webhook_function_name']]
+      - name: SALES_FUNCTION_APP_NAME
+        value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.sales_function_name']]
       steps:
       - task: AzureCli@2
         displayName: Deploy webhook_listener to production slot
@@ -169,8 +185,21 @@ stages:
           inlineScript: |
             az functionapp deployment source config-zip \
               --resource-group $(RESOURCE_GROUP_NAME) \
-              --name "$(ENVIRONMENT)-$(WEBHOOK_FUNCTION_APP_NAME)" \
+              --name "$(webhook_function_name)" \
               --src "$(Pipeline.Workspace)/$(WEBHOOK_ARTIFACT_NAME)/$(WEBHOOK_ARTIFACT_NAME).zip" \
+              --build-remote true
+
+      - task: AzureCli@2
+        displayName: Deploy store_sales to production slot
+        inputs:
+          azureSubscription: 'AxieMarket-Dev'
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az functionapp deployment source config-zip \
+              --resource-group $(RESOURCE_GROUP_NAME) \
+              --name "$(webhook_function_name)" \
+              --src "$(Pipeline.Workspace)/$(SALES_ARTIFACT_NAME)/$(SALES_ARTIFACT_NAME).zip" \
               --build-remote true
 
     - job: TestDev
@@ -253,3 +282,4 @@ stages:
                 TF_VAR_POSTGRESQL_SALES_PASSWORD: $(TF_VAR_POSTGRESQL_SALES_PASSWORD)
                 TF_VAR_POSTGRESQL_SALES_USERNAME: $(TF_VAR_POSTGRESQL_SALES_USERNAME)
                 TF_VAR_POSTGRESQL_AUTHORIZED_IPS: $(TF_VAR_POSTGRESQL_AUTHORIZED_IPS)
+                TF_VAR_ALCHEMY_NODE_PROVIDER: $(TF_VAR_ALCHEMY_NODE_PROVIDER)
