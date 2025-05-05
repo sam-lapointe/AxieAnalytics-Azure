@@ -32,10 +32,6 @@ class Transaction:
             )
             raise e
 
-    """
-    This might be better as a classmethod.
-    """
-
     async def process_logs(self, transaction_hash) -> list:
         """
         Looks for specifc data in the logs and returns a list of the sold prices and assets IDs.

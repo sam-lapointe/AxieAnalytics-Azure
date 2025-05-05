@@ -150,11 +150,13 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
 
     # Call Transaction class to get the sales list from a transaction hash.
     async with aiohttp.ClientSession() as http_client:
-        transaction = Transaction(conn, w3, http_client)
-        sales_list = await transaction.process_logs(transaction_hash)
+        sales_list = await Transaction(conn, w3, http_client).process_logs(
+            transaction_hash
+        )
 
     logging.info(f"Sales List: {sales_list}")
 
-    # TODO: Call the StoreSales class to store the sales in the database
-    store_sales = StoreSales(conn, sales_list, block_number, block_timestamp)
-    store_sales.add_to_db()
+    # Call the StoreSales class to store the sales in the database and send message to the axies topic.
+    StoreSales(
+        conn, sales_list, block_number, block_timestamp, transaction_hash
+    ).add_to_db()
