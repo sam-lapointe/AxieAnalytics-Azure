@@ -9,6 +9,7 @@ from store_sales import StoreSales
 from urllib.parse import quote_plus
 from azure.keyvault.secrets.aio import SecretClient
 from azure.identity.aio import DefaultAzureCredential
+from azure.servicebus.aio import ServiceBusClient
 from web3 import AsyncWeb3
 
 
@@ -157,6 +158,21 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
     logging.info(f"Sales List: {sales_list}")
 
     # Call the StoreSales class to store the sales in the database and send message to the axies topic.
-    StoreSales(
-        conn, sales_list, block_number, block_timestamp, transaction_hash
-    ).add_to_db()
+    async with ServiceBusClient(
+        Config.get_servicebus_full_namespace(), credential, logging_enable=True
+    ) as servicebus_client:
+        axies_topic_name = Config.get_servicebus_topic_axies_name()
+
+        await StoreSales(
+            conn,
+            servicebus_client,
+            axies_topic_name,
+            sales_list,
+            block_number,
+            block_timestamp,
+            transaction_hash,
+        ).add_to_db()
+
+    logging.info(
+        f"All sales of transaction {transaction_hash} have been added successfuly to the database and messages have been sent to the axies topic."
+    )

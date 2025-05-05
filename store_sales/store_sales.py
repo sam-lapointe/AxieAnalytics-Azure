@@ -1,6 +1,8 @@
 import asyncpg
 import logging
 from datetime import datetime, timezone
+from azure.servicebus import ServiceBusMessage
+from azure.servicebus.aio import ServiceBusClient
 
 
 class StoreSales:
@@ -11,12 +13,16 @@ class StoreSales:
     def __init__(
         self,
         conn: asyncpg.Connection,
+        servicebus_client: ServiceBusClient,
+        axies_topic_name: str,
         sales_list: list,
         block_number: int,
         block_timestamp: int,
         transaction_hash: str,
     ):
         self.__conn = conn
+        self.__servicebus_client = servicebus_client
+        self.__axies_topic_name = axies_topic_name
         self.__sales_list = sales_list
         self.__block_number = block_number
         self.__block_timestamp = block_timestamp
@@ -73,6 +79,20 @@ class StoreSales:
         )
         return
 
-    def __send_topic_message(self, axie_sale) -> None:
-        logging.info("Sending message to axies topic...")
-        pass
+    async def __send_topic_message(self, axie_sale) -> None:
+        try:
+            async with self.__servicebus_client.get_topic_sender(
+                self.__axies_topic_name
+            ) as sender:
+                message = {
+                    "transaction_hash": self.__transaction_hash,
+                    "axie_id": axie_sale["axie_id"],
+                }
+
+                await sender.send_messages(ServiceBusMessage(message))
+                logging.info(f"Sent message: {message}")
+        except Exception as e:
+            logging.error(
+                f"An unexpected error occured while sending message to axies topic for {axie_sale}: {e}"
+            )
+            raise e
