@@ -23,3 +23,4 @@ class StoreSales:
 
     def send_topic_message(self):
         logging.info("Sending message to Axies topic...")
+        pass
