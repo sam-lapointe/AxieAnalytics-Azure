@@ -1,7 +1,5 @@
 import asyncpg
 import logging
-import time
-
 
 class StoreSales:
     def __init__(self, conn: asyncpg.Connection, sales_list: list, block_number: int, block_timestamp: int):
