@@ -71,7 +71,9 @@ class StoreSales:
                     )
                     logging.info(f"[add_to_db] Added to DB Axie sale: {axie_sale}")
                 except UniqueViolationError:
-                    logging.info(f"[add_to_db] This axie sale already exists in the database: {axie_sale}")
+                    logging.info(
+                        f"[add_to_db] This axie sale already exists in the database: {axie_sale}"
+                    )
 
                 await self.__send_topic_message(axie_sale)
 

@@ -44,12 +44,12 @@ class Contract:
         conn: asyncpg.Connection,
         w3: AsyncWeb3,
         contract_address: str,
-        visited_contracts_addresses: set = None  # Shared context for recursion tracking
+        visited_contracts_addresses: set = None,  # Shared context for recursion tracking
     ):
         """
         Factory method to create and initialize a Contract instance asynchronously.
         """
-        
+
         if visited_contracts_addresses is None:
             visited_contracts_addresses = set()
 
@@ -210,7 +210,9 @@ class Contract:
                     f"[__add_contract_data] Successfully added contract {self.__contract_address} ({contract_name}) to the database."
                 )
             except UniqueViolationError:
-                logging.info(f"[__add_contract_data] Contract {self.__contract_address} is already in the database. Skipped.")
+                logging.info(
+                    f"[__add_contract_data] Contract {self.__contract_address} is already in the database. Skipped."
+                )
 
         except Exception as e:
             logging.error(

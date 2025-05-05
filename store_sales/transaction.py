@@ -109,7 +109,7 @@ class Transaction:
                     logging.info(
                         f"[process_logs] Found Axie transfer. Added Axie {axie_id} to the list of axies."
                     )
-            
+
             if len(prices) > len(axies):
                 # This make sure that the last price is removed if no asset was found for that sale.
                 prices.pop()
