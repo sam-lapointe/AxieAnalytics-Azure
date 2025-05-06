@@ -34,7 +34,7 @@ class StoreSales:
         Go through the list of sales and add each of them to the database.
         """
         if not self.__sales_list:
-            logging.warning("[add_to_db] Sales list is empty. No data to add to DB.")
+            logging.info("[add_to_db] Sales list is empty. No data to add to DB.")
             return
 
         for sale in self.__sales_list:

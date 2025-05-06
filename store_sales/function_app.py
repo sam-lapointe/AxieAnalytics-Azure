@@ -154,21 +154,24 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
     sales_list = await Transaction(conn, w3).process_logs(transaction_hash)
 
     # Call the StoreSales class to store the sales in the database and send message to the axies topic.
-    async with ServiceBusClient(
-        Config.get_servicebus_full_namespace(), credential, logging_enable=True
-    ) as servicebus_client:
-        axies_topic_name = Config.get_servicebus_topic_axies_name()
+    if sales_list:
+        async with ServiceBusClient(
+            Config.get_servicebus_full_namespace(), credential, logging_enable=True
+        ) as servicebus_client:
+            axies_topic_name = Config.get_servicebus_topic_axies_name()
 
-        await StoreSales(
-            conn,
-            servicebus_client,
-            axies_topic_name,
-            sales_list,
-            block_number,
-            block_timestamp,
-            transaction_hash,
-        ).add_to_db()
+            await StoreSales(
+                conn,
+                servicebus_client,
+                axies_topic_name,
+                sales_list,
+                block_number,
+                block_timestamp,
+                transaction_hash,
+            ).add_to_db()
+    else:
+        logging.info("Sales list is empty.")
 
     logging.info(
-        f"All sales of transaction {transaction_hash} have been added successfuly to the database and messages have been sent to the axies topic."
+        f"All sales of transaction {transaction_hash} have been processed successfuly."
     )

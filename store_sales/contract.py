@@ -139,14 +139,20 @@ class Contract:
             abi_url = f"https://explorer-kintsugi.roninchain.com/v2/2020/contract/{self.__contract_address}/abi"
             contract_url = f"https://skynet-api.roninchain.com/ronin/explorer/v2/accounts/{self.__contract_address}"
 
-            # Get contract data from roninchain.com.
-            async with aiohttp.ClientSession() as http_client:
-                async with http_client.get(abi_url) as abi_response:
-                    abi_data = await abi_response.json()
+            try:
+                # Get contract data from roninchain.com.
+                async with aiohttp.ClientSession() as http_client:
+                    async with http_client.get(abi_url) as abi_response:
+                        abi_data = await abi_response.json()
 
-                async with http_client.get(contract_url) as contract_response:
-                    contract_data = await contract_response.json()
-                    logging.info(contract_data)
+                    async with http_client.get(contract_url) as contract_response:
+                        contract_data = await contract_response.json()
+                        logging.info(contract_data)
+            except Exception as e:
+                logging.error(
+                    f"[__add_contract_data] Error fetching contract data: {e}"
+                )
+                raise e
 
             abi = abi_data["result"]["output"]["abi"]
 
