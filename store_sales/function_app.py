@@ -96,7 +96,7 @@ class Config:
             pg_username = quote_plus(pg_username_secret.value)
             pg_password = quote_plus(pg_password_secret.value)
 
-            connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}.postgres.database.azure.com:{pg_port}/{pg_database}"
+            connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
             return connection_string
 
         except Exception as e:
