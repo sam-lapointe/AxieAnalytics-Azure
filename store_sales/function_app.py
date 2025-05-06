@@ -23,11 +23,13 @@ class Config:
 
     @staticmethod
     def get_servicebus_full_namespace() -> str:
-        full_namespace = os.getenv("SERVICEBUS_FULLY_QUALIFIED_NAMESPACE")
+        full_namespace = os.getenv("ServiceBusConnection__fullyQualifiedNamespace")
         if not full_namespace:
-            logging.critical("SERVICEBUS_FULLY_QUALIFIED_NAMESPACE is not set.")
+            logging.critical(
+                "ServiceBusConnection__fullyQualifiedNamespace is not set."
+            )
             raise ValueError(
-                "SERVICEBUS_FULLY_QUALIFIED_NAMESPACE environment variable is required."
+                "ServiceBusConnection__fullyQualifiedNamespace environment variable is required."
             )
         return full_namespace
 

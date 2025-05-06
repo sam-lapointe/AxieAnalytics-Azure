@@ -199,17 +199,18 @@ module "store_sales_function_app" {
   user_managed_identities    = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
   python_version             = "3.11"
   app_settings = {
-    "KEY_VAULT_NAME"                       = module.key_vault_internal.key_vault_name
-    "SERVICEBUS_FULLY_QUALIFIED_NAMESPACE" = module.service_bus.endpoint
-    "SERVICEBUS_TOPIC_SALES_NAME"          = local.SERVICEBUS_TOPIC_SALES_NAME
-    "SERVICEBUS_TOPIC_AXIES_NAME"          = local.SERVICEBUS_TOPIC_AXIES_NAME
-    "SERVICEBUS_SALES_SUBSCRIPTION_NAME"   = local.STORE_SALES_SUBSCRIPTION_NAME
-    "KV_PG_USERNAME"                       = local.POSTGRESQL_SALES_USERNAME_NAME
-    "KV_PG_PASSWORD"                       = local.POSTGRESQL_SALES_PASSWORD_NAME
-    "PG_HOST"                              = "${module.postgresql_server.hostname}.postgres.database.azure.com"
-    "PG_PORT"                              = 5432
-    "PG_DATABASE"                          = local.AXIEMARKET_DATABASE
-    "NODE_PROVIDER"                        = var.ALCHEMY_NODE_PROVIDER
+    "AZURE_CLIENT_ID"                               = azurerm_user_assigned_identity.umi_functionapp_internal.client_id
+    "KEY_VAULT_NAME"                                = module.key_vault_internal.key_vault_name
+    "ServiceBusConnection__fullyQualifiedNamespace" = module.service_bus.endpoint
+    "SERVICEBUS_TOPIC_SALES_NAME"                   = local.SERVICEBUS_TOPIC_SALES_NAME
+    "SERVICEBUS_TOPIC_AXIES_NAME"                   = local.SERVICEBUS_TOPIC_AXIES_NAME
+    "SERVICEBUS_SALES_SUBSCRIPTION_NAME"            = local.STORE_SALES_SUBSCRIPTION_NAME
+    "KV_PG_USERNAME"                                = local.POSTGRESQL_SALES_USERNAME_NAME
+    "KV_PG_PASSWORD"                                = local.POSTGRESQL_SALES_PASSWORD_NAME
+    "PG_HOST"                                       = "${module.postgresql_server.hostname}.postgres.database.azure.com"
+    "PG_PORT"                                       = 5432
+    "PG_DATABASE"                                   = local.AXIEMARKET_DATABASE
+    "NODE_PROVIDER"                                 = var.ALCHEMY_NODE_PROVIDER
   }
 
   depends_on = [
