@@ -141,13 +141,16 @@ class Contract:
 
             try:
                 # Get contract data from roninchain.com.
+                logging.info("Opening aiohttp_ClientSession...")
                 async with aiohttp.ClientSession() as http_client:
+                    logging.info("ClientSession opened.")
                     async with http_client.get(abi_url) as abi_response:
                         abi_data = await abi_response.json()
 
                     async with http_client.get(contract_url) as contract_response:
                         contract_data = await contract_response.json()
                         logging.info(contract_data)
+                    logging.info("ClientSessionClosed")
             except Exception as e:
                 logging.error(
                     f"[__add_contract_data] Error fetching contract data: {e}"
