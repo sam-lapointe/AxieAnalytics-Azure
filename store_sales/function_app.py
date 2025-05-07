@@ -64,7 +64,7 @@ class Config:
         return subscription_name
 
     @staticmethod
-    async def get_pg_connection_string(key_vault_client: SecretClient) -> str:
+    async def get_pg_connection_string(credential: DefaultAzureCredential) -> str:
         try:
             # Retrieve environment variables.
             kv_pg_username = os.getenv("KV_PG_USERNAME")
@@ -90,11 +90,14 @@ class Config:
                 logging.critical("PG_DATABASE is not set.")
                 raise ValueError("PG_DATABASE environment variable is required.")
 
-            # Retrieves the PostgreSQL Credentials from Key Vault and URL encodes them.
-            pg_username_secret = await key_vault_client.get_secret(kv_pg_username)
-            pg_password_secret = await key_vault_client.get_secret(kv_pg_password)
-            pg_username = quote_plus(pg_username_secret.value)
-            pg_password = quote_plus(pg_password_secret.value)
+            async with SecretClient(
+                Config.get_key_vault_url(), credential
+            ) as key_vault_client:
+                # Retrieves the PostgreSQL Credentials from Key Vault and URL encodes them.
+                pg_username_secret = await key_vault_client.get_secret(kv_pg_username)
+                pg_password_secret = await key_vault_client.get_secret(kv_pg_password)
+                pg_username = quote_plus(pg_username_secret.value)
+                pg_password = quote_plus(pg_password_secret.value)
 
             connection_string = f"postgres://{pg_username}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
             return connection_string
@@ -115,7 +118,6 @@ class Config:
 
 # Authenticate to Azure
 credential = DefaultAzureCredential()
-key_vault_client = SecretClient(Config.get_key_vault_url(), credential)
 
 # Servicebus Variables
 servicebus_topic_sales_subscription_name = (
@@ -144,7 +146,7 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
 
     # Initialize dependencies
     conn = await asyncpg.connect(
-        dsn=await Config.get_pg_connection_string(key_vault_client), ssl="require"
+        dsn=await Config.get_pg_connection_string(credential), ssl="require"
     )  # PostgreSQL connection
     w3 = AsyncWeb3(
         AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider())
