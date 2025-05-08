@@ -160,17 +160,17 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
         async with ServiceBusClient(
             Config.get_servicebus_full_namespace(), credential, logging_enable=True
         ) as servicebus_client:
-            axies_topic_name = Config.get_servicebus_topic_axies_name()
-
-            await StoreSales(
-                conn,
-                servicebus_client,
-                axies_topic_name,
-                sales_list,
-                block_number,
-                block_timestamp,
-                transaction_hash,
-            ).add_to_db()
+            async with servicebus_client.get_topic_sender(
+                Config.get_servicebus_topic_axies_name()
+            ) as servicebus_sender:
+                await StoreSales(
+                    conn,
+                    servicebus_sender,
+                    sales_list,
+                    block_number,
+                    block_timestamp,
+                    transaction_hash,
+                ).add_to_db()
     else:
         logging.info("Sales list is empty.")
 

@@ -14,16 +14,14 @@ class StoreSales:
     def __init__(
         self,
         conn: asyncpg.Connection,
-        servicebus_client: ServiceBusClient,
-        axies_topic_name: str,
+        servicebus_sender: ServiceBusClient.get_topic_sender,
         sales_list: list,
         block_number: int,
         block_timestamp: int,
         transaction_hash: str,
     ):
         self.__conn = conn
-        self.__servicebus_client = servicebus_client
-        self.__axies_topic_name = axies_topic_name
+        self.__servicebus_sender = servicebus_sender
         self.__sales_list = sales_list
         self.__block_number = block_number
         self.__block_timestamp = block_timestamp
@@ -93,16 +91,15 @@ class StoreSales:
         For each sale, sends a message to axies topic.
         """
         try:
-            async with self.__servicebus_client.get_topic_sender(
-                self.__axies_topic_name
-            ) as sender:
-                message = {
-                    "transaction_hash": self.__transaction_hash,
-                    "axie_id": axie_sale["axie_id"],
-                }
+            message = {
+                "transaction_hash": self.__transaction_hash,
+                "axie_id": axie_sale["axie_id"],
+            }
 
-                # Send message to the Axies topic.
-                await sender.send_messages(ServiceBusMessage(str(message)))
+            # Send message to the Axies topic.
+            await self.__servicebus_sender.send_messages(
+                ServiceBusMessage(str(message))
+            )
             logging.info(f"[__send_topic_message] Sent message: {message}")
         except Exception as e:
             logging.error(
