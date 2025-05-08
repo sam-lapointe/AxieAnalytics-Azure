@@ -146,14 +146,15 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
 
     # Initialize dependencies
     conn = await asyncpg.connect(
-        dsn=await Config.get_pg_connection_string(credential), ssl="require"
+        dsn=await Config.get_pg_connection_string(credential),
+        ssl="require",
     )  # PostgreSQL connection
-    w3 = AsyncWeb3(
-        AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider())
-    )  # Ronin Node provider
 
-    # Call Transaction class to get the sales list from a transaction hash.
-    sales_list = await Transaction(conn, w3).process_logs(transaction_hash)
+    async with AsyncWeb3(
+        AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider())
+    ) as w3:  # Ronin Node provider
+        # Call Transaction class to get the sales list from a transaction hash.
+        sales_list = await Transaction(conn, w3).process_logs(transaction_hash)
 
     # Call the StoreSales class to store the sales in the database and send message to the axies topic.
     if sales_list:
