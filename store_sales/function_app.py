@@ -160,7 +160,6 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
     finally:
         # Closing session
         await w3.provider.disconnect()
-        logging.info("Session closed")
 
     # Call the StoreSales class to store the sales in the database and send message to the axies topic.
     if sales_list:

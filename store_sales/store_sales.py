@@ -1,9 +1,11 @@
 import asyncpg
 import logging
+import asyncio
 from asyncpg.exceptions import UniqueViolationError
 from datetime import datetime, timezone
 from azure.servicebus import ServiceBusMessage
 from azure.servicebus.aio import ServiceBusClient
+from azure.servicebus.exceptions import ServiceBusError
 
 
 class StoreSales:
@@ -90,19 +92,47 @@ class StoreSales:
         """
         For each sale, sends a message to axies topic.
         """
-        try:
-            message = {
-                "transaction_hash": self.__transaction_hash,
-                "axie_id": axie_sale["axie_id"],
-            }
+        max_retries = 3
+        retry_delay = 5  # seconds
 
-            # Send message to the Axies topic.
-            await self.__servicebus_sender.send_messages(
-                ServiceBusMessage(str(message))
-            )
-            logging.info(f"[__send_topic_message] Sent message: {message}")
-        except Exception as e:
-            logging.error(
-                f"[__send_topic_message] An unexpected error occured while sending message to axies topic for {axie_sale}: {e}"
-            )
-            raise e
+        for attempt in range(max_retries):
+            try:
+                message = {
+                    "transaction_hash": self.__transaction_hash,
+                    "axie_id": axie_sale["axie_id"],
+                }
+
+                # Send message to the Axies topic.
+                await asyncio.wait_for(
+                    self.__servicebus_sender.send_messages(
+                        ServiceBusMessage(str(message))
+                    ),
+                    timeout=30,  # seconds
+                )
+                logging.info(f"[__send_topic_message] Sent message: {message}")
+                return
+            except asyncio.TimeoutError:
+                logging.warning(
+                    f"[__send_topic_message] TimeoutError occured while sending message to axies topic for {axie_sale}. Attempt {attempt + 1}/{max_retries}."
+                )
+            except ServiceBusError as e:
+                logging.error(
+                    f"[__send_topic_message] ServiceBusError occured while sending message to axies topic for {axie_sale}: {e}. Attempt {attempt + 1}/{max_retries}."
+                )
+            except Exception as e:
+                logging.error(
+                    f"[__send_topic_message] An unexpected error occurred while sending message to axies topic for {axie_sale}: {e}. Attempt {attempt + 1} of {max_retries}."
+                )
+                raise e
+
+            # Wait before retrying
+            await asyncio.sleep(retry_delay)
+            retry_delay *= 2  # Exponential backoff
+
+            if attempt == max_retries - 1:
+                logging.error(
+                    f"[__send_topic_message] Max retries reached. Failed to send message to axies topic for {axie_sale}."
+                )
+                raise Exception(
+                    f"Failed to send message to axies topic after {max_retries} attempts."
+                )
