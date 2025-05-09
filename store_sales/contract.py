@@ -15,6 +15,10 @@ class EventNotFoundError(Exception):
     pass
 
 
+class RecursionError(Exception):
+    pass
+
+
 class Contract:
     """
     Represents a smart contract and provides methods to interact with it.
@@ -55,7 +59,7 @@ class Contract:
 
         # Check for infinite recursion
         if contract_address in visited_contracts_addresses:
-            raise ValueError(
+            raise RecursionError(
                 f"Infinite recursion detected for contract {contract_address}."
             )
         visited_contracts_addresses.add(contract_address)
@@ -225,7 +229,7 @@ class Contract:
 
         except Exception as e:
             logging.error(
-                f"[__add_contract_data] An unexpected error occured while retrieving contract {self.__contract_address} ({contract_name}) or adding it to the database: {e}"
+                f"[__add_contract_data] An unexpected error occured while retrieving contract {self.__contract_address} or adding it to the database: {e}"
             )
             raise e
 
