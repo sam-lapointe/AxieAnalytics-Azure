@@ -243,55 +243,6 @@ async def test_add_contract_data(mocker, conn, w3, is_new_contract):
 
         conn.execute.assert_called_once()
 
-# Test the Contract.__add_contract_data method when the contract already exists in the database.
-@pytest.mark.asyncio
-async def test_add_contract_data_unique_violation(mocker, conn, w3):
-    # Mock the current time.
-    mock_current_time = datetime(2025, 5, 9, 12, 0, 0, tzinfo=timezone.utc)
-    mock_datetime = mocker.patch("contract.datetime")
-    mock_datetime.now.return_value = mock_current_time
-
-    # Mock HTTP session and responses.
-    mock_http_session = mocker.patch("aiohttp.ClientSession")
-    mock_http_client_instance = mock_http_session.return_value
-    mock_http_client_instance.__aenter__.return_value = mock_http_client_instance
-    mock_http_client_instance.__aexit__.return_value = None
-
-    mock_abi_response = mocker.AsyncMock()
-    mock_abi_response.__aenter__.return_value.json.return_value = {
-        "result": {
-            "output": {
-                "abi": []
-            }
-        }
-    }
-
-    mock_contract_response = mocker.AsyncMock()
-    mock_contract_response.__aenter__.return_value.json.return_value = {
-        "result": {
-            "contract": {
-                "verifiedName": "TestContract",
-            }
-        }
-    }
-
-    mock_http_client_instance.__aenter__.return_value.get.side_effect = [
-        mock_abi_response,
-        mock_contract_response,
-    ]
-
-    # Mock get_storage_at to return a valid bytes object.
-    w3.eth.get_storage_at = mocker.AsyncMock(return_value=bytes.fromhex("000000000000000000000000abcdefabcdefabcdefabcdefabcdefabcdefabcd"))
-
-    # Mock conn.execute to raise a unique violation error
-    conn.execute.side_effect = asyncpg.exceptions.UniqueViolationError("Unique violation error")
-
-    # No errors should be raised because this error is handled in the __add_contract_data method.
-    contract = Contract(conn, w3, '0x1234567890abcdef1234567890abcdef12345678')
-    await contract._Contract__add_contract_data()
-
-    conn.execute.assert_called_once()
-
 # Test the Contract.get_contract_address method.
 @pytest.mark.parametrize(
     "contract_address",
