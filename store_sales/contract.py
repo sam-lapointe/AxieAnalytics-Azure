@@ -5,6 +5,7 @@ import ast
 from asyncpg.exceptions import UniqueViolationError
 from datetime import datetime, timezone
 from web3 import Web3, AsyncWeb3
+from web3.exceptions import Web3ValueError
 
 
 class ContractNotFoundError(Exception):
@@ -240,17 +241,23 @@ class Contract:
         """
         Returns the event name using the topic.
         """
-        logging.info(f"[get_event_data] Retrieving event name for topic {topic}...")
-        if self.__is_proxy:
-            logging.info(
-                f"[get_event_name] Successfuly returned event name for topic {topic}."
+        try:
+            logging.info(f"[get_event_data] Retrieving event name for topic {topic}...")
+            if self.__is_proxy:
+                logging.info(
+                    f"[get_event_name] Successfuly returned event name for topic {topic}."
+                )
+                return self.__implementation.get_event_name(topic)
+            else:
+                logging.info(
+                    f"[get_event_name] Successfuly returned event name for topic {topic}."
+                )
+                return self.__contract.get_event_by_topic(topic).name
+        except Web3ValueError as e:
+            logging.error(
+                f"[get_event_name] Could not find any event matching this topic: {topic}"
             )
-            return self.__implementation.get_event_name(topic)
-        else:
-            logging.info(
-                f"[get_event_name] Successfuly returned event name for topic {topic}."
-            )
-            return self.__contract.get_event_by_topic(topic).name
+            raise e
 
     def get_event_data(self, topic: str, log: dict) -> dict:
         """
