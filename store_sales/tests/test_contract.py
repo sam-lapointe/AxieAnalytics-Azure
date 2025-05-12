@@ -19,11 +19,13 @@ from contract import (
 )
 
 
+# Mock the database connection.
 @pytest.fixture
 def conn(mocker):
     return mocker.AsyncMock()
 
 
+# Mock the Web3 instance.
 @pytest.fixture
 def w3(mocker):
     return mocker.AsyncMock()

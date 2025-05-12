@@ -61,7 +61,7 @@ class StoreSales:
                             price_eth,
                             axie_id,
                             created_at,
-                            modified_at                      
+                            modified_at
                         )
                         VALUES (
                             $1, $2, $3, $4, $5, $6, $7
