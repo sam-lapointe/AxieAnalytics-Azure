@@ -52,6 +52,9 @@ class StoreSales:
                 self.__topic_axies_name
             ) as servicebus_sender:
                 self.__servicebus_sender = servicebus_sender
+                logging.info(
+                    f"[add_to_db] ServiceBus sender initialized for topic {self.__topic_axies_name}."
+                )
                 for sale in self.__sales_list:
                     try:
                         current_time_utc = datetime.now(timezone.utc)
