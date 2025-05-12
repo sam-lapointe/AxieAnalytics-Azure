@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from azure.servicebus import ServiceBusMessage
 from azure.servicebus.aio import ServiceBusClient
 from azure.servicebus.exceptions import ServiceBusError
+from azure.identity.aio import DefaultAzureCredential
 
 
 class StoreSales:
@@ -16,18 +17,23 @@ class StoreSales:
     def __init__(
         self,
         conn: asyncpg.Connection,
-        servicebus_sender: ServiceBusClient.get_topic_sender,
+        servicebus_namespace: str,
+        azure_credentials: DefaultAzureCredential,
+        topic_axies_name: str,
         sales_list: list,
         block_number: int,
         block_timestamp: int,
         transaction_hash: str,
     ):
         self.__conn = conn
-        self.__servicebus_sender = servicebus_sender
+        self.__servicebus_namespace = servicebus_namespace
+        self.__azure_credentials = azure_credentials
+        self.__topic_axies_name = topic_axies_name
         self.__sales_list = sales_list
         self.__block_number = block_number
         self.__block_timestamp = block_timestamp
         self.__transaction_hash = transaction_hash
+        self.__servicebus_sender = None
 
     async def add_to_db(self) -> None:
         """
@@ -37,51 +43,62 @@ class StoreSales:
             logging.info("[add_to_db] Sales list is empty. No data to add to DB.")
             return
 
-        for sale in self.__sales_list:
-            try:
-                current_time_utc = datetime.now(timezone.utc)
+        async with ServiceBusClient(
+            self.__servicebus_namespace,
+            self.__azure_credentials,
+            logging_enable=True,
+        ) as servicebus_client:
+            async with servicebus_client.get_topic_sender(
+                self.__topic_axies_name
+            ) as servicebus_sender:
+                self.__servicebus_sender = servicebus_sender
+                for sale in self.__sales_list:
+                    try:
+                        current_time_utc = datetime.now(timezone.utc)
 
-                axie_sale = {
-                    "block_number": self.__block_number,
-                    "transaction_hash": self.__transaction_hash,
-                    "sale_date": self.__block_timestamp,
-                    "price_eth": sale["price_weth"],
-                    "axie_id": sale["axie_id"],
-                    "created_at": current_time_utc,
-                    "modified_at": current_time_utc,
-                }
+                        axie_sale = {
+                            "block_number": self.__block_number,
+                            "transaction_hash": self.__transaction_hash,
+                            "sale_date": self.__block_timestamp,
+                            "price_eth": sale["price_weth"],
+                            "axie_id": sale["axie_id"],
+                            "created_at": current_time_utc,
+                            "modified_at": current_time_utc,
+                        }
 
-                try:
-                    await self.__conn.execute(
-                        """
-                        INSERT INTO axie_sales(
-                            block_number,
-                            transaction_hash,
-                            sale_date,
-                            price_eth,
-                            axie_id,
-                            created_at,
-                            modified_at
+                        try:
+                            await self.__conn.execute(
+                                """
+                                INSERT INTO axie_sales(
+                                    block_number,
+                                    transaction_hash,
+                                    sale_date,
+                                    price_eth,
+                                    axie_id,
+                                    created_at,
+                                    modified_at
+                                )
+                                VALUES (
+                                    $1, $2, $3, $4, $5, $6, $7
+                                )
+                                """,
+                                *axie_sale.values(),
+                            )
+                            logging.info(
+                                f"[add_to_db] Added to DB Axie sale: {axie_sale}"
+                            )
+                        except UniqueViolationError:
+                            logging.info(
+                                f"[add_to_db] This axie sale already exists in the database: {axie_sale}"
+                            )
+
+                        await self.__send_topic_message(axie_sale)
+
+                    except Exception as e:
+                        logging.error(
+                            f"[add_to_db] An unexpected error occured while adding to DB Axie sale {axie_sale}: {e}"
                         )
-                        VALUES (
-                            $1, $2, $3, $4, $5, $6, $7
-                        )
-                        """,
-                        *axie_sale.values(),
-                    )
-                    logging.info(f"[add_to_db] Added to DB Axie sale: {axie_sale}")
-                except UniqueViolationError:
-                    logging.info(
-                        f"[add_to_db] This axie sale already exists in the database: {axie_sale}"
-                    )
-
-                await self.__send_topic_message(axie_sale)
-
-            except Exception as e:
-                logging.error(
-                    f"[add_to_db] An unexpected error occured while adding to DB Axie sale {axie_sale}: {e}"
-                )
-                raise e
+                        raise e
 
         logging.info(
             f"[add_to_db] All sales were added to the database successfuly for transaction {self.__transaction_hash}."
@@ -103,6 +120,9 @@ class StoreSales:
                 }
 
                 # Send message to the Axies topic.
+                logging.info(
+                    f"[__send_topic_message] Sending message to axies topic for {axie_sale}."
+                )
                 await asyncio.wait_for(
                     self.__servicebus_sender.send_messages(
                         ServiceBusMessage(str(message))
