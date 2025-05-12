@@ -4,7 +4,7 @@ import os
 import ast
 import asyncpg
 from transaction import Transaction
-from store_sales import StoreSales
+from sales import StoreSales
 from urllib.parse import quote_plus
 from azure.keyvault.secrets.aio import SecretClient
 from azure.identity.aio import DefaultAzureCredential
