@@ -197,9 +197,7 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
     global servicebus_client, db_connection, w3
 
     # Ensure dependencies are initialized
-    logging.info("Initializing dependencies...")
     await init_dependencies()
-    logging.info("Dependencies initialized.")
 
     try:
         message_body = ast.literal_eval(azservicebus.get_body().decode("utf-8"))

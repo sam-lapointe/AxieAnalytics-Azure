@@ -69,18 +69,23 @@ class Contract:
         instance = cls(conn, w3, contract_address)
 
         # Perform asynchronous initialization
-        await instance.__get_contract_data(visited_contracts_addresses)
+        async with conn.acquire() as db_connection:
+            await instance.__get_contract_data(
+                db_connection, visited_contracts_addresses
+            )
 
         return instance
 
-    async def __get_contract_data(self, visited_contracts_addresses: set) -> None:
+    async def __get_contract_data(
+        self, db_connection, visited_contracts_addresses: set
+    ) -> None:
         """
         Retrieves the contract data from the database or call __add_contract_data if it isn't in the database.
         It then set the object's variables.
         """
         try:
             # Retrieve contract data from database.
-            contract_data = await self.__conn.fetchrow(
+            contract_data = await db_connection.fetchrow(
                 "SELECT * FROM contracts WHERE contract_address = $1",
                 self.__contract_address,
             )
@@ -89,9 +94,9 @@ class Contract:
                     f"[__get_contract_data] Contract {self.__contract_address} is not in the database."
                 )
                 # Call method to retrieve the contract data and add it to the database.
-                await self.__add_contract_data()
+                await self.__add_contract_data(db_connection)
                 # Retrieve contract data from database after it has been added.
-                contract_data = await self.__conn.fetchrow(
+                contract_data = await db_connection.fetchrow(
                     "SELECT * FROM contracts WHERE contract_address = $1",
                     self.__contract_address,
                 )
@@ -132,7 +137,7 @@ class Contract:
             logging.error(f"[__get_contract_data] An unexpected error occured: {e}")
             raise e
 
-    async def __add_contract_data(self) -> None:
+    async def __add_contract_data(self, db_connection) -> None:
         """
         Retrieves the contracts information from roninchain.com and adds it to the database.
         """
@@ -203,7 +208,7 @@ class Contract:
                 f"[__add_contract_data] Adding contract {self.__contract_address} ({contract_name}) to the database..."
             )
             try:
-                await self.__conn.execute(
+                await db_connection.execute(
                     """
                     INSERT INTO contracts(
                         contract_address,
