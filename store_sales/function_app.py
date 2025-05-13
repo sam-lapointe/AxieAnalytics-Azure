@@ -8,6 +8,7 @@ from sales import StoreSales
 from urllib.parse import quote_plus
 from azure.keyvault.secrets.aio import SecretClient
 from azure.identity.aio import DefaultAzureCredential
+from azure.servicebus.aio import ServiceBusClient
 from web3 import AsyncWeb3
 
 
@@ -115,14 +116,73 @@ class Config:
         return node_provider_url
 
 
-# Authenticate to Azure
+# Global variables
 credential = DefaultAzureCredential()
-
-# Servicebus Variables
+servicebus_client = None
+db_connection = None
+w3 = None
 servicebus_topic_sales_subscription_name = (
     Config.get_servicebus_topic_sales_subscription_name()
 )
 servicebus_topic_sales_name = Config.get_servicebus_topic_sales_name()
+servicebus_topic_axies_name = Config.get_servicebus_topic_axies_name()
+
+
+async def init_dependencies():
+    """
+    Initialize dependencies for the function app.
+    This function is called when the function app starts.
+    """
+    global servicebus_client, db_connection, w3
+
+    if not servicebus_client:
+        # Initialize Service Bus client and sender
+        servicebus_namespace = Config.get_servicebus_full_namespace()
+        servicebus_client = ServiceBusClient(
+            fully_qualified_namespace=servicebus_namespace,
+            credential=credential,
+            logging_enable=True,
+        )
+        logging.info(
+            f"Service Bus client initialized for namespace: {servicebus_namespace}"
+        )
+
+    if not db_connection:
+        # Initialize PostgreSQL connection
+        db_connection_string = await Config.get_pg_connection_string(credential)
+        db_connection = await asyncpg.create_pool(
+            dsn=db_connection_string,
+            ssl="require",
+            min_size=1,
+            max_size=10,
+        )
+        logging.info("PostgreSQL connection initialized.")
+
+    if not w3:
+        # Initialize Web3 provider
+        w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider()))
+        logging.info("Web3 provider initialized.")
+
+
+async def close_dependencies():
+    """
+    Close dependencies for the function app.
+    This function is called when the function app shuts down.
+    """
+    global servicebus_client, servicebus_topic_axies_sender, db_conn
+
+    if servicebus_client:
+        await servicebus_client.close()
+        logging.info("Service Bus client closed.")
+
+    if db_connection:
+        await db_connection.close()
+        logging.info("PostgreSQL connection closed.")
+
+    if w3:
+        await w3.provider.disconnect()
+        logging.info("Web3 provider disconnected.")
+
 
 app = func.FunctionApp()
 
@@ -134,47 +194,43 @@ app = func.FunctionApp()
     connection="ServiceBusConnection",
 )
 async def store_axie_sales(azservicebus: func.ServiceBusMessage):
-    message_body = ast.literal_eval(azservicebus.get_body().decode("utf-8"))
-    logging.info(
-        "Python ServiceBus Topic trigger processed a message: %s", message_body
-    )
+    global servicebus_client, db_connection, w3
 
-    transaction_hash = message_body["transactionHash"]
-    block_number = message_body["blockNumber"]
-    block_timestamp = message_body["blockTimestamp"]
-
-    # Initialize dependencies
-    conn = await asyncpg.connect(
-        dsn=await Config.get_pg_connection_string(credential),
-        ssl="require",
-    )  # PostgreSQL connection
+    # Ensure dependencies are initialized
+    logging.info("Initializing dependencies...")
+    await init_dependencies()
+    logging.info("Dependencies initialized.")
 
     try:
-        w3 = AsyncWeb3(
-            AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider())
-        )  # Ronin Node provider
+        message_body = ast.literal_eval(azservicebus.get_body().decode("utf-8"))
+        logging.info(
+            "Python ServiceBus Topic trigger processed a message: %s", message_body
+        )
+
+        transaction_hash = message_body["transactionHash"]
+        block_number = message_body["blockNumber"]
+        block_timestamp = message_body["blockTimestamp"]
 
         # Call Transaction class to get the sales list from a transaction hash.
-        sales_list = await Transaction(conn, w3).process_logs(transaction_hash)
-    finally:
-        # Closing session
-        await w3.provider.disconnect()
+        sales_list = await Transaction(db_connection, w3).process_logs(transaction_hash)
 
-    # Call the StoreSales class to store the sales in the database and send message to the axies topic.
-    if sales_list:
-        await StoreSales(
-            conn,
-            servicebus_namespace=Config.get_servicebus_full_namespace(),
-            azure_credentials=credential,
-            topic_axies_name=Config.get_servicebus_topic_axies_name(),
-            sales_list=sales_list,
-            block_number=block_number,
-            block_timestamp=block_timestamp,
-            transaction_hash=transaction_hash,
-        ).add_to_db()
-    else:
-        logging.info("Sales list is empty.")
+        # Call the StoreSales class to store the sales in the database and send message to the axies topic.
+        if sales_list:
+            await StoreSales(
+                db_connection,
+                servicebus_client=servicebus_client,
+                servicebus_topic_axies_name=servicebus_topic_axies_name,
+                sales_list=sales_list,
+                block_number=block_number,
+                block_timestamp=block_timestamp,
+                transaction_hash=transaction_hash,
+            ).add_to_db()
+        else:
+            logging.info("Sales list is empty.")
 
-    logging.info(
-        f"All sales of transaction {transaction_hash} have been processed successfuly."
-    )
+        logging.info(
+            f"All sales of transaction {transaction_hash} have been processed successfuly."
+        )
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+        raise e
