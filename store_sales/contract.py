@@ -105,7 +105,7 @@ class Contract:
                         f"[__get_contract_data] Contract {self.__contract_address} is not in the database after calling self.__add_contract_data()."
                     )
                     raise ContractNotFoundError(
-                        f"Contract {self.__contract_address} is not in the database after calling self.__add_contract_data()."
+                        f"[__get_contract_data] Contract {self.__contract_address} is not in the database after calling self.__add_contract_data()."
                     )
 
             # Set object variables
@@ -123,7 +123,7 @@ class Contract:
                 )
                 if not implementation_address:
                     raise ValueError(
-                        f"Implementation address is missing for proxy contract {self.__contract_address} ({self.__name})."
+                        f"[__get_contract_data] Implementation address is missing for proxy contract {self.__contract_address} ({self.__name})."
                     )
 
                 # Create an instance of the implementation contract

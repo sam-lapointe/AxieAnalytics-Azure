@@ -110,13 +110,13 @@ class StoreSales:
                     f"[__send_topic_message] Sending message to axies topic for {axie_sale}."
                 )
 
-                async with self.__servicebus_client.get_topic_sender(
-                    self.__servicebus_topic_axies_name
-                ) as sender:
-                    await asyncio.wait_for(
-                        sender.send_messages(ServiceBusMessage(str(message))),
-                        timeout=30,  # seconds
-                    )
+                """
+                This allows to send messages while handling the sender that sometimes hangs for a long period of time.
+                """
+                await asyncio.wait_for(
+                    self.__send_message_with_sender(message),
+                    timeout=30,  # seconds
+                )
                 logging.info(f"[__send_topic_message] Sent message: {message}")
                 return
             except asyncio.TimeoutError:
@@ -144,3 +144,12 @@ class StoreSales:
                 raise Exception(
                     f"Failed to send message to axies topic after {max_retries} attempts."
                 )
+
+    async def __send_message_with_sender(self, message: dict) -> None:
+        """
+        Send a message to the axies topic.
+        """
+        async with self.__servicebus_client.get_topic_sender(
+            self.__servicebus_topic_axies_name
+        ) as sender:
+            await sender.send_messages(ServiceBusMessage(str(message)))
