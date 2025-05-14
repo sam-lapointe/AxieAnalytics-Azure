@@ -3,6 +3,7 @@ import logging
 import os
 import ast
 import asyncpg
+from datetime import datetime, timezone
 from transaction import Transaction
 from sales import StoreSales
 from urllib.parse import quote_plus
@@ -243,7 +244,8 @@ def timer_function(timer: func.TimerRequest) -> None:
     """
     Time function to keep the function app alive.
     """
-    logging.info("Python timer trigger function ran at %s", timer.schedule_status.last)
+    current_time_utc = datetime.now(timezone.utc)
+    logging.info("Python timer trigger function ran at %s", current_time_utc)
     # This function is used to keep the function app alive.
     # It does not do anything else.
     # It is called every minute.
