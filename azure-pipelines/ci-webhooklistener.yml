@@ -50,8 +50,8 @@ steps:
 
 - script: |
     sonar-scanner \
-      -D sonar.projectKey=$(SONARQUBE_PROJECT_KEY) \
-      -D sonar.projectName=$(SONARQUBE_PROJECT_NAME) \
+      -D sonar.projectKey=$(SONARQUBE_PROJECT_WEBHOOK) \
+      -D sonar.projectName=$(SONARQUBE_PROJECT_WEBHOOK) \
       -D sonar.sources=$(System.DefaultWorkingDirectory)/webhook_listener \
       -D sonar.host.url=$(SONARQUBE_HOST_URL) \
       -D sonar.token=$(SONARQUBE_TOKEN)

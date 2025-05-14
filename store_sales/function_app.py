@@ -237,7 +237,7 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
 
 @app.timer_trigger(
     arg_name="timer",
-    schedule="0 */1 * * * *",  # Every 5 minutes
+    schedule="0 */1 * * * *",  # Every minute
     use_monitoring=False,
 )
 def timer_function(timer: func.TimerRequest) -> None:

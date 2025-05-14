@@ -112,7 +112,7 @@ async def AlchemyWebhook(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(status_code=500)
 
     source_ip = req.headers.get("x-forwarded-for")
-    # Verifies if the request if coming from an authorized IP address
+    # Verifies if the request is coming from an authorized IP address
     authorized_ips = Config.get_authorized_ips()
     if source_ip not in authorized_ips and len(authorized_ips) != 0:
         logging.error(f"Request coming from unauthorized IP address: {source_ip}")
