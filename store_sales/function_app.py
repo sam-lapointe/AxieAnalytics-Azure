@@ -243,9 +243,7 @@ def timer_function(timer: func.TimerRequest) -> None:
     """
     Time function to keep the function app alive.
     """
-    logging.info(
-        "Python timer trigger function ran at %s", timer.schedule_status.last
-    )
+    logging.info("Python timer trigger function ran at %s", timer.schedule_status.last)
     # This function is used to keep the function app alive.
     # It does not do anything else.
     # It is called every minute.
