@@ -22,11 +22,11 @@ steps:
   displayName: Install Dependencies
   workingDirectory: $(System.DefaultWorkingDirectory)/store_sales
 
-# - script: |
-#     source venv/bin/activate
-#     python$(PYTHON_VERSION) -m pytest tests/*.py
-#   displayName: Unit Tests
-#   workingDirectory: $(System.DefaultWorkingDirectory)/store_sales
+- script: |
+    source venv/bin/activate
+    python$(PYTHON_VERSION) -m pytest tests/*.py
+  displayName: Unit Tests
+  workingDirectory: $(System.DefaultWorkingDirectory)/store_sales
 
 - script: |
     source venv/bin/activate

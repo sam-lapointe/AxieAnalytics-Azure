@@ -24,15 +24,31 @@ def current_time(mocker):
 # Mock the database connection.
 @pytest.fixture
 def conn(mocker):
-    return mocker.AsyncMock()
+    # This will be returned by __aenter__ (used inside the context manager)
+    db_conn = mocker.AsyncMock()
+
+    # This is the async context manager returned by conn.acquire()
+    acquire_cm = mocker.MagicMock()
+    acquire_cm.__aenter__ = mocker.AsyncMock(return_value=db_conn)
+    acquire_cm.__aexit__ = mocker.AsyncMock(return_value=None)
+
+    # Mock connection with acquire() returning the context manager
+    conn_instance = mocker.AsyncMock()
+    conn_instance.acquire = mocker.MagicMock(return_value=acquire_cm)
+    return conn_instance
 
 
-# Mock the ServiceBus Sender.
+# Mock the ServiceBus client.
 @pytest.fixture
-def servicebus_sender(mocker):
-    sender = mocker.AsyncMock()
-    sender.send_messages = mocker.AsyncMock()
-    return sender
+def servicebus_client(mocker):
+    servicebus_client = mocker.patch(
+        "sales.ServiceBusClient",
+        autospec=True,
+    )
+    servicebus_instance = servicebus_client.return_value.__aenter__.return_value = (
+        servicebus_client
+    )
+    return servicebus_instance
 
 
 # Test the StoreSales.add_to_db method.
@@ -97,11 +113,14 @@ def servicebus_sender(mocker):
     ],
 )
 @pytest.mark.asyncio
-async def test_add_to_db(mocker, current_time, conn, sale_params, already_exists):
+async def test_add_to_db(
+    mocker, current_time, conn, servicebus_client, sale_params, already_exists
+):
     # Create the StoreSales instance.
     store_sales = StoreSales(
         conn=conn,
-        servicebus_sender=mocker.AsyncMock(),
+        servicebus_client=servicebus_client,
+        servicebus_topic_axies_name="test_topic",
         sales_list=sale_params["sales_list"],
         block_number=sale_params["block_number"],
         block_timestamp=sale_params["block_timestamp"],
@@ -110,26 +129,28 @@ async def test_add_to_db(mocker, current_time, conn, sale_params, already_exists
 
     num_sales = len(sale_params["sales_list"])
 
+    db_connection = await conn.acquire().__aenter__()
+
     if num_sales == 0:
         # If there are no sales, the function should return early.
         await store_sales.add_to_db()
-        conn.execute.assert_not_called()
+        db_connection.execute.assert_not_called()
         return
     else:
         # If there are sales, the function should attempt to add them to the database.
         if already_exists:
             # If the sale already exists, it should handle the UniqueViolationError.
-            conn.execute.side_effect = asyncpg.exceptions.UniqueViolationError(
+            db_connection.execute.side_effect = asyncpg.exceptions.UniqueViolationError(
                 "Unique violation"
             )
             await store_sales.add_to_db()
-            conn.execute.assert_called_once()
-            assert conn.execute.call_count == num_sales
+            db_connection.execute.assert_called_once()
+            assert db_connection.execute.call_count == num_sales
         else:
             # If the sale does not exist, it should add it to the database.
-            conn.execute.side_effect = None
+            db_connection.execute.side_effect = None
             await store_sales.add_to_db()
-            assert conn.execute.call_count == num_sales
+            assert db_connection.execute.call_count == num_sales
 
             for i in range(num_sales):
                 axie_sale = {
@@ -143,21 +164,21 @@ async def test_add_to_db(mocker, current_time, conn, sale_params, already_exists
                 }
 
                 # The indentation of the query string is important to match the expected format.
-                conn.execute.assert_any_call(
-                        """
-                        INSERT INTO axie_sales(
-                            block_number,
-                            transaction_hash,
-                            sale_date,
-                            price_eth,
-                            axie_id,
-                            created_at,
-                            modified_at
-                        )
-                        VALUES (
-                            $1, $2, $3, $4, $5, $6, $7
-                        )
-                        """,
+                db_connection.execute.assert_any_call(
+                            """
+                            INSERT INTO axie_sales(
+                                block_number,
+                                transaction_hash,
+                                sale_date,
+                                price_eth,
+                                axie_id,
+                                created_at,
+                                modified_at
+                            )
+                            VALUES (
+                                $1, $2, $3, $4, $5, $6, $7
+                            )
+                            """,
                     *axie_sale.values(),
                 )
 
@@ -198,11 +219,19 @@ async def test_add_to_db(mocker, current_time, conn, sale_params, already_exists
     ],
 )
 @pytest.mark.asyncio
-async def test_send_topic_message(servicebus_sender, axie_sale, expected_message):
+async def test_send_topic_message(
+    mocker, servicebus_client, axie_sale, expected_message
+):
+    # Mock the send_messages_with_sender method.
+    mocker.patch(
+        "sales.StoreSales._StoreSales__send_message_with_sender", return_value=None
+    )
+
     # Create the StoreSales instance.
     store_sales = StoreSales(
         conn=None,
-        servicebus_sender=servicebus_sender,
+        servicebus_client=servicebus_client,
+        servicebus_topic_axies_name="test_topic",
         sales_list=[axie_sale],
         block_number=axie_sale["block_number"],
         block_timestamp=axie_sale["sale_date"],
@@ -212,10 +241,50 @@ async def test_send_topic_message(servicebus_sender, axie_sale, expected_message
     # Call the method to test.
     await store_sales._StoreSales__send_topic_message(axie_sale)
 
-    # Check that the send_messages method was called with the expected message.
+    # Check that the send_messages_with_sender method was called with the expected message.
+    store_sales._StoreSales__send_message_with_sender.assert_called_once_with(
+        expected_message
+    )
+
+
+@pytest.mark.parametrize(
+    "expected_message",
+    [
+        {
+            "transaction_hash": "0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+            "axie_id": 11649154,
+        },
+        {
+            "transaction_hash": "0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+            "axie_id": 123456789,
+        },
+    ],
+)
+@pytest.mark.asyncio
+async def test_send_message_with_sender(mocker, servicebus_client, expected_message):
+    # Mock the servicebus sender.
+    servicebus_sender = mocker.AsyncMock()
+    servicebus_client.get_topic_sender.return_value.__aenter__.return_value = (
+        servicebus_sender
+    )
+    servicebus_sender.return_value.__aenter__.return_value = servicebus_sender
+    servicebus_sender.return_value.__aexit__.return_value = None
+    servicebus_sender.send_messages = mocker.AsyncMock()
+
+    store_sales = StoreSales(
+        conn=None,
+        servicebus_client=servicebus_client,
+        servicebus_topic_axies_name="test_topic",
+        sales_list=[],
+        block_number=44153279,
+        block_timestamp=1712773221,
+        transaction_hash="0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+    )
+
+    await store_sales._StoreSales__send_message_with_sender(expected_message)
+
     servicebus_sender.send_messages.assert_called_once()
     sent_message = servicebus_sender.send_messages.call_args[0][0]
-
     sent_message_body = json.loads(
         b"".join(sent_message.body).decode("utf-8").replace("'", '"')
     )

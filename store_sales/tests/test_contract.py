@@ -22,7 +22,18 @@ from contract import (
 # Mock the database connection.
 @pytest.fixture
 def conn(mocker):
-    return mocker.AsyncMock()
+    # This will be returned by __aenter__ (used inside the context manager)
+    db_conn = mocker.AsyncMock()
+
+    # This is the async context manager returned by conn.acquire()
+    acquire_cm = mocker.MagicMock()
+    acquire_cm.__aenter__ = mocker.AsyncMock(return_value=db_conn)
+    acquire_cm.__aexit__ = mocker.AsyncMock(return_value=None)
+
+    # Mock connection with acquire() returning the context manager
+    conn_instance = mocker.AsyncMock()
+    conn_instance.acquire = mocker.MagicMock(return_value=acquire_cm)
+    return conn_instance
 
 
 # Mock the Web3 instance.
@@ -96,7 +107,8 @@ async def test_create(mocker, conn, w3, contract_address, visited_addresses):
 @pytest.mark.asyncio
 async def test_get_contract_data_exists_in_db(mocker, conn, w3):
     # Mock the database fetchrow method to return the proxy and implementation contract data.
-    conn.fetchrow.side_effect = [
+    db_connection = await conn.acquire().__aenter__()
+    db_connection.fetchrow.side_effect = [
         {
             "contract_name": "ProxyContract",
             "is_proxy": True,
@@ -139,7 +151,8 @@ async def test_get_contract_data_exists_in_db(mocker, conn, w3):
 @pytest.mark.asyncio
 async def test_get_contract_data_not_in_db(mocker, conn, w3):
     # Mock database fetchrow to return None initially and then the contract data.
-    conn.fetchrow.side_effect = [
+    db_connection = await conn.acquire().__aenter__()
+    db_connection.fetchrow.side_effect = [
         None,
         {
             "contract_name": "TestContract",
@@ -168,14 +181,15 @@ async def test_get_contract_data_not_in_db(mocker, conn, w3):
     )
 
     contract._Contract__add_contract_data.assert_called_once()
-    assert conn.fetchrow.call_count == 2
+    assert db_connection.fetchrow.call_count == 2
 
 
 # Test the Contract.__get_contract_data method when the contract is not found in the database after it was added to the database.
 @pytest.mark.asyncio
 async def test_get_contract_data_missing_after_add(mocker, conn, w3):
     # Mock database fetchrow to return None two times.
-    conn.fetchrow.side_effect = [None, None]
+    db_connection = await conn.acquire().__aenter__()
+    db_connection.fetchrow.side_effect = [None, None]
 
     # Mock __add_contract_data.
     mocker.patch.object(
@@ -189,7 +203,7 @@ async def test_get_contract_data_missing_after_add(mocker, conn, w3):
         )
         contract._Contract__add_contract_data.assert_called_once()
 
-    assert conn.fetchrow.call_count == 2
+    assert db_connection.fetchrow.call_count == 2
 
 
 # Test the Contract.__add_contract_data method.
@@ -242,7 +256,7 @@ async def test_add_contract_data(mocker, conn, w3, is_new_contract):
     contract = Contract(conn, w3, "0x1234567890abcdef1234567890abcdef12345678")
 
     if is_new_contract:
-        await contract._Contract__add_contract_data()
+        await contract._Contract__add_contract_data(conn)
 
         contract_data = {
             "contract_address": contract._Contract__contract_address,
@@ -280,7 +294,7 @@ async def test_add_contract_data(mocker, conn, w3, is_new_contract):
 
         # No errors should be raised because this error is handled in the __add_contract_data method.
         contract = Contract(conn, w3, "0x1234567890abcdef1234567890abcdef12345678")
-        await contract._Contract__add_contract_data()
+        await contract._Contract__add_contract_data(conn)
 
         conn.execute.assert_called_once()
 

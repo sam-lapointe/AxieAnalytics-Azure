@@ -56,11 +56,10 @@ def key_vault_secret_client(mocker):
 @pytest.fixture
 def conn(mocker):
     connection = mocker.patch(
-        "function_app.asyncpg.connect",
-        autospec=True,
+        "function_app.asyncpg.create_pool",
+        new_callable=mocker.AsyncMock,
     )
-    connection_instance = connection.return_value.__aenter__.return_value = connection
-    return connection_instance
+    return connection
 
 
 # Mock the Web3 provider.
@@ -142,7 +141,6 @@ async def test_function_app(
 
     # Assertions
     conn.assert_called_once()
-    w3.provider.disconnect.assert_called_once()
     servicebus_client.assert_called_once()
     mock_add_to_db_instance.add_to_db.assert_called_once()
     mock_transaction_instance.process_logs.assert_called_once()
