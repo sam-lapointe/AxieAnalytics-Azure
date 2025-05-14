@@ -232,3 +232,20 @@ async def store_axie_sales(azservicebus: func.ServiceBusMessage):
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
         raise e
+
+
+@app.timer_trigger(
+    arg_name="timer",
+    schedule="0 */1 * * * *",  # Every 5 minutes
+    use_monitoring=False,
+)
+def timer_function(timer: func.TimerRequest) -> None:
+    """
+    Time function to keep the function app alive.
+    """
+    logging.info(
+        "Python timer trigger function ran at %s", timer.schedule_status.last
+    )
+    # This function is used to keep the function app alive.
+    # It does not do anything else.
+    # It is called every minute.
