@@ -135,7 +135,6 @@ async def test_add_to_db(
         # If there are no sales, the function should return early.
         await store_sales.add_to_db()
         db_connection.execute.assert_not_called()
-        return
     else:
         # If there are sales, the function should attempt to add them to the database.
         if already_exists:

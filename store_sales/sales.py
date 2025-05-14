@@ -89,7 +89,6 @@ class StoreSales:
         logging.info(
             f"[add_to_db] All sales were added to the database successfuly for transaction {self.__transaction_hash}."
         )
-        return
 
     async def __send_topic_message(self, axie_sale) -> None:
         """
