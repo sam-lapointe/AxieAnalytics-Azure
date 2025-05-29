@@ -24,7 +24,7 @@ class Axie:
         self.__axie_id = axie_id
         self.__sale_date = sale_date
 
-    async def get_axie_data(self) -> dict:
+    async def __get_axie_data(self) -> dict:
         api_url = "https://api-gateway.skymavis.com/graphql/axie-marketplace"
         headers = {
             "accept": "application/json, multipart/mixed",
@@ -36,3 +36,17 @@ class Axie:
             "operationName":"MyQuery",
             "variables":{{}}
         }}"""
+
+        try:
+            async with aiohttp.ClientSession as http_client:
+                async with http_client.post(api_url, headers=headers, data=body) as axie_data_response:
+                    axie_data = await axie_data_response.json()
+                    logging.info(axie_data)
+        except Exception as e:
+            logging.error(
+                f"[__get_axie_data] Error fetching axie data: {e}"
+            )
+            raise e
+        
+    async def store_axie_data(self) -> None:
+        pass

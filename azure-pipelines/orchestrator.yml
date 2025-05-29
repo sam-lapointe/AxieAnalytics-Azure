@@ -173,6 +173,8 @@ stages:
         env:
           store_sales_username: $(TF_VAR_POSTGRESQL_SALES_USERNAME)
           store_sales_password: $(TF_VAR_POSTGRESQL_SALES_PASSWORD)
+          store_axies_username: $(TF_VAR_POSTGRESQL_AXIES_USERNAME)
+          store_axies_password: $(TF_VAR_POSTGRESQL_AXIES_PASSWORD)
 
     - job: DeployDevCode
       dependsOn:
