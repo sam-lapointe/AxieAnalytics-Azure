@@ -8,6 +8,7 @@ trigger:
       - webhook_listener/**
       - database_config/**
       - store_sales/**
+      - store_axies/**
     exclude:
       - '**/README.md'
       - '**/docs/**'
