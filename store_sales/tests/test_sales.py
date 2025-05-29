@@ -197,6 +197,7 @@ async def test_add_to_db(
             },
             {
                 "transaction_hash": "0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+                "sale_date": 1712773221,
                 "axie_id": 11649154,
             },
         ),
@@ -212,6 +213,7 @@ async def test_add_to_db(
             },
             {
                 "transaction_hash": "0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+                "sale_date": 1712773221,
                 "axie_id": 123456789,
             },
         ),
@@ -251,10 +253,12 @@ async def test_send_topic_message(
     [
         {
             "transaction_hash": "0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+            "sale_date": 1712773221,
             "axie_id": 11649154,
         },
         {
             "transaction_hash": "0xb05e64ab435371a5c4b6e23f416a37fec881419228db0e35d9b3549204f549eb",
+            "sale_date": 1712773221,
             "axie_id": 123456789,
         },
     ],

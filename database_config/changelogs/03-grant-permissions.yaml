@@ -14,3 +14,19 @@ databaseChangeLog:
                 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE contracts TO ${store_sales_username};
               END
               $$;
+
+  - changeSet:
+      id: grant-permissions-store-axies-user
+      author: "Samuel Lapointe"
+      changes:
+        - sql:
+            dbms: 'postgresql'
+            splitStatements: false
+            sql: |
+              DO
+              $$
+              BEGIN
+                GRANT INSERT ON TABLE axies TO ${store_axies_username};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE axie_parts TO ${store_axies_username};
+              END
+              $$;

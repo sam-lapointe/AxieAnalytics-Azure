@@ -33,6 +33,9 @@ locals {
   POSTGRESQL_ADMIN_PASSWORD_NAME = "postgres-admin-password"
   POSTGRESQL_SALES_USERNAME_NAME = "postgres-sales-username"
   POSTGRESQL_SALES_PASSWORD_NAME = "postgres-sales-password"
+  POSTGRESQL_AXIES_USERNAME_NAME = "postgres-axies-username"
+  POSTGRESQL_AXIES_PASSWORD_NAME = "postgres-axies-password"
+  AXIE_API_KEY_NAME              = "axie-api-key"
 
   # Servicebus
   SERVICEBUS_TOPIC_SALES_NAME   = "sales"
@@ -105,6 +108,9 @@ module "key_vault_internal" {
   secrets = {
     (local.POSTGRESQL_SALES_USERNAME_NAME) = var.POSTGRESQL_SALES_USERNAME
     (local.POSTGRESQL_SALES_PASSWORD_NAME) = var.POSTGRESQL_SALES_PASSWORD
+    (local.POSTGRESQL_AXIES_USERNAME_NAME) = var.POSTGRESQL_AXIES_USERNAME
+    (local.POSTGRESQL_AXIES_PASSWORD_NAME) = var.POSTGRESQL_AXIES_PASSWORD
+    (local.AXIE_API_KEY_NAME)              = var.AXIE_API_KEY
   }
 
   depends_on = [azurerm_user_assigned_identity.umi_functionapp_internal]
@@ -218,6 +224,37 @@ module "store_sales_function_app" {
     azurerm_user_assigned_identity.umi_functionapp_internal,
     module.service_bus
   ]
+}
+
+module "store_axies_function_app" {
+  source = "./modules/function-app"
+
+  service_plan_name   = "${var.environment}-axie-store-axies-sp"
+  function_app_name   = "${var.environment}-axie-store-axies-func"
+  app_insights_name   = "${var.environment}-axie-store-axies-ai"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  tags                = local.tags
+
+  log_workspace_id           = azurerm_log_analytics_workspace.logs_workspace.id
+  storage_account_name       = module.function_app_storage_account.storage_account_name
+  storage_account_access_key = module.function_app_storage_account.primary_access_key
+  umi_key_vault              = azurerm_user_assigned_identity.umi_functionapp_internal.id
+  user_managed_identities    = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
+  python_version             = "3.11"
+  app_settings = {
+    "AZURE_CLIENT_ID"                               = azurerm_user_assigned_identity.umi_functionapp_internal.client_id
+    "KEY_VAULT_NAME"                                = module.key_vault_internal.key_vault_name
+    "ServiceBusConnection__fullyQualifiedNamespace" = module.service_bus.endpoint
+    "SERVICEBUS_TOPIC_AXIES_NAME"                   = local.SERVICEBUS_TOPIC_AXIES_NAME
+    "SERVICEBUS_AXIES_SUBSCRIPTION_NAME"            = local.STORE_AXIES_SUBSCRIPTION_NAME
+    "KV_PG_USERNAME"                                = local.POSTGRESQL_AXIES_USERNAME_NAME
+    "KV_PG_PASSWORD"                                = local.POSTGRESQL_AXIES_PASSWORD_NAME
+    "PG_HOST"                                       = "${module.postgresql_server.hostname}.postgres.database.azure.com"
+    "PG_PORT"                                       = 5432
+    "PG_DATABASE"                                   = local.AXIEMARKET_DATABASE
+    "AXIE_API_KEY_NAME"                             = local.AXIE_API_KEY_NAME
+  }
 }
 
 module "service_bus" {

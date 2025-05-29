@@ -101,6 +101,7 @@ class StoreSales:
             try:
                 message = {
                     "transaction_hash": self.__transaction_hash,
+                    "sale_date": axie_sale["sale_date"],
                     "axie_id": axie_sale["axie_id"],
                 }
 

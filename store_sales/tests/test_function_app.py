@@ -7,7 +7,8 @@ from azure.identity.aio import DefaultAzureCredential
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 try:
-    from function_app import store_axie_sales, Config
+    from function_app import store_axie_sales
+    from config import Config
 except ValueError:
     os.environ["KEY_VAULT_NAME"] = "mock_kv"
     os.environ["ServiceBusConnection__fullyQualifiedNamespace"] = (
@@ -22,7 +23,8 @@ except ValueError:
     os.environ["PG_PORT"] = "5432"
     os.environ["PG_DATABASE"] = "axie_market"
     os.environ["NODE_PROVIDER"] = "https://ronin-mainnet.g.alchemy.com/v2/mock_key"
-    from function_app import store_axie_sales, Config
+    from function_app import store_axie_sales
+    from config import Config
 
 
 # Mock the DefaultAzureCredential.
@@ -38,7 +40,7 @@ def default_azure_credential(mocker):
 @pytest.fixture
 def key_vault_secret_client(mocker):
     secret_client = mocker.patch(
-        "function_app.SecretClient",
+        "config.SecretClient",
         autospec=True,
     )
     secret_client_instance = secret_client.return_value.__aenter__.return_value = (

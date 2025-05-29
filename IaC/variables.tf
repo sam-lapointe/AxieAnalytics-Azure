@@ -57,3 +57,18 @@ variable "POSTGRESQL_SALES_PASSWORD" {
   type      = string
   sensitive = true
 }
+
+variable "POSTGRESQL_AXIES_USERNAME" {
+  type      = string
+  sensitive = true
+}
+
+variable "POSTGRESQL_AXIES_PASSWORD" {
+  type      = string
+  sensitive = true
+}
+
+variable "AXIE_API_KEY" {
+  type      = string
+  sensitive = true
+}

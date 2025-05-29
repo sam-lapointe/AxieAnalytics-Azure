@@ -15,3 +15,20 @@ databaseChangeLog:
                 END IF;
               END
               $$;
+
+  - changeSet:
+      id: create-store-axies-user
+      author: "Samuel Lapointe"
+      changes:
+        - sql:
+            dbms: 'postgresql'
+            splitStatements: false
+            sql: |
+              DO
+              $$
+              BEGIN
+                IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${store_axies_username}') THEN
+                  CREATE ROLE ${store_axies_username} WITH LOGIN PASSWORD '${store_axies_password}';
+                END IF;
+              END
+              $$;
