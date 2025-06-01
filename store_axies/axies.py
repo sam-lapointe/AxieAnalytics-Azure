@@ -5,6 +5,7 @@ import json
 import time
 from asyncpg.exceptions import UniqueViolationError
 from datetime import datetime, timezone
+from parts import Part
 
 
 axies_token = "0x32950db2a7164ae833121501c797d79e7b79d74c"
@@ -206,7 +207,7 @@ class Axie:
             )
             raise e
         
-    async def __estimate_axie_level(self, axie_axp_info, earned_axp_stat, axie_activities) -> dict:
+    async def __estimate_axie_level(self, axie_axp_info: dict, earned_axp_stat: dict, axie_activities: list) -> dict:
         """
         Estimate the axie level at the time of sale.
 
@@ -268,7 +269,7 @@ class Axie:
 
         return new_axp_info
 
-    async def __verify_breed_count(self, axie_breed_count, axie_activities) -> int:
+    async def __verify_breed_count(self, axie_breed_count: int, axie_activities: list) -> int:
         """
         Verify the breed count at the time of sale.
 
@@ -290,7 +291,7 @@ class Axie:
 
         return new_breed_count
 
-    async def __verify_parts_stage(self, axie_parts, axie_activities) -> list:
+    async def __verify_parts_stage(self, axie_parts: dict, axie_activities: list) -> dict:
         """
         Verify the parts stages at the time of sale.
 
@@ -299,12 +300,58 @@ class Axie:
         logging.info(
             f"[__verify_parts_stage] Verifying {self.__axie_id} parts stages at time of sale..."
         )
-        # TODO: Verify if the axie was evolved 4 days before time of sale
-        
-        # TODO: Verify if the axie was evolved between now and the time of sale
-        pass
-        
-    async def __store_axie_data(self, axie_data) -> None:
+
+        new_axie_parts = axie_parts
+        modified_parts = set()
+        evolved_parts_before_sale = set()
+
+        for activity in axie_activities:
+            if activity["activityType"] == "EvolveAxie" or activity["activityType"] == "DevolveAxie":
+                activityType = activity["activityType"]
+                partType = activity["activityDetails"]["partType"]
+                partStage = activity["activityDetails"]["partStage"]
+                # Verify if the axie was evolved or devolved between now and time of sale.
+                if activity["createdAt"] > self.__sale_date:
+                    if activityType == "EvolveAxie":
+                        new_axie_parts[partType]["stage"] = partStage - 1
+                        modified_parts.add(partType)
+                    elif activityType == "DevolveAxie":
+                        new_axie_parts[partType]["stage"] = partStage + 1
+                        modified_parts.add(partType)
+                # Verify if the axie was evolved within 4 days before the sale.
+                elif activity["createdAt"] < self.__sale_date and activity["createdAt"] >= (self.__sale_date - 345600):
+                    if activityType == "EvolveAxie" and partType not in evolved_parts_before_sale:
+                        new_axie_parts[partType]["stage"] = partStage
+                        modified_parts.add(partType)
+                        evolved_parts_before_sale.add(partType)
+                    elif activityType == "DevolveAxie" and partType not in evolved_parts_before_sale:
+                        """
+                        This handle the case where the evolution is accelerated and then devolved.
+                        """
+                        evolved_parts_before_sale.add(partType)
+
+        # Get the ID for the modified parts
+        for modified_part in modified_parts:
+            # Get the current part
+            part = Part.get_part(self.__conn, new_axie_parts[modified_part]["id"])
+            if part["stage"] < new_axie_parts[modified_part]["stage"]:
+                """
+                This means the part stage is currently 1, but was 2 at time of sell.
+                Either the part was devolved since the sale or was evolving at time of sell.
+                Set the part id to the normal stage 2.
+                """
+                new_axie_parts[modified_part]["id"] = f"{part["id"]-2}"
+            elif part["stage"] > new_axie_parts[modified_part]["stage"]:
+                """
+                This means the part stage is currently 2, but was 1 at time of sell.
+                The part was evolved since the sale.
+                Set the part id to stage 1.
+                """
+                new_axie_parts[modified_part]["id"] = part["previous_stage_part_id"]
+
+        return new_axie_parts
+
+    async def __store_axie_data(self, axie_data: dict) -> None:
         pass
         
     async def process_axie_data(self) -> None:
@@ -312,12 +359,22 @@ class Axie:
         axie_data = await self.__get_axie_data()
         axie_activities = await self.__get_axie_activities()
 
+        # Change the parts data structure from list of dict to dict.
+        parts = {
+            part["type"]: {"id": part["id"], "stage": part["stage"]}
+            for part in axie_data["axie"]["parts"]
+        }
+        axie_data["axie"]["parts"] = parts
+
         """ 
         The parts stages must be validated even if the sale was processed immediately.
         Since Axie parts take multiple days to evolve and only update the stage once completed.
-        So even if the part is "evolving", we count it as evolved.
+        So even if the part is "evolving", we count it as evolved because the cost was paid by the seller.
+        The part ID will be set to its normal part. It does not take into account parts evolution such as nightmare.
         """
         axie_parts = await self.__verify_parts_stage(axie_data["axie"]["parts"], axie_activities["axieActivities"])
+
+        return axie_parts
 
         # Verify if the sale was not made within the last 2 minutes
         current_epoch = int(time.time())
@@ -330,7 +387,6 @@ class Axie:
                 axie_data["axie"]["axpInfo"], axie_data["axie"]["earnedAxpStat"], axie_activities["axieActivities"]
             )
             axie_breed_count = await self.__verify_breed_count(axie_data["axie"]["breedCount"], axie_activities["axieActivities"])
-            return axie_breed_count
 
             # Update the axie_data
             axie_data["axie"]["axpInfo"] = axie_axp_info

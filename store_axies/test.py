@@ -67,8 +67,10 @@ axie_levels = {
 
 async def main():
     # 1653 Good test
-    breed_count = await Axie("yS3sQSVozLtALtkCgpGYUu0aBEnxE519", 12128312, 1746226281).process_axie_data()
-    print(breed_count)
+    axie_data, axie_activities = await Axie("yS3sQSVozLtALtkCgpGYUu0aBEnxE519", 3517, 1746226281).process_axie_data()
+    print(axie_data)
+    print(axie_activities)
+
 
 
 if __name__ == "__main__":
