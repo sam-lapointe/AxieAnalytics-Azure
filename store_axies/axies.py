@@ -361,7 +361,7 @@ class Axie:
         for modified_part in modified_parts:
             try:
                 # Get the current part
-                part = Part.get_part(self.__conn, new_axie_parts[modified_part]["id"])
+                part = Part.get_part(self.__connection, new_axie_parts[modified_part]["id"])
                 if not part:
                     """
                     This means the part was not found in the database.
@@ -370,9 +370,9 @@ class Axie:
                     logging.warning(
                         f"[__verify_parts_stage] Part {new_axie_parts[modified_part]['id']} not found in the database, trying to get the latest version..."
                     )
-                    await Part.search_and_update_parts_latest_version(self.__conn)
+                    await Part.search_and_update_parts_latest_version(self.__connection)
                     part = Part.get_part(
-                        self.__conn, new_axie_parts[modified_part]["id"]
+                        self.__connection, new_axie_parts[modified_part]["id"]
                     )
                     if not part:
                         logging.error(
@@ -407,8 +407,6 @@ class Axie:
 
     async def __store_axie_data(self, axie_data: dict) -> None:
         logging.info(f"[__store_axie_data] Storing axie {self.__axie_id} data...")
-
-        logging.info(axie_data)
 
         current_time_utc = datetime.now(timezone.utc)
 
