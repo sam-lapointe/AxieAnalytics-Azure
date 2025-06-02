@@ -1,12 +1,13 @@
 import logging
 import asyncpg
 import aiohttp
-from datetime import datetime, timedelta
+import json
+from datetime import datetime, timedelta, timezone
 
 
 class Part:
     @staticmethod
-    async def get_part(conn: asyncpg.Connection, part_id: str) -> dict:
+    async def get_part(connection: asyncpg.Connection, part_id: str) -> dict:
         logging.info(f"[get_part] Fetching data for part {part_id} from database...")
         try:
             async with conn.acquire() as conn:
@@ -14,29 +15,40 @@ class Part:
             return part
         except Exception as e:
             logging.error(
-                f"[get_part] An unexpected error occured while fetching part {part_id}: {e}"
+                f"[get_part] An error occured while fetching part {part_id}: {e}"
             )
             raise e
         
     @staticmethod
-    async def get_current_version(conn: asyncpg.Connection) -> datetime.date:
-        # Create new table for the current version of parts
-        pass
+    async def get_current_version(connection: asyncpg.Connection) -> str | None:
+        async with connection.acquire() as conn:
+            logging.info("[get_current_version] Fetching the current version of parts from database...")
+            try:
+                result = await conn.fetchrow("SELECT version FROM axie_parts_version LIMIT 1")
+                if result:
+                    return result['version']
+                else:
+                    logging.warning("[get_current_version] No version found in the database.")
+                    return None
+            except Exception as e:
+                logging.error(f"[get_current_version] An error occurred while fetching the current version: {e}")
+                raise e
 
     @staticmethod
-    async def search_parts_update(conn: asyncpg.Connection, days: int, current_version: datetime) -> tuple[str, datetime.date, dict]:
+    async def search_parts_update(connection: asyncpg.Connection, days: int, current_version = None) -> tuple[str | None, str | None, dict]:
         """
         This method should be used on demand to verify if there was an update to the parts from Axie Infinity today.
         """
         logging.info(f"[search_parts_update] Verifying if there was an update to Axies parts in the last {days} days...")
-        current_date = datetime.now().date()
+        today_date = datetime.now().date()
+        current_version_date = datetime.strptime(current_version, "%Y%m%d").date() if current_version else datetime.min.date()
 
         try:
             for i in range(0, days + 1):
-                date = current_date - timedelta(days=i)
+                date = today_date - timedelta(days=i)
                 date_str = date.strftime("%Y%m%d")
 
-                if current_version > date:
+                if current_version_date > date:
                     logging.info(f"[search_parts_update] Stopping the search, current version is up to date.")
                     return None, None, {}
 
@@ -46,20 +58,114 @@ class Part:
                         if axie_parts_response.status != 404:
                             logging.info("[search_parts_update] There is a new update to parts, returning it...")
                             axie_parts = await axie_parts_response.json()
-                            return parts_url, date, axie_parts
+                            return parts_url, date_str, json.loads(axie_parts)
 
             logging.info(f"[search_parts_update] No new parts update was found in the last {days} days.")
             return None, None, {}
         except Exception as e:
             logging.error(
-                f"[search_parts_update] An unexpected error occured while fetching the list of parts: {e}"
+                f"[search_parts_update] An error occured while fetching the list of parts: {e}"
             )
             raise e
 
     @staticmethod
-    async def update_parts(conn: asyncpg.Connection, parts: dict, url: str) -> None:
+    async def update_parts(connection: asyncpg.Connection, date: str, parts: dict) -> None:
         logging.info("[update_parts] Updating the axie_parts table...")
 
         # Update the current version of parts
+        for part in parts.items():
+            part_id = part["part_id"]
+            part_class = part["class"]
+            part_name = part["name"]
+            part_stage = part["part_stage"]
+            previous_stage_part_id = None if part["stage_part_ids"][0] == id else part["stage_part_ids"][0]
+            part_type = part["type"]
+            special_genes = part["special_genes"]
+            current_time_utc = datetime.now(timezone.utc)
+            try:
+                async with connection.acquire() as conn:
+                    await conn.execute(
+                        """
+                        INSERT INTO axie_parts (
+                            id, class, name, stage, previous_stage_part_id, type, special_genes, created_at, modified_at
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                        ON CONFLICT (part_id) DO UPDATE SET
+                            class = EXCLUDED.class,
+                            name = EXCLUDED.name,
+                            stage = EXCLUDED.stage,
+                            previous_stage_part_id = EXCLUDED.previous_stage_part_id,
+                            type = EXCLUDED.type,
+                            special_genes = EXCLUDED.special_genes,
+                            modified_at = EXCLUDED.modified_at
+                        """,
+                        part_id,
+                        part_class,
+                        part_name,
+                        part_stage,
+                        previous_stage_part_id,
+                        part_type,
+                        special_genes,
+                        current_time_utc,
+                        current_time_utc
+                    )
+                logging.info(f"[update_parts] Updated or inserted part {part_id} successfully.")
+            except Exception as e:
+                logging.error(f"[update_parts] An error occurred while updating/inserting part {part_id}: {e}")
+                raise e
+            
+        # Update the version of parts
+        try:
+            current_time_utc = datetime.now(timezone.utc)
+            logging.info(f"[update_parts] Updating the version of parts to {date}...")
 
-        # Compare the new version of parts with the parts in database and update.
+            # Insert or update the version in the versions table
+            async with connection.acquire() as conn:
+                await conn.execute(
+                    """
+                    INSERT INTO versions (id, version, created_at, modified_at)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (version) DO UPDATE SET
+                        version = EXCLUDED.version,
+                        modified_at = EXCLUDED.modified_at
+                    """,
+                    "axie_parts_version",
+                    date,
+                    current_time_utc,
+                    current_time_utc
+                )
+            logging.info(f"[update_parts] Updated the version of parts to {date}.")
+        except Exception as e:
+            logging.error(f"[update_parts] An error occurred while updating the version of parts: {e}")
+            raise e
+        
+        logging.info("[update_parts] All parts updated successfully.")
+        return None
+
+    @staticmethod
+    async def search_and_update_parts_latest_version(connection: asyncpg.Connection) -> None:
+        """
+        This method should be used to get the latest version of parts from Axie Infinity and update the database.
+        """
+        logging.info("[get_and_update_parts_latest_version] Fetching the latest version of parts...")
+        current_version = await Part.get_current_version(connection)
+        
+        if not current_version:
+            logging.info("[get_and_update_parts_latest_version] No current version of parts found in the database, fetching the latest version...")
+            latest_parts_url, latest_version_date, axie_parts = await Part.search_parts_update(connection, days=30)
+            if latest_parts_url:
+                logging.info(f"[get_and_update_parts_latest_version] Latest parts URL: {latest_parts_url}, Date: {latest_version_date}")
+                await Part.update_parts(connection, latest_version_date, axie_parts)
+            else:
+                logging.info("[get_and_update_parts_latest_version] No new parts update found.")
+                raise ValueError("No current version of parts found in the database and no new parts update found.")
+        else:
+            logging.info(f"[get_and_update_parts_latest_version] Current version of parts is {current_version}. Looking for updates...")
+            latest_parts_url, latest_version_date, axie_parts = await Part.search_parts_update(connection, days=30, current_version=current_version)
+            if latest_parts_url:
+                logging.info(f"[get_and_update_parts_latest_version] Latest parts URL: {latest_parts_url}, Date: {latest_version_date}")
+                await Part.update_parts(connection, latest_version_date, axie_parts)
+            else:
+                logging.info("[get_and_update_parts_latest_version] No new parts update found.")
+
+        logging.info("[get_and_update_parts_latest_version] Parts update process completed.")
+        return None

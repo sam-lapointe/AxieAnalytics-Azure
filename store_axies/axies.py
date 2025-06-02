@@ -79,15 +79,15 @@ class Axie:
 
     def __init__(
         self,
-        # conn: asyncpg.Connection,
+        connection: asyncpg.Connection,
         api_key: str,
-        # transaction_hash: str,
+        transaction_hash: str,
         axie_id: int,
         sale_date: int,
     ):
-        # self.__conn = conn
+        self.__connection = connection
         self.__api_key = api_key
-        # self.__transaction_hash = transaction_hash
+        self.__transaction_hash = transaction_hash
         self.__axie_id = axie_id
         self.__sale_date = sale_date
 
@@ -332,27 +332,113 @@ class Axie:
 
         # Get the ID for the modified parts
         for modified_part in modified_parts:
-            # Get the current part
-            part = Part.get_part(self.__conn, new_axie_parts[modified_part]["id"])
-            if part["stage"] < new_axie_parts[modified_part]["stage"]:
-                """
-                This means the part stage is currently 1, but was 2 at time of sell.
-                Either the part was devolved since the sale or was evolving at time of sell.
-                Set the part id to the normal stage 2.
-                """
-                new_axie_parts[modified_part]["id"] = f"{part["id"]-2}"
-            elif part["stage"] > new_axie_parts[modified_part]["stage"]:
-                """
-                This means the part stage is currently 2, but was 1 at time of sell.
-                The part was evolved since the sale.
-                Set the part id to stage 1.
-                """
-                new_axie_parts[modified_part]["id"] = part["previous_stage_part_id"]
+            try:
+                # Get the current part
+                part = Part.get_part(self.__conn, new_axie_parts[modified_part]["id"])
+                if not part:
+                    """
+                    This means the part was not found in the database.
+                    Will try to get the latest version of the parts and update the database.
+                    """
+                    logging.warning(
+                        f"[__verify_parts_stage] Part {new_axie_parts[modified_part]['id']} not found in the database, trying to get the latest version..."
+                    )
+                    await Part.search_and_update_parts_latest_version(self.__conn)
+                    part = Part.get_part(self.__conn, new_axie_parts[modified_part]["id"])
+                    if not part:
+                        logging.error(
+                            f"[__verify_parts_stage] Part {new_axie_parts[modified_part]['id']} not found in the database after updating the parts."
+                        )
+                        raise Exception(
+                            f"Part {new_axie_parts[modified_part]['id']} not found in the database after updating the parts."
+                        )
+
+                # Update the part ID based on the stage at the time of sale.
+                if part["stage"] < new_axie_parts[modified_part]["stage"]:
+                    """
+                    This means the part stage is currently 1, but was 2 at time of sell.
+                    Either the part was devolved since the sale or was evolving at time of sell.
+                    Set the part id to the normal stage 2.
+                    """
+                    new_axie_parts[modified_part]["id"] = f"{part["id"]-2}"
+                elif part["stage"] > new_axie_parts[modified_part]["stage"]:
+                    """
+                    This means the part stage is currently 2, but was 1 at time of sell.
+                    The part was evolved since the sale.
+                    Set the part id to stage 1.
+                    """
+                    new_axie_parts[modified_part]["id"] = part["previous_stage_part_id"]
+            except Exception as e:
+                logging.error(
+                    f"[__verify_parts_stage] An error occured while retrieving {new_axie_parts[modified_part]["id"]} from database: {e}"
+                )
+                raise e
 
         return new_axie_parts
 
     async def __store_axie_data(self, axie_data: dict) -> None:
-        pass
+        logging.info(f"[__store_axie_data] Storing axie {self.__axie_id} data...")
+        
+        current_time_utc = datetime.now(timezone.utc)
+
+        try:
+            async with asyncpg.acquire(self.__connection) as conn:
+                await conn.execute(
+                    """
+                    INSERT INTO axies (
+                        transaction_hash,
+                        axie_id,
+                        level,
+                        xp,
+                        breed_count,
+                        image_url,
+                        class,
+                        eyes_id,
+                        ears_id,
+                        mouth_id,
+                        horn_id,
+                        back_id,
+                        tail_id,
+                        body_shape_id,
+                        collection_title,
+                        created_at,
+                        modified_at
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                    ON CONFLICT (id) DO UPDATE SET
+                        data = EXCLUDED.data,
+                        modified_at = EXCLUDED.modified_at
+                    """,
+                    self.__transaction_hash,
+                    self.__axie_id,
+                    axie_data["axie"]["axpInfo"]["level"],
+                    axie_data["axie"]["axpInfo"]["xp"],
+                    axie_data["axie"]["breedCount"],
+                    axie_data["axie"]["image"],
+                    axie_data["axie"]["class"],
+                    axie_data["axie"]["parts"]["eyes"]["id"],
+                    axie_data["axie"]["parts"]["ears"]["id"],
+                    axie_data["axie"]["parts"]["mouth"]["id"],
+                    axie_data["axie"]["parts"]["horn"]["id"],
+                    axie_data["axie"]["parts"]["back"]["id"],
+                    axie_data["axie"]["parts"]["tail"]["id"],
+                    axie_data["axie"]["bodyShape"],
+                    axie_data["axie"]["title"],
+                    current_time_utc,
+                    current_time_utc
+                )
+        except UniqueViolationError as e:
+            logging.warning(
+                f"[__store_axie_data] Axie {self.__axie_id} already exists in the database. Skipping insertion."
+            )
+        except Exception as e:
+            logging.error(
+                f"[__store_axie_data] An error occurred while storing axie {self.__axie_id} data: {e}"
+            )
+            raise e
+        
+        logging.info(f"[__store_axie_data] Axie {self.__axie_id} data stored successfully.")
+        return None
         
     async def process_axie_data(self) -> None:
         logging.info(f"[process_axie_data] Processing axie {self.__axie_id}...")
@@ -374,8 +460,6 @@ class Axie:
         """
         axie_parts = await self.__verify_parts_stage(axie_data["axie"]["parts"], axie_activities["axieActivities"])
 
-        return axie_parts
-
         # Verify if the sale was not made within the last 2 minutes
         current_epoch = int(time.time())
         if current_epoch >= self.__sale_date + 120:
@@ -396,31 +480,5 @@ class Axie:
 
         self.__store_axie_data(axie_data)
 
-# Example of axie_data
-"""
-{
-    'data': {
-        'axie': {
-            'earnedAxpStat': {
-                '2025-05-28': [
-                    {'source_id': '7', 'xp': 5024}
-                ]
-            },
-            'bodyShape': 'Normal',
-            'breedCount': 0,
-            'class': 'Reptile',
-            'title': '',
-            'parts': [
-                {'id': 'eyes-tricky', 'stage': 1},
-                {'id': 'ears-curly', 'stage': 1},
-                {'id': 'mouth-peace-maker', 'stage': 1},
-                {'id': 'horn-lagging', 'stage': 1},
-                {'id': 'back-indian-star', 'stage': 1},
-                {'id': 'tail-koi', 'stage': 1}
-            ],
-            'image': 'https://assets.axieinfinity.com/axies/11393467/axie/axie-full-transparent.png',
-            'axpInfo': {'level': 13, 'xp': 1106}
-        }
-    }
-}
-"""
+        logging.info(f"[process_axie_data] Axie {self.__axie_id} processed successfully.")
+        return None

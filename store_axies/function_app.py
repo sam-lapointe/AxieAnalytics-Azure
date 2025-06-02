@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from azure.identity.aio import DefaultAzureCredential
 from azure.servicebus.aio import ServiceBusClient
 from config import Config
+from parts import Part
+from axies import Axie
 
 
 # Global variables
@@ -15,6 +17,7 @@ servicebus_topic_axies_subscription_name = (
     Config.get_servicebus_topic_axies_subscription_name()
 )
 servicebus_topic_axies_name = Config.get_servicebus_topic_axies_name()
+api_key = Config.get_axie_api_key(credential)
 
 
 async def init_dependencies():
@@ -35,6 +38,11 @@ async def init_dependencies():
         )
         logging.info("PostgreSQL connection initialized.")
 
+    # Verify if the versions table contain the current version of parts
+    current_parts_version = await Part.get_current_version(db_connection)
+    if not current_parts_version:
+        await Part.search_and_update_parts_latest_version(db_connection)
+
 
 app = func.FunctionApp()
 
@@ -46,27 +54,24 @@ app = func.FunctionApp()
     connection="ServiceBusConnection",
 ) 
 async def store_axies(azservicebus: func.ServiceBusMessage):
-    global db_connection
+    global db_connection, api_key
 
     # Ensure dependencies are initialized
     await init_dependencies()
 
-    try:
-        message_body = ast.literal_eval(azservicebus.get_body().decode("utf-8"))
-        logging.info(
-            'Python ServiceBus Topic trigger processed a message: %s', message_body
-        )
+    message_body = ast.literal_eval(azservicebus.get_body().decode("utf-8"))
+    logging.info(
+        "Python ServiceBus Topic trigger processed a message: %s", message_body
+    )
 
-        # TODO: Verify if the axie_parts table is filled, fill it if it is not
-        # TODO: Get the axie information from Axie Graphql
-        # TODO: Verify the Axie Level, Ascension and Evolved parts at the time of sale
-        # TODO: Store the data
-        # TODO: Add another timer trigger function to verify the axie parts and update them if needed.
-
-
-    except Exception as e:
-        logging.error(f"An unexpected error occured: {e}")
-        raise e
+    # Process the axie data
+    await Axie(
+        db_connection,
+        api_key,
+        message_body["transaction_hash"],
+        message_body["axie_id"],
+        message_body["sale_date"],
+    ).process_axie_data()
 
 
 @app.timer_trigger(

@@ -263,7 +263,7 @@ databaseChangeLog:
             tableName: versions
             columns:
               - column:
-                  name: "name"
+                  name: "id"
                   type: "varchar(64)"
                   constraints:
                     primaryKey: true
