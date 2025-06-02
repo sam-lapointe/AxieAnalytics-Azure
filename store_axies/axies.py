@@ -151,38 +151,38 @@ class Axie:
             "x-api-key": self.__api_key,
         }
         query = """
-        query GetAxieActivities($tokenAddress: String!, $tokenId: BigDecimal, $size: Int!) {{
+        query GetAxieActivities($tokenAddress: String!, $tokenId: BigDecimal, $size: Int!) {
             axieActivities: tokenActivities(
                 tokenAddress: $tokenAddress
                 tokenId: $tokenId
                 size: $size
                 activityTypes: [EvolveAxie, AscendAxie, BreedAxie, DevolveAxie]
-            ) {{
+            ) {
                 ...ActivityCommonFields
-                activityDetails {{
-                    ... on AxiePartUpdateActivity {{
+                activityDetails {
+                    ... on AxiePartUpdateActivity {
                         ...AxiePartUpdateActivityFields
-                    }}
-                    ... on AscendAxieActivity {{
+                    }
+                    ... on AscendAxieActivity {
                         ...AscendAxieActivityFields
-                    }}
-                }}
-            }}
-        }}
+                    }
+                }
+            }
+        }
 
-        fragment AxiePartUpdateActivityFields on AxiePartUpdateActivity {{
+        fragment AxiePartUpdateActivityFields on AxiePartUpdateActivity {
             partType
             partStage
-        }}
+        }
 
-        fragment AscendAxieActivityFields on AscendAxieActivity {{
+        fragment AscendAxieActivityFields on AscendAxieActivity {
             level
-        }}
+        }
 
-        fragment ActivityCommonFields on Activity {{
+        fragment ActivityCommonFields on Activity {
             activityType
             createdAt
-        }}
+        }
         """
 
         body = {
@@ -202,8 +202,7 @@ class Axie:
                 ) as axie_activities_response:
                     axie_activities = await axie_activities_response.json()
 
-            logging.info(axie_activities)
-            return axie_activities
+            return axie_activities["data"]
         except Exception as e:
             logging.error(
                 f"[__get_axie_activities] Error fetching axie {self.__axie_id} activities: {e}"
