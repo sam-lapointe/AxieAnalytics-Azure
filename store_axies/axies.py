@@ -118,9 +118,7 @@ class Axie:
                     level
                     xp
                 }}
-                partEvolutionInfo {{
-                    status
-                }}
+                stage
             }}
         }}
         """
@@ -361,7 +359,7 @@ class Axie:
         for modified_part in modified_parts:
             try:
                 # Get the current part
-                part = Part.get_part(
+                part = await Part.get_part(
                     self.__connection, new_axie_parts[modified_part]["id"]
                 )
                 if not part:
@@ -373,7 +371,7 @@ class Axie:
                         f"[__verify_parts_stage] Part {new_axie_parts[modified_part]['id']} not found in the database, trying to get the latest version..."
                     )
                     await Part.search_and_update_parts_latest_version(self.__connection)
-                    part = Part.get_part(
+                    part = await Part.get_part(
                         self.__connection, new_axie_parts[modified_part]["id"]
                     )
                     if not part:
@@ -474,6 +472,13 @@ class Axie:
         logging.info(f"[process_axie_data] Processing axie {self.__axie_id}...")
         axie_data = await self.__get_axie_data()
         axie_activities = await self.__get_axie_activities()
+
+        # Verify if the axie is an egg. Stage 1 means it is an egg.
+        if axie_data["axie"]["stage"] == 1:
+            logging.info(
+                f"[process_axie_data] Axie {self.__axie_id} is an egg. Skipping processing."
+            )
+            return None
 
         # Change the parts data structure from list of dict to dict.
         parts = {
