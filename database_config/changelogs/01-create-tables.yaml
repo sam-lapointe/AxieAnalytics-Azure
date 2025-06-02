@@ -185,7 +185,7 @@ databaseChangeLog:
                   type: "smallint"
                   constraints:
                     nullable: false
-              - columns:
+              - column:
                   name: "previous_stage_part_id"
                   type: "varchar(64)"
                   constraints:

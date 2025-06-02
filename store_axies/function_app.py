@@ -4,7 +4,6 @@ import asyncpg
 import ast
 from datetime import datetime, timezone
 from azure.identity.aio import DefaultAzureCredential
-from azure.servicebus.aio import ServiceBusClient
 from config import Config
 from parts import Part
 from axies import Axie
@@ -13,11 +12,11 @@ from axies import Axie
 # Global variables
 credential = DefaultAzureCredential()
 db_connection = None
+axie_api_key = None
 servicebus_topic_axies_subscription_name = (
     Config.get_servicebus_topic_axies_subscription_name()
 )
 servicebus_topic_axies_name = Config.get_servicebus_topic_axies_name()
-api_key = Config.get_axie_api_key(credential)
 
 
 async def init_dependencies():
@@ -25,7 +24,7 @@ async def init_dependencies():
     Initialize dependencies for the function app.
     This function is called when the function app starts.
     """
-    global db_connection
+    global db_connection, axie_api_key
 
     if not db_connection:
         # Initialize PostgreSQL connection
@@ -37,6 +36,10 @@ async def init_dependencies():
             max_size=10,
         )
         logging.info("PostgreSQL connection initialized.")
+
+    if not axie_api_key:
+        axie_api_key = await Config.get_axie_api_key(credential)
+        logging.info("Axie API key initialized.")
 
     # Verify if the versions table contain the current version of parts
     current_parts_version = await Part.get_current_version(db_connection)
@@ -52,9 +55,9 @@ app = func.FunctionApp()
     subscription_name=servicebus_topic_axies_subscription_name,
     topic_name=servicebus_topic_axies_name,
     connection="ServiceBusConnection",
-) 
+)
 async def store_axies(azservicebus: func.ServiceBusMessage):
-    global db_connection, api_key
+    global db_connection, axie_api_key
 
     # Ensure dependencies are initialized
     await init_dependencies()
@@ -67,7 +70,7 @@ async def store_axies(azservicebus: func.ServiceBusMessage):
     # Process the axie data
     await Axie(
         db_connection,
-        api_key,
+        axie_api_key,
         message_body["transaction_hash"],
         message_body["axie_id"],
         message_body["sale_date"],

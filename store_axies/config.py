@@ -88,7 +88,7 @@ class Config:
         except Exception as e:
             logging.error(f"Error constructing PostgreSQL connection string: {e}")
             raise e
-        
+
     @staticmethod
     async def get_axie_api_key(credential: DefaultAzureCredential) -> str:
         try:
@@ -99,14 +99,15 @@ class Config:
             if not axie_api_key:
                 logging.critical("AXIE_API_KEY is not set.")
                 raise ValueError("AXIE_API_KEY environment variable is required.")
-            
+
             async with SecretClient(
                 Config.get_key_vault_url(), credential
             ) as key_vault_client:
                 # Retrieve the API key from Key Vault.
                 axie_api_key_secret = await key_vault_client.get_secret(axie_api_key)
+                axie_api_key_value = axie_api_key_secret.value
 
-            return axie_api_key_secret.value
+            return axie_api_key_value
         except Exception as e:
-            logging.error(f"Error retrieving the Axie API key.")
+            logging.error("Error retrieving the Axie API key.")
             raise e

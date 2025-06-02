@@ -183,10 +183,13 @@ stages:
       - group: Dev
       - group: Service-WebhookListener
       - group: Service-StoreSales
+      - group: Service-StoreAxies
       - name: WEBHOOK_FUNCTION_APP_NAME
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.webhook_function_name']]
       - name: SALES_FUNCTION_APP_NAME
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.sales_function_name']]
+      - name: AXIES_FUNCTION_APP_NAME
+        value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.axies_function_name']]
       steps:
       - task: AzureCli@2
         displayName: Deploy webhook_listener to production slot
@@ -214,6 +217,19 @@ stages:
               --src "$(Pipeline.Workspace)/$(SALES_ARTIFACT_NAME)/$(SALES_ARTIFACT_NAME).zip" \
               --build-remote true
 
+      - task: AzureCli@2
+        displayName: Deploy store_axies to production slot
+        inputs:
+          azureSubscription: 'AxieMarket-Dev'
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az functionapp deployment source config-zip \
+              --resource-group $(RESOURCE_GROUP_NAME) \
+              --name "$(AXIES_FUNCTION_APP_NAME)" \
+              --src "$(Pipeline.Workspace)/$(AXIES_ARTIFACT_NAME)/$(AXIES_ARTIFACT_NAME).zip" \
+              --build-remote true
+
     - job: TestDev
       dependsOn:
       - DeployDevInfra
@@ -231,6 +247,7 @@ stages:
       - TestDev
       - ConfigureDevDB
       condition: succeededOrFailed()
+      continueOnError: true
       pool: server
       steps:
       - task: ManualValidation@0

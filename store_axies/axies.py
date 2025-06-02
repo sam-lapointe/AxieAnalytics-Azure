@@ -10,67 +10,68 @@ from parts import Part
 
 axies_token = "0x32950db2a7164ae833121501c797d79e7b79d74c"
 axie_levels = {
-    '1': {'total_xp': 0, 'level_up_xp': 100},
-    '2': {'total_xp': 100, 'level_up_xp': 210},
-    '3': {'total_xp': 310, 'level_up_xp': 430},
-    '4': {'total_xp': 740, 'level_up_xp': 740},
-    '5': {'total_xp': 1480, 'level_up_xp': 1140},
-    '6': {'total_xp': 2620, 'level_up_xp': 1640},
-    '7': {'total_xp': 4260, 'level_up_xp': 2260},
-    '8': {'total_xp': 6520, 'level_up_xp': 2980},
-    '9': {'total_xp': 9500, 'level_up_xp': 3810},
-    '10': {'total_xp': 13310, 'level_up_xp': 4760},
-    '11': {'total_xp': 18070, 'level_up_xp': 5830},
-    '12': {'total_xp': 23900, 'level_up_xp': 7010},
-    '13': {'total_xp': 30910, 'level_up_xp': 8320},
-    '14': {'total_xp': 39230, 'level_up_xp': 9760},
-    '15': {'total_xp': 48990, 'level_up_xp': 11310},
-    '16': {'total_xp': 60300, 'level_up_xp': 13010},
-    '17': {'total_xp': 73310, 'level_up_xp': 14830},
-    '18': {'total_xp': 88140, 'level_up_xp': 16780},
-    '19': {'total_xp': 104920, 'level_up_xp': 18870},
-    '20': {'total_xp': 123790, 'level_up_xp': 21090},
-    '21': {'total_xp': 144880, 'level_up_xp': 23460},
-    '22': {'total_xp': 168340, 'level_up_xp': 25950},
-    '23': {'total_xp': 194290, 'level_up_xp': 28600},
-    '24': {'total_xp': 222890, 'level_up_xp': 31380},
-    '25': {'total_xp': 254270, 'level_up_xp': 34300},
-    '26': {'total_xp': 288570, 'level_up_xp': 37380},
-    '27': {'total_xp': 325950, 'level_up_xp': 40590},
-    '28': {'total_xp': 366540, 'level_up_xp': 43950},
-    '29': {'total_xp': 410490, 'level_up_xp': 47470},
-    '30': {'total_xp': 457960, 'level_up_xp': 51130},
-    '31': {'total_xp': 509090, 'level_up_xp': 54940},
-    '32': {'total_xp': 564030, 'level_up_xp': 58910},
-    '33': {'total_xp': 622940, 'level_up_xp': 63020},
-    '34': {'total_xp': 685960, 'level_up_xp': 67300},
-    '35': {'total_xp': 753260, 'level_up_xp': 71720},
-    '36': {'total_xp': 824980, 'level_up_xp': 76300},
-    '37': {'total_xp': 901280, 'level_up_xp': 81040},
-    '38': {'total_xp': 982320, 'level_up_xp': 85940},
-    '39': {'total_xp': 1068260, 'level_up_xp': 91000},
-    '40': {'total_xp': 1159260, 'level_up_xp': 96210},
-    '41': {'total_xp': 1255470, 'level_up_xp': 101590},
-    '42': {'total_xp': 1357060, 'level_up_xp': 107130},
-    '43': {'total_xp': 1464190, 'level_up_xp': 112820},
-    '44': {'total_xp': 1577010, 'level_up_xp': 118700},
-    '45': {'total_xp': 1695710, 'level_up_xp': 124720},
-    '46': {'total_xp': 1820430, 'level_up_xp': 130920},
-    '47': {'total_xp': 1951350, 'level_up_xp': 137280},
-    '48': {'total_xp': 2088630, 'level_up_xp': 143800},
-    '49': {'total_xp': 2232430, 'level_up_xp': 150500},
-    '50': {'total_xp': 2382930, 'level_up_xp': 157370},
-    '51': {'total_xp': 2540300, 'level_up_xp': 164390},
-    '52': {'total_xp': 2704690, 'level_up_xp': 171600},
-    '53': {'total_xp': 2876290, 'level_up_xp': 178970},
-    '54': {'total_xp': 3055260, 'level_up_xp': 186520},
-    '55': {'total_xp': 3241780, 'level_up_xp': 194240},
-    '56': {'total_xp': 3436020, 'level_up_xp': 202120},
-    '57': {'total_xp': 3638140, 'level_up_xp': 210190},
-    '58': {'total_xp': 3848330, 'level_up_xp': 218430},
-    '59': {'total_xp': 4066760, 'level_up_xp': 226840},
-    '60': {'total_xp': 4293600, 'level_up_xp': 235430}
+    "1": {"total_xp": 0, "level_up_xp": 100},
+    "2": {"total_xp": 100, "level_up_xp": 210},
+    "3": {"total_xp": 310, "level_up_xp": 430},
+    "4": {"total_xp": 740, "level_up_xp": 740},
+    "5": {"total_xp": 1480, "level_up_xp": 1140},
+    "6": {"total_xp": 2620, "level_up_xp": 1640},
+    "7": {"total_xp": 4260, "level_up_xp": 2260},
+    "8": {"total_xp": 6520, "level_up_xp": 2980},
+    "9": {"total_xp": 9500, "level_up_xp": 3810},
+    "10": {"total_xp": 13310, "level_up_xp": 4760},
+    "11": {"total_xp": 18070, "level_up_xp": 5830},
+    "12": {"total_xp": 23900, "level_up_xp": 7010},
+    "13": {"total_xp": 30910, "level_up_xp": 8320},
+    "14": {"total_xp": 39230, "level_up_xp": 9760},
+    "15": {"total_xp": 48990, "level_up_xp": 11310},
+    "16": {"total_xp": 60300, "level_up_xp": 13010},
+    "17": {"total_xp": 73310, "level_up_xp": 14830},
+    "18": {"total_xp": 88140, "level_up_xp": 16780},
+    "19": {"total_xp": 104920, "level_up_xp": 18870},
+    "20": {"total_xp": 123790, "level_up_xp": 21090},
+    "21": {"total_xp": 144880, "level_up_xp": 23460},
+    "22": {"total_xp": 168340, "level_up_xp": 25950},
+    "23": {"total_xp": 194290, "level_up_xp": 28600},
+    "24": {"total_xp": 222890, "level_up_xp": 31380},
+    "25": {"total_xp": 254270, "level_up_xp": 34300},
+    "26": {"total_xp": 288570, "level_up_xp": 37380},
+    "27": {"total_xp": 325950, "level_up_xp": 40590},
+    "28": {"total_xp": 366540, "level_up_xp": 43950},
+    "29": {"total_xp": 410490, "level_up_xp": 47470},
+    "30": {"total_xp": 457960, "level_up_xp": 51130},
+    "31": {"total_xp": 509090, "level_up_xp": 54940},
+    "32": {"total_xp": 564030, "level_up_xp": 58910},
+    "33": {"total_xp": 622940, "level_up_xp": 63020},
+    "34": {"total_xp": 685960, "level_up_xp": 67300},
+    "35": {"total_xp": 753260, "level_up_xp": 71720},
+    "36": {"total_xp": 824980, "level_up_xp": 76300},
+    "37": {"total_xp": 901280, "level_up_xp": 81040},
+    "38": {"total_xp": 982320, "level_up_xp": 85940},
+    "39": {"total_xp": 1068260, "level_up_xp": 91000},
+    "40": {"total_xp": 1159260, "level_up_xp": 96210},
+    "41": {"total_xp": 1255470, "level_up_xp": 101590},
+    "42": {"total_xp": 1357060, "level_up_xp": 107130},
+    "43": {"total_xp": 1464190, "level_up_xp": 112820},
+    "44": {"total_xp": 1577010, "level_up_xp": 118700},
+    "45": {"total_xp": 1695710, "level_up_xp": 124720},
+    "46": {"total_xp": 1820430, "level_up_xp": 130920},
+    "47": {"total_xp": 1951350, "level_up_xp": 137280},
+    "48": {"total_xp": 2088630, "level_up_xp": 143800},
+    "49": {"total_xp": 2232430, "level_up_xp": 150500},
+    "50": {"total_xp": 2382930, "level_up_xp": 157370},
+    "51": {"total_xp": 2540300, "level_up_xp": 164390},
+    "52": {"total_xp": 2704690, "level_up_xp": 171600},
+    "53": {"total_xp": 2876290, "level_up_xp": 178970},
+    "54": {"total_xp": 3055260, "level_up_xp": 186520},
+    "55": {"total_xp": 3241780, "level_up_xp": 194240},
+    "56": {"total_xp": 3436020, "level_up_xp": 202120},
+    "57": {"total_xp": 3638140, "level_up_xp": 210190},
+    "58": {"total_xp": 3848330, "level_up_xp": 218430},
+    "59": {"total_xp": 4066760, "level_up_xp": 226840},
+    "60": {"total_xp": 4293600, "level_up_xp": 235430},
 }
+
 
 class Axie:
     """
@@ -97,7 +98,7 @@ class Axie:
         headers = {
             "accept": "application/json, multipart/mixed",
             "content-type": "application/json",
-            "x-api-key": self.__api_key
+            "x-api-key": self.__api_key,
         }
         query = f"""
         query GetAxieData($lastNDays: Int = 30) {{
@@ -124,15 +125,13 @@ class Axie:
         }}
         """
 
-        body = {
-            "query": query,
-            "operationName": "GetAxieData",
-            "variables": {}
-        }
+        body = {"query": query, "operationName": "GetAxieData", "variables": {}}
 
         try:
             async with aiohttp.ClientSession() as http_client:
-                async with http_client.post(api_url, headers=headers, data=json.dumps(body)) as axie_data_response:
+                async with http_client.post(
+                    api_url, headers=headers, data=json.dumps(body)
+                ) as axie_data_response:
                     axie_data = await axie_data_response.json()
                     logging.info(axie_data)
             return axie_data["data"]
@@ -141,16 +140,18 @@ class Axie:
                 f"[__get_axie_data] Error fetching axie {self.__axie_id} data: {e}"
             )
             raise e
-        
+
     async def __get_axie_activities(self) -> list:
-        logging.info(f"[__get_axie_activities] Fetching axie {self.__axie_id} activities...")
+        logging.info(
+            f"[__get_axie_activities] Fetching axie {self.__axie_id} activities..."
+        )
         api_url = "https://api-gateway.skymavis.com/graphql/axie-marketplace"
         headers = {
             "accept": "application/json, multipart/mixed",
             "content-type": "application/json",
-            "x-api-key": self.__api_key
+            "x-api-key": self.__api_key,
         }
-        query = f"""
+        query = """
         query GetAxieActivities($tokenAddress: String!, $tokenId: BigDecimal, $size: Int!) {{
             axieActivities: tokenActivities(
                 tokenAddress: $tokenAddress
@@ -191,13 +192,15 @@ class Axie:
             "variables": {
                 "tokenId": self.__axie_id,
                 "tokenAddress": axies_token,
-                "size": 50
-            }
+                "size": 50,
+            },
         }
 
         try:
             async with aiohttp.ClientSession() as http_client:
-                async with http_client.post(api_url, headers=headers, data=json.dumps(body)) as axie_activities_response:
+                async with http_client.post(
+                    api_url, headers=headers, data=json.dumps(body)
+                ) as axie_activities_response:
                     axie_activities = await axie_activities_response.json()
                     logging.info(axie_activities)
             return axie_activities["data"]
@@ -206,8 +209,10 @@ class Axie:
                 f"[__get_axie_activities] Error fetching axie {self.__axie_id} activities: {e}"
             )
             raise e
-        
-    async def __estimate_axie_level(self, axie_axp_info: dict, earned_axp_stat: dict, axie_activities: list) -> dict:
+
+    async def __estimate_axie_level(
+        self, axie_axp_info: dict, earned_axp_stat: dict, axie_activities: list
+    ) -> dict:
         """
         Estimate the axie level at the time of sale.
 
@@ -224,11 +229,10 @@ class Axie:
 
         if sale_date != today_date:
             # Sort the dictionary from most recent dates to older dates
-            sorted_earnings = dict(sorted(
-                earned_axp_stat.items(), key=lambda item: item[0],
-                reverse=True
-            ))
-    
+            sorted_earnings = dict(
+                sorted(earned_axp_stat.items(), key=lambda item: item[0], reverse=True)
+            )
+
             # Sum all the sources of xp per date
             sorted_summed_earnings = {
                 date: sum(item["xp"] for item in items)
@@ -236,7 +240,10 @@ class Axie:
             }
 
             # Current axie xp
-            axie_xp = axie_levels[str(axie_axp_info["level"])]["total_xp"] + axie_axp_info["xp"]
+            axie_xp = (
+                axie_levels[str(axie_axp_info["level"])]["total_xp"]
+                + axie_axp_info["xp"]
+            )
 
             # Substract xp from now up to (not included) the sale date.
             for date, xp in sorted_summed_earnings.items():
@@ -245,7 +252,7 @@ class Axie:
                     axie_xp -= xp
                 else:
                     break
-            
+
             # Calculate the axie axp info at time of sell
             for level in range(axie_axp_info["level"], 0, -1):
                 if axie_xp < axie_levels[str(level)]["total_xp"]:
@@ -255,10 +262,13 @@ class Axie:
                     new_axp_info["level"] = level
                     new_axp_info["xp"] = remaining_xp
                     break
-        
+
         for activity in axie_activities:
             # Ascension was made after sale
-            if activity["createdAt"] > self.__sale_date and activity["activityType"] == "AscendAxie":
+            if (
+                activity["createdAt"] > self.__sale_date
+                and activity["activityType"] == "AscendAxie"
+            ):
                 # Axie level is lower than previously calculated
                 if activity["activityDetails"]["level"] - 1 < new_axp_info["level"]:
                     new_level = activity["activityDetails"]["level"] - 1
@@ -269,7 +279,9 @@ class Axie:
 
         return new_axp_info
 
-    async def __verify_breed_count(self, axie_breed_count: int, axie_activities: list) -> int:
+    async def __verify_breed_count(
+        self, axie_breed_count: int, axie_activities: list
+    ) -> int:
         """
         Verify the breed count at the time of sale.
 
@@ -283,7 +295,10 @@ class Axie:
 
         for activity in axie_activities:
             # Breeding was made after sale
-            if activity["createdAt"] > self.__sale_date and activity["activityType"] == "BreedAxie":
+            if (
+                activity["createdAt"] > self.__sale_date
+                and activity["activityType"] == "BreedAxie"
+            ):
                 new_breed_count -= 1
                 print("Decreased breed count by 1")
             elif activity["createdAt"] < self.__sale_date:
@@ -291,7 +306,9 @@ class Axie:
 
         return new_breed_count
 
-    async def __verify_parts_stage(self, axie_parts: dict, axie_activities: list) -> dict:
+    async def __verify_parts_stage(
+        self, axie_parts: dict, axie_activities: list
+    ) -> dict:
         """
         Verify the parts stages at the time of sale.
 
@@ -306,7 +323,10 @@ class Axie:
         evolved_parts_before_sale = set()
 
         for activity in axie_activities:
-            if activity["activityType"] == "EvolveAxie" or activity["activityType"] == "DevolveAxie":
+            if (
+                activity["activityType"] == "EvolveAxie"
+                or activity["activityType"] == "DevolveAxie"
+            ):
                 activityType = activity["activityType"]
                 partType = activity["activityDetails"]["partType"]
                 partStage = activity["activityDetails"]["partStage"]
@@ -319,12 +339,20 @@ class Axie:
                         new_axie_parts[partType]["stage"] = partStage + 1
                         modified_parts.add(partType)
                 # Verify if the axie was evolved within 4 days before the sale.
-                elif activity["createdAt"] < self.__sale_date and activity["createdAt"] >= (self.__sale_date - 345600):
-                    if activityType == "EvolveAxie" and partType not in evolved_parts_before_sale:
+                elif activity["createdAt"] < self.__sale_date and activity[
+                    "createdAt"
+                ] >= (self.__sale_date - 345600):
+                    if (
+                        activityType == "EvolveAxie"
+                        and partType not in evolved_parts_before_sale
+                    ):
                         new_axie_parts[partType]["stage"] = partStage
                         modified_parts.add(partType)
                         evolved_parts_before_sale.add(partType)
-                    elif activityType == "DevolveAxie" and partType not in evolved_parts_before_sale:
+                    elif (
+                        activityType == "DevolveAxie"
+                        and partType not in evolved_parts_before_sale
+                    ):
                         """
                         This handle the case where the evolution is accelerated and then devolved.
                         """
@@ -344,7 +372,9 @@ class Axie:
                         f"[__verify_parts_stage] Part {new_axie_parts[modified_part]['id']} not found in the database, trying to get the latest version..."
                     )
                     await Part.search_and_update_parts_latest_version(self.__conn)
-                    part = Part.get_part(self.__conn, new_axie_parts[modified_part]["id"])
+                    part = Part.get_part(
+                        self.__conn, new_axie_parts[modified_part]["id"]
+                    )
                     if not part:
                         logging.error(
                             f"[__verify_parts_stage] Part {new_axie_parts[modified_part]['id']} not found in the database after updating the parts."
@@ -360,7 +390,7 @@ class Axie:
                     Either the part was devolved since the sale or was evolving at time of sell.
                     Set the part id to the normal stage 2.
                     """
-                    new_axie_parts[modified_part]["id"] = f"{part["id"]-2}"
+                    new_axie_parts[modified_part]["id"] = f"{part['id']}-2"
                 elif part["stage"] > new_axie_parts[modified_part]["stage"]:
                     """
                     This means the part stage is currently 2, but was 1 at time of sell.
@@ -370,7 +400,7 @@ class Axie:
                     new_axie_parts[modified_part]["id"] = part["previous_stage_part_id"]
             except Exception as e:
                 logging.error(
-                    f"[__verify_parts_stage] An error occured while retrieving {new_axie_parts[modified_part]["id"]} from database: {e}"
+                    f"[__verify_parts_stage] An error occured while retrieving {new_axie_parts[modified_part]['id']} from database: {e}"
                 )
                 raise e
 
@@ -378,11 +408,13 @@ class Axie:
 
     async def __store_axie_data(self, axie_data: dict) -> None:
         logging.info(f"[__store_axie_data] Storing axie {self.__axie_id} data...")
-        
+
+        logging.info(axie_data)
+
         current_time_utc = datetime.now(timezone.utc)
 
         try:
-            async with asyncpg.acquire(self.__connection) as conn:
+            async with self.__connection.acquire() as conn:
                 await conn.execute(
                     """
                     INSERT INTO axies (
@@ -405,9 +437,6 @@ class Axie:
                         modified_at
                     )
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-                    ON CONFLICT (id) DO UPDATE SET
-                        data = EXCLUDED.data,
-                        modified_at = EXCLUDED.modified_at
                     """,
                     self.__transaction_hash,
                     self.__axie_id,
@@ -416,18 +445,18 @@ class Axie:
                     axie_data["axie"]["breedCount"],
                     axie_data["axie"]["image"],
                     axie_data["axie"]["class"],
-                    axie_data["axie"]["parts"]["eyes"]["id"],
-                    axie_data["axie"]["parts"]["ears"]["id"],
-                    axie_data["axie"]["parts"]["mouth"]["id"],
-                    axie_data["axie"]["parts"]["horn"]["id"],
-                    axie_data["axie"]["parts"]["back"]["id"],
-                    axie_data["axie"]["parts"]["tail"]["id"],
+                    axie_data["axie"]["parts"]["Eyes"]["id"],
+                    axie_data["axie"]["parts"]["Ears"]["id"],
+                    axie_data["axie"]["parts"]["Mouth"]["id"],
+                    axie_data["axie"]["parts"]["Horn"]["id"],
+                    axie_data["axie"]["parts"]["Back"]["id"],
+                    axie_data["axie"]["parts"]["Tail"]["id"],
                     axie_data["axie"]["bodyShape"],
                     axie_data["axie"]["title"],
                     current_time_utc,
-                    current_time_utc
+                    current_time_utc,
                 )
-        except UniqueViolationError as e:
+        except UniqueViolationError:
             logging.warning(
                 f"[__store_axie_data] Axie {self.__axie_id} already exists in the database. Skipping insertion."
             )
@@ -436,10 +465,12 @@ class Axie:
                 f"[__store_axie_data] An error occurred while storing axie {self.__axie_id} data: {e}"
             )
             raise e
-        
-        logging.info(f"[__store_axie_data] Axie {self.__axie_id} data stored successfully.")
+
+        logging.info(
+            f"[__store_axie_data] Axie {self.__axie_id} data stored successfully."
+        )
         return None
-        
+
     async def process_axie_data(self) -> None:
         logging.info(f"[process_axie_data] Processing axie {self.__axie_id}...")
         axie_data = await self.__get_axie_data()
@@ -458,27 +489,34 @@ class Axie:
         So even if the part is "evolving", we count it as evolved because the cost was paid by the seller.
         The part ID will be set to its normal part. It does not take into account parts evolution such as nightmare.
         """
-        axie_parts = await self.__verify_parts_stage(axie_data["axie"]["parts"], axie_activities["axieActivities"])
+        axie_parts = await self.__verify_parts_stage(
+            axie_data["axie"]["parts"], axie_activities["axieActivities"]
+        )
+        axie_data["axie"]["parts"] = axie_parts
 
         # Verify if the sale was not made within the last 2 minutes
         current_epoch = int(time.time())
         if current_epoch >= self.__sale_date + 120:
             logging.info(
-                f"[process_axie_data] The sale was not made within the last 120 seconds."
+                "[process_axie_data] The sale was not made within the last 120 seconds."
             )
 
             axie_axp_info = await self.__estimate_axie_level(
-                axie_data["axie"]["axpInfo"], axie_data["axie"]["earnedAxpStat"], axie_activities["axieActivities"]
+                axie_data["axie"]["axpInfo"],
+                axie_data["axie"]["earnedAxpStat"],
+                axie_activities["axieActivities"],
             )
-            axie_breed_count = await self.__verify_breed_count(axie_data["axie"]["breedCount"], axie_activities["axieActivities"])
+            axie_breed_count = await self.__verify_breed_count(
+                axie_data["axie"]["breedCount"], axie_activities["axieActivities"]
+            )
 
             # Update the axie_data
             axie_data["axie"]["axpInfo"] = axie_axp_info
             axie_data["axie"]["breedCount"] = axie_breed_count
 
-        axie_data["axie"]["parts"] = axie_parts
+        await self.__store_axie_data(axie_data)
 
-        self.__store_axie_data(axie_data)
-
-        logging.info(f"[process_axie_data] Axie {self.__axie_id} processed successfully.")
+        logging.info(
+            f"[process_axie_data] Axie {self.__axie_id} processed successfully."
+        )
         return None
