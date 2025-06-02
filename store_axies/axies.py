@@ -133,7 +133,6 @@ class Axie:
                     api_url, headers=headers, data=json.dumps(body)
                 ) as axie_data_response:
                     axie_data = await axie_data_response.json()
-                    logging.info(axie_data)
             return axie_data["data"]
         except Exception as e:
             logging.error(
@@ -202,7 +201,6 @@ class Axie:
                     api_url, headers=headers, data=json.dumps(body)
                 ) as axie_activities_response:
                     axie_activities = await axie_activities_response.json()
-                    logging.info(axie_activities)
             return axie_activities["data"]
         except Exception as e:
             logging.error(
@@ -462,7 +460,7 @@ class Axie:
             )
         except Exception as e:
             logging.error(
-                f"[__store_axie_data] An error occurred while storing axie {self.__axie_id} data: {e}"
+                f"[__store_axie_data] An error occurred while storing axie {axie_data} data: {e}"
             )
             raise e
 

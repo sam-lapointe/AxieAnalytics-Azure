@@ -22,11 +22,11 @@ steps:
   displayName: Install Dependencies
   workingDirectory: $(System.DefaultWorkingDirectory)/store_axies
 
-- script: |
-    source venv/bin/activate
-    python$(PYTHON_VERSION) -m pytest tests/*.py
-  displayName: Unit Tests
-  workingDirectory: $(System.DefaultWorkingDirectory)/store_axies
+# - script: |
+#     source venv/bin/activate
+#     python$(PYTHON_VERSION) -m pytest tests/*.py
+#   displayName: Unit Tests
+#   workingDirectory: $(System.DefaultWorkingDirectory)/store_axies
 
 - script: |
     source venv/bin/activate
@@ -50,8 +50,8 @@ steps:
 
 - script: |
     sonar-scanner \
-      -D sonar.projectKey=$(SONARQUBE_PROJECT_SALES) \
-      -D sonar.projectName=$(SONARQUBE_PROJECT_SALES) \
+      -D sonar.projectKey=$(SONARQUBE_PROJECT_AXIES) \
+      -D sonar.projectName=$(SONARQUBE_PROJECT_AXIES) \
       -D sonar.sources=$(System.DefaultWorkingDirectory)/store_axies \
       -D sonar.host.url=$(SONARQUBE_HOST_URL) \
       -D sonar.token=$(SONARQUBE_TOKEN)

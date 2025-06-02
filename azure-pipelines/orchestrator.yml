@@ -43,6 +43,8 @@ stages:
             echo "##vso[task.setvariable variable=runWebhookListenerCI;isOutput=true]$runWebhookListenerCI"
             if grep "store_sales/" changed.txt; then runStoreSalesCI=true; else runStoreSalesCI=false;fi
             echo "##vso[task.setvariable variable=runStoreSalesCI;isOutput=true]$runStoreSalesCI"
+            if grep "store_axies/" changed.txt; then runStoreAxiesCI=true; else runStoreAxiesCI=false;fi
+            echo "##vso[task.setvariable variable=runStoreAxiesCI;isOutput=true]$runStoreAxiesCI"
             echo "##[endgroup]"
           displayName: Check Changes
           name: CheckChanges
@@ -53,6 +55,7 @@ stages:
     - group: Orchestrator
     - group: Service-WebhookListener
     - group: Service-StoreSales
+    - group: Service-StoreAxies
     jobs:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
@@ -72,6 +75,13 @@ stages:
         - template: ci-storesales.yml
           parameters:
             artifactName: $(SALES_ARTIFACT_NAME)
+
+    - job: StoreAxiesCI
+      condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runStoreAxiesCI'], 'true')
+      steps:
+        - template: ci-storeaxies.yml
+          parameters:
+            artifactName: $(AXIES_ARTIFACT_NAME)
 
   - stage: DeployDev
     displayName: Deployment to Dev
