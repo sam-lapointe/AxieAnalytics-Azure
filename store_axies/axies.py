@@ -361,7 +361,9 @@ class Axie:
         for modified_part in modified_parts:
             try:
                 # Get the current part
-                part = Part.get_part(self.__connection, new_axie_parts[modified_part]["id"])
+                part = Part.get_part(
+                    self.__connection, new_axie_parts[modified_part]["id"]
+                )
                 if not part:
                     """
                     This means the part was not found in the database.
