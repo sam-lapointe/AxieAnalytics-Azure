@@ -201,7 +201,9 @@ class Axie:
                     api_url, headers=headers, data=json.dumps(body)
                 ) as axie_activities_response:
                     axie_activities = await axie_activities_response.json()
-            return axie_activities["data"]
+
+            logging.info(axie_activities)
+            return axie_activities
         except Exception as e:
             logging.error(
                 f"[__get_axie_activities] Error fetching axie {self.__axie_id} activities: {e}"
