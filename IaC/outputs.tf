@@ -15,11 +15,11 @@ output "sales_function_name" {
 }
 
 output "axies_function_hostname" {
-  value = modules.store_axies_function_app.function_app_hostname
+  value = module.store_axies_function_app.function_app_hostname
 }
 
 output "axies_function_name" {
-  value = modules.store_axies_function_app.function_app_name
+  value = module.store_axies_function_app.function_app_name
 }
 
 output "database_hostname" {
