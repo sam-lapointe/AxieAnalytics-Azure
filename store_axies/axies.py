@@ -325,36 +325,36 @@ class Axie:
                 activity["activityType"] == "EvolveAxie"
                 or activity["activityType"] == "DevolveAxie"
             ):
-                activityType = activity["activityType"]
-                partType = activity["activityDetails"]["partType"]
-                partStage = activity["activityDetails"]["partStage"]
+                activity_type = activity["activityType"]
+                part_type = activity["activityDetails"]["partType"]
+                part_stage = activity["activityDetails"]["partStage"]
                 # Verify if the axie was evolved or devolved between now and time of sale.
                 if activity["createdAt"] > self.__sale_date:
-                    if activityType == "EvolveAxie":
-                        new_axie_parts[partType]["stage"] = partStage - 1
-                        modified_parts.add(partType)
-                    elif activityType == "DevolveAxie":
-                        new_axie_parts[partType]["stage"] = partStage + 1
-                        modified_parts.add(partType)
+                    if activity_type == "EvolveAxie":
+                        new_axie_parts[part_type]["stage"] = part_stage - 1
+                        modified_parts.add(part_type)
+                    elif activity_type == "DevolveAxie":
+                        new_axie_parts[part_type]["stage"] = part_stage + 1
+                        modified_parts.add(part_type)
                 # Verify if the axie was evolved within 4 days before the sale.
                 elif activity["createdAt"] < self.__sale_date and activity[
                     "createdAt"
                 ] >= (self.__sale_date - 345600):
                     if (
-                        activityType == "EvolveAxie"
-                        and partType not in evolved_parts_before_sale
+                        activity_type == "EvolveAxie"
+                        and part_type not in evolved_parts_before_sale
                     ):
-                        new_axie_parts[partType]["stage"] = partStage
-                        modified_parts.add(partType)
-                        evolved_parts_before_sale.add(partType)
+                        new_axie_parts[part_type]["stage"] = part_stage
+                        modified_parts.add(part_type)
+                        evolved_parts_before_sale.add(part_type)
                     elif (
-                        activityType == "DevolveAxie"
-                        and partType not in evolved_parts_before_sale
+                        activity_type == "DevolveAxie"
+                        and part_type not in evolved_parts_before_sale
                     ):
                         """
                         This handle the case where the evolution is accelerated and then devolved.
                         """
-                        evolved_parts_before_sale.add(partType)
+                        evolved_parts_before_sale.add(part_type)
 
         # Get the ID for the modified parts
         for modified_part in modified_parts:

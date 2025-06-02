@@ -280,7 +280,7 @@ module "service_bus" {
     {
       topic_name   = local.SERVICEBUS_TOPIC_AXIES_NAME,
       sender_ids   = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id],
-      receiver_ids = [],
+      receiver_ids = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id],
       subscriptions = [
         {
           subscription_name  = local.STORE_AXIES_SUBSCRIPTION_NAME,
