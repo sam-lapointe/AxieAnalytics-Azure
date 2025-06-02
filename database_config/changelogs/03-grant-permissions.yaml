@@ -27,6 +27,6 @@ databaseChangeLog:
               $$
               BEGIN
                 GRANT INSERT ON TABLE axies TO ${store_axies_username};
-                GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE axie_parts TO ${store_axies_username};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE axie_parts, versions TO ${store_axies_username};
               END
               $$;

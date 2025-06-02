@@ -185,6 +185,11 @@ databaseChangeLog:
                   type: "smallint"
                   constraints:
                     nullable: false
+              - columns:
+                  name: "previous_stage_part_id"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: true
               - column:
                   name: "type"
                   type: "varchar(64)"
@@ -239,6 +244,35 @@ databaseChangeLog:
                   type: "char(42)"
                   constraints:
                     nullable: true
+              - column:
+                  name: "created_at"
+                  type: "timestamptz"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "modified_at"
+                  type: "timestamptz"
+                  constraints:
+                    nullable: false
+
+- changeSet:
+      id: create-versions-table
+      author: "Samuel Lapointe"
+      changes:
+       - createTable:
+            tableName: versions
+            columns:
+              - column:
+                  name: "name"
+                  type: "varchar(64)"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "version"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: false
               - column:
                   name: "created_at"
                   type: "timestamptz"
