@@ -26,6 +26,80 @@ def axie_instance(mock_connection):
         sale_date=1740000000,
     )
 
+@pytest.fixture
+def axie_parts():
+    """Fixture to provide axie parts for testing."""
+    return {
+        "Eyes": {
+            "id": "eyes-telescope",
+            "stage": 1,
+        },
+        "Ears": {
+            "id": "ears-nimo",
+            "stage": 1,
+        },
+        "Mouth": {
+            "id": "mouth-little-owl",
+            "stage": 1,
+        },
+        "Horn": {
+            "id": "horn-eggshell-2",
+            "stage": 2,
+        },
+        "Back": {
+            "id": "back-pigeon-post",
+            "stage": 1,
+        },
+        "Tail": {
+            "id": "tail-hare-2",
+            "stage": 2,
+        }
+    }
+
+@pytest.fixture
+def ears_obj():
+    """Fixture to provide ears object for testing."""
+    return {
+        "id": "ears-nimo",
+        "class": "aquatic",
+        "name": "Nimo",
+        "stage": 1,
+        "previous_stage_part_id": None,
+        "type": "ears",
+        "special_genes": "",
+        "created_at": datetime.now(timezone.utc),
+        "modified_at": datetime.now(timezone.utc),
+    }
+
+@pytest.fixture
+def tail_obj():
+    """Fixture to provide tail object for testing."""
+    return {
+        "id": "tail-hare-2",
+        "class": "beast",
+        "name": "Hare",
+        "stage": 2,
+        "previous_stage_part_id": "tail-hare",
+        "type": "tail",
+        "special_genes": "",
+        "created_at": datetime.now(timezone.utc),
+        "modified_at": datetime.now(timezone.utc),
+    }
+
+@pytest.fixture
+def eyes_obj():
+    """Fixture to provide eyes object for testing."""
+    return {
+        "id": "eyes-telescope",
+        "class": "aquatic",
+        "name": "Telescope",
+        "stage": 1,
+        "previous_stage_part_id": None,
+        "type": "eyes",
+        "special_genes": "",
+        "created_at": datetime.now(timezone.utc),
+        "modified_at": datetime.now(timezone.utc),
+    }
 
 @pytest.mark.parametrize(
     "input, expected_result",
@@ -182,3 +256,675 @@ async def test_estimate_axie_level(monkeypatch, axie_instance, input, expected_r
     )
     
     assert axp_info == expected_result
+
+
+@pytest.mark.parametrize(
+    "input, expected_result",
+    [
+        (
+            # Breed -> Sale -> Breed -> Breed -> Process
+            {
+                "breed_count": 3,
+                "axie_activities": [
+                    {
+                        # After sale
+                        "activityType": "BreedAxie",
+                        "createdAt": 1742000000,
+                        "activityDetails": {},
+                    },
+                    {
+                        # After sale
+                        "activityType": "BreedAxie",
+                        "createdAt": 1741000000,
+                        "activityDetails": {},
+                    },
+                    {
+                        # Before Sale
+                        "activityType": "BreedAxie",
+                        "createdAt": 1739000000,
+                        "activityDetails": {},
+                    },
+                ],
+            },
+            1
+        ),
+        (
+            # Breed -> Sale -> Process
+            {
+                "breed_count": 1,
+                "axie_activities": [
+                    {
+                        # Before sale
+                        "activityType": "BreedAxie",
+                        "createdAt": 1739000000,
+                        "activityDetails": {},
+                    },
+                ],
+            },
+            1
+        ),
+        (
+            # Sale -> Process
+            {
+                "breed_count": 5,
+                "axie_activities": [],
+            },
+            5
+        )
+    ],
+)
+@pytest.mark.asyncio
+async def test_verify_breed_count(axie_instance, input, expected_result):
+    """Test the verify_breed_count method."""
+
+    breed_count = await axie_instance._Axie__verify_breed_count(
+        input["breed_count"],
+        input["axie_activities"]
+    )
+
+    assert breed_count == expected_result
+
+@pytest.mark.parametrize(
+    "axie_activities, expected_result",
+    [
+        (
+            [],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo",
+                    "stage": 1,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                }
+            }
+        )
+    ]
+)
+@pytest.mark.asyncio
+async def test_verify_parts_stage_0_modified_part(monkeypatch, axie_instance, axie_parts, axie_activities, expected_result):
+    new_axie_parts = await axie_instance._Axie__verify_parts_stage(
+        axie_parts, axie_activities
+    )
+
+    assert new_axie_parts == expected_result
+
+
+@pytest.mark.parametrize(
+    "axie_activities, expected_result",
+    [
+        (
+            # Evolve Ears -> Devolve Ears -> Sale -> Process
+            [
+                {
+                    'activityType': 'DevolveAxie',
+                    'createdAt': 1739900000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739800000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo",
+                    "stage": 1,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                },
+            },
+        ),
+        (
+            # Evolve Ears (Evolving) -> Sale -> Process
+            [
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739800000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo-2",
+                    "stage": 2,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                },
+            },
+        ),
+        (
+            # Sale -> Evolve Ears -> Devolve Ears -> Process
+            [
+                {
+                    'activityType': 'DevolveAxie',
+                    'createdAt': 1742000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1741000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo",
+                    "stage": 1,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                },
+            },
+        ),
+        (
+            # Evolve Ears (Evolving) -> Sale -> Devolve Ears -> Process
+            [
+                {
+                    'activityType': 'DevolveAxie',
+                    'createdAt': 1741000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739900000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo-2",
+                    "stage": 2,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                },
+            },
+        )
+    ]
+)
+@pytest.mark.asyncio
+async def test_verify_parts_stage_1_modified_part_stage_1(monkeypatch, mocker, axie_instance, ears_obj, axie_parts, axie_activities, expected_result):
+    """Test the verify_parts_stage method with 1 modified part that is currently at stage 1."""
+    
+    get_part_mock = mocker.AsyncMock(side_effect=[ears_obj])
+    monkeypatch.setattr("axies.Part.get_part", get_part_mock)
+
+    new_axie_parts = await axie_instance._Axie__verify_parts_stage(
+        axie_parts, axie_activities
+    )
+
+    assert new_axie_parts == expected_result
+
+
+
+@pytest.mark.parametrize(
+    "axie_activities, expected_result",
+    [
+        (
+            # Evolve Ears -> Sale -> Evolve Tail -> Devolve Ears-> Process
+            [
+                {
+                    'activityType': 'DevolveAxie',
+                    'createdAt': 1742000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1741000000,
+                    'activityDetails': {'partType': 'Tail', 'partStage': 2}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739900000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo-2",
+                    "stage": 2,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare",
+                    "stage": 1,
+                }
+            },
+        ),
+        (
+            # Evolve Tail -> Evolve Ears (Evolving) -> Sale -> Process
+            [
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739900000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739800000,
+                    'activityDetails': {'partType': 'Tail', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo-2",
+                    "stage": 2,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                }
+            },
+        ),
+        (
+            # Sale -> Evolve Tail -> Evolve Ears (Evolving) -> Process
+            [
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1742000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1741000000,
+                    'activityDetails': {'partType': 'Tail', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo",
+                    "stage": 1,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare",
+                    "stage": 1,
+                }
+            },
+        )
+    ]
+)
+@pytest.mark.asyncio
+async def test_verify_parts_stage_2_modified_parts_both_stages(monkeypatch, mocker, axie_instance, ears_obj, tail_obj, axie_parts, axie_activities, expected_result):
+    """Test the verify_parts_stage method with 2 modified parts, one at stage 1 and the other at stage 2."""
+    
+    # Must be careful with the order of the mock calls, as the first call will be for ears_obj and the second for tail_obj.
+    get_part_mock = mocker.AsyncMock(side_effect=[ears_obj, tail_obj])
+    monkeypatch.setattr("axies.Part.get_part", get_part_mock)
+
+    new_axie_parts = await axie_instance._Axie__verify_parts_stage(
+        axie_parts, axie_activities
+    )
+
+    assert new_axie_parts == expected_result
+
+
+@pytest.mark.parametrize(
+    "axie_activities, expected_result",
+    [
+        (
+            # Sale -> Evolve Ears -> Evolve Eyes (Evolving) -> Devolve Ears -> Process
+            [
+                {
+                    'activityType': 'DevolveAxie',
+                    'createdAt': 1743000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1742000000,
+                    'activityDetails': {'partType': 'Eyes', 'partStage': 2}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1741000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo",
+                    "stage": 1,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                }
+            },
+        ),
+        (
+            # Evolve Ears -> Evolve Eyes (Evolving) -> Devolve Ears -> Sale -> Process
+            [
+                {
+                    'activityType': 'DevolveAxie',
+                    'createdAt': 1739900000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739800000,
+                    'activityDetails': {'partType': 'Eyes', 'partStage': 2}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739700000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope-2",
+                    "stage": 2,
+                },
+                "Ears": {
+                    "id": "ears-nimo",
+                    "stage": 1,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                }
+            },
+        ),
+        (
+            # Evolve Ears -> Evolve Eyes (Evolving) -> Sale -> Devolve Ears -> Process
+            [
+                {
+                    'activityType': 'DevolveAxie',
+                    'createdAt': 1741000000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739900000,
+                    'activityDetails': {'partType': 'Eyes', 'partStage': 2}
+                },
+                {
+                    'activityType': 'EvolveAxie',
+                    'createdAt': 1739800000,
+                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                },
+            ],
+            {
+                "Eyes": {
+                    "id": "eyes-telescope-2",
+                    "stage": 2,
+                },
+                "Ears": {
+                    "id": "ears-nimo-2",
+                    "stage": 2,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                }
+            },
+        ),
+    ]
+)
+@pytest.mark.asyncio
+async def test_verify_parts_stage_2_modified_parts_stage_1(monkeypatch, mocker, axie_instance, ears_obj, eyes_obj, axie_parts, axie_activities, expected_result):
+    """Test the verify_parts_stage method with 2 modified parts, both at stage 1."""
+    
+    # Must be careful with the order of the mock calls, as the first call will be for ears_obj and the second for eyes_obj.
+    get_part_mock = mocker.AsyncMock(side_effect=[ears_obj, eyes_obj])
+    monkeypatch.setattr("axies.Part.get_part", get_part_mock)
+
+    new_axie_parts = await axie_instance._Axie__verify_parts_stage(
+        axie_parts, axie_activities
+    )
+
+    assert new_axie_parts == expected_result
+
+
+@pytest.mark.parametrize(
+    "axie_activities, expected_result",
+    [
+       (
+           # Sale -> Evolve Ears (Evolving) -> Process
+           [
+               {
+                   'activityType': 'EvolveAxie',
+                   'createdAt': 1741000000,
+                   'activityDetails': {'partType': 'Ears', 'partStage': 2}
+               },
+           ],
+           {
+               "Eyes": {
+                    "id": "eyes-telescope",
+                    "stage": 1,
+                },
+                "Ears": {
+                    "id": "ears-nimo",
+                    "stage": 1,
+                },
+                "Mouth": {
+                    "id": "mouth-little-owl",
+                    "stage": 1,
+                },
+                "Horn": {
+                    "id": "horn-eggshell-2",
+                    "stage": 2,
+                },
+                "Back": {
+                    "id": "back-pigeon-post",
+                    "stage": 1,
+                },
+                "Tail": {
+                    "id": "tail-hare-2",
+                    "stage": 2,
+                }
+           },
+       ) 
+    ]
+)
+@pytest.mark.asyncio
+async def test_verify_parts_stage_part_not_found(monkeypatch, mocker, axie_instance, ears_obj, axie_parts, axie_activities, expected_result):
+    """Test the verify_parts_stage method when a part is not found and then found after update."""
+    
+    # Mock the Part.get_part method to return None the first time and the ears_obj the second time.
+    get_part_mock = mocker.AsyncMock(side_effect=[None, ears_obj])
+    monkeypatch.setattr("axies.Part.get_part", get_part_mock)
+    monkeypatch.setattr("axies.Part.search_and_update_parts_latest_version", mocker.AsyncMock())
+
+    new_axie_parts = await axie_instance._Axie__verify_parts_stage(
+        axie_parts, axie_activities
+    )
+
+    assert new_axie_parts == expected_result
+
+
+@pytest.mark.asyncio
+async def test_verify_parts_stage_part_not_found_after_update(monkeypatch, mocker, axie_instance, axie_parts):
+    axie_activities = [
+        {
+            'activityType': 'EvolveAxie',
+            'createdAt': 1741000000,
+            'activityDetails': {'partType': 'Ears', 'partStage': 2}
+        },
+    ]
+
+    # Mock the Part.get_part method to return None after update.
+    get_part_mock = mocker.AsyncMock(side_effect=[None, None])
+    monkeypatch.setattr("axies.Part.get_part", get_part_mock)
+    monkeypatch.setattr("axies.Part.search_and_update_parts_latest_version", mocker.AsyncMock())
+
+    with pytest.raises(ValueError):
+        await axie_instance._Axie__verify_parts_stage(
+            axie_parts, axie_activities
+        )

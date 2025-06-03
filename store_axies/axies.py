@@ -222,7 +222,7 @@ class Axie:
         sale_date = datetime.fromtimestamp(self.__sale_date).date()
         today_date = datetime.now().date()
 
-        new_axp_info = axie_axp_info
+        new_axp_info = axie_axp_info.copy()
 
         if sale_date != today_date:
             # Sort the dictionary from most recent dates to older dates
@@ -315,9 +315,9 @@ class Axie:
             f"[__verify_parts_stage] Verifying {self.__axie_id} parts stages at time of sale..."
         )
 
-        new_axie_parts = axie_parts
+        new_axie_parts = axie_parts.copy()
         modified_parts = set()
-        evolved_parts_before_sale = set()
+        evolved_after_sale = False
 
         for activity in axie_activities:
             if (
@@ -332,31 +332,37 @@ class Axie:
                     if activity_type == "EvolveAxie":
                         new_axie_parts[part_type]["stage"] = part_stage - 1
                         modified_parts.add(part_type)
+                        evolved_after_sale = True
                     elif activity_type == "DevolveAxie":
                         new_axie_parts[part_type]["stage"] = part_stage + 1
                         modified_parts.add(part_type)
                 # Verify if the axie was evolved within 4 days before the sale.
                 elif activity["createdAt"] < self.__sale_date and activity[
                     "createdAt"
-                ] >= (self.__sale_date - 345600):
+                ] >= (self.__sale_date - 345600): # 345600 seconds = 4 days
                     if (
                         activity_type == "EvolveAxie"
-                        and part_type not in evolved_parts_before_sale
+                        and not evolved_after_sale
+                        and part_type not in modified_parts
                     ):
+                        """
+                        This means the part was evolving at the time of sale.
+                        Because no part was evolved after the sale and the part was not devolved either.
+                        Set the part stage to the evolved stage.
+                        """
                         new_axie_parts[part_type]["stage"] = part_stage
                         modified_parts.add(part_type)
-                        evolved_parts_before_sale.add(part_type)
-                    elif (
-                        activity_type == "DevolveAxie"
-                        and part_type not in evolved_parts_before_sale
-                    ):
+                        
+                        # We can break here since only one part can be evolved at a time.
+                        break
+                    elif activity_type == "DevolveAxie" and not evolved_after_sale:
                         """
-                        This handle the case where the evolution is accelerated and then devolved.
+                        This mean the part was devolved before the time of sale.
                         """
-                        evolved_parts_before_sale.add(part_type)
+                        modified_parts.add(part_type)
 
         # Get the ID for the modified parts
-        for modified_part in modified_parts:
+        for modified_part in sorted(modified_parts):
             try:
                 # Get the current part
                 part = await Part.get_part(
@@ -378,7 +384,7 @@ class Axie:
                         logging.error(
                             f"[__verify_parts_stage] Part {new_axie_parts[modified_part]['id']} not found in the database after updating the parts."
                         )
-                        raise Exception(
+                        raise ValueError(
                             f"Part {new_axie_parts[modified_part]['id']} not found in the database after updating the parts."
                         )
 
@@ -500,11 +506,11 @@ class Axie:
         )
         axie_data["axie"]["parts"] = axie_parts
 
-        # Verify if the sale was not made within the last 2 minutes
+        # Verify if the sale was not made within the last 1 minute
         current_epoch = int(time.time())
-        if current_epoch >= self.__sale_date + 120:
+        if current_epoch >= self.__sale_date + 60:
             logging.info(
-                "[process_axie_data] The sale was not made within the last 120 seconds."
+                "[process_axie_data] The sale was not made within the last 60 seconds."
             )
 
             axie_axp_info = await self.__estimate_axie_level(
