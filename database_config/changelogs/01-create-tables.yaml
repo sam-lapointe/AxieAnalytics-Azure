@@ -78,6 +78,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: "sale_date"
+                  type: "bigint"
+                  constraints:
+                    nullable: false
+              - column:
                   name: "level"
                   type: "smallint"
                   constraints:
@@ -107,31 +112,43 @@ databaseChangeLog:
                   type: "varchar(64)"
                   constraints:
                     nullable: false
+                    foreignKeyName: fk_axie_eyes
+                    references: axie_parts(id)
               - column:
                   name: "ears_id"
                   type: "varchar(64)"
                   constraints:
                     nullable: false
+                    foreignKeyName: fk_axie_ears
+                    references: axie_parts(id)
               - column:
                   name: "mouth_id"
                   type: "varchar(64)"
                   constraints:
                     nullable: false
+                    foreignKeyName: fk_axie_mouth
+                    references: axie_parts(id)
               - column:
                   name: "horn_id"
                   type: "varchar(64)"
                   constraints:
                     nullable: false
+                    foreignKeyName: fk_axie_horn
+                    references: axie_parts(id)
               - column:
                   name: "back_id"
                   type: "varchar(64)"
                   constraints:
                     nullable: false
+                    foreignKeyName: fk_axie_back
+                    references: axie_parts(id)
               - column:
                   name: "tail_id"
                   type: "varchar(64)"
                   constraints:
                     nullable: false
+                    foreignKeyName: fk_axie_tail
+                    references: axie_parts(id)
               - column:
                   name: "body_shape_id"
                   type: "varchar(64)"
@@ -152,10 +169,18 @@ databaseChangeLog:
                   type: "timestamptz"
                   constraints:
                     nullable: false
+
        - addUniqueConstraint:
            tableName: axies
            columnNames: transaction_hash, axie_id
            constraintName: unique_axie_sale
+
+       - addForeignKeyConstraint:
+            baseTableName: axies
+            baseColumnNames: transaction_hash, axie_id
+            referencedTableName: axie_sales
+            referencedColumnNames: transaction_hash, axie_id
+            constraintName: fk_axie_sale
 
 - changeSet:
       id: create-axieParts-table
