@@ -1,6 +1,5 @@
 import pytest
 import sys
-import asyncpg
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -25,6 +24,7 @@ def axie_instance(mock_connection):
         axie_id=12345,
         sale_date=1740000000,
     )
+
 
 @pytest.fixture
 def axie_parts():
@@ -53,8 +53,9 @@ def axie_parts():
         "Tail": {
             "id": "tail-hare-2",
             "stage": 2,
-        }
+        },
     }
+
 
 @pytest.fixture
 def ears_obj():
@@ -71,6 +72,7 @@ def ears_obj():
         "modified_at": datetime.now(timezone.utc),
     }
 
+
 @pytest.fixture
 def tail_obj():
     """Fixture to provide tail object for testing."""
@@ -85,6 +87,7 @@ def tail_obj():
         "created_at": datetime.now(timezone.utc),
         "modified_at": datetime.now(timezone.utc),
     }
+
 
 @pytest.fixture
 def eyes_obj():
@@ -101,6 +104,7 @@ def eyes_obj():
         "modified_at": datetime.now(timezone.utc),
     }
 
+
 @pytest.mark.parametrize(
     "input, expected_result",
     [
@@ -115,7 +119,7 @@ def eyes_obj():
                     ],
                     "2025-06-02": [
                         {"source_id": "7", "xp": 2000},
-                    ]
+                    ],
                 },
                 "axie_activities": [
                     {
@@ -238,23 +242,23 @@ def eyes_obj():
             },
             {"level": 20, "xp": 0},
         ),
-    ]
+    ],
 )
 @pytest.mark.asyncio
 async def test_estimate_axie_level(monkeypatch, axie_instance, input, expected_result):
     """Test the estimate_axie_level method."""
-    
+
     if input["sale_date"] == "today":
         # Mock today's date.
         mock_today_date = datetime(2025, 2, 19, 12, 0, 0, tzinfo=timezone.utc)
         monkeypatch.setattr("axies.datetime", mock_today_date)
-    
+
     axp_info = await axie_instance._Axie__estimate_axie_level(
         axie_axp_info=input["axie_axp_info"],
         earned_axp_stat=input["earned_axp_stat"],
         axie_activities=input["axie_activities"],
     )
-    
+
     assert axp_info == expected_result
 
 
@@ -286,7 +290,7 @@ async def test_estimate_axie_level(monkeypatch, axie_instance, input, expected_r
                     },
                 ],
             },
-            1
+            1,
         ),
         (
             # Breed -> Sale -> Process
@@ -301,7 +305,7 @@ async def test_estimate_axie_level(monkeypatch, axie_instance, input, expected_r
                     },
                 ],
             },
-            1
+            1,
         ),
         (
             # Sale -> Process
@@ -309,8 +313,8 @@ async def test_estimate_axie_level(monkeypatch, axie_instance, input, expected_r
                 "breed_count": 5,
                 "axie_activities": [],
             },
-            5
-        )
+            5,
+        ),
     ],
 )
 @pytest.mark.asyncio
@@ -318,11 +322,11 @@ async def test_verify_breed_count(axie_instance, input, expected_result):
     """Test the verify_breed_count method."""
 
     breed_count = await axie_instance._Axie__verify_breed_count(
-        input["breed_count"],
-        input["axie_activities"]
+        input["breed_count"], input["axie_activities"]
     )
 
     assert breed_count == expected_result
+
 
 @pytest.mark.parametrize(
     "axie_activities, expected_result",
@@ -353,13 +357,15 @@ async def test_verify_breed_count(axie_instance, input, expected_result):
                 "Tail": {
                     "id": "tail-hare-2",
                     "stage": 2,
-                }
-            }
+                },
+            },
         )
-    ]
+    ],
 )
 @pytest.mark.asyncio
-async def test_verify_parts_stage_0_modified_part(monkeypatch, axie_instance, axie_parts, axie_activities, expected_result):
+async def test_verify_parts_stage_0_modified_part(
+    monkeypatch, axie_instance, axie_parts, axie_activities, expected_result
+):
     new_axie_parts = await axie_instance._Axie__verify_parts_stage(
         axie_parts, axie_activities
     )
@@ -374,14 +380,14 @@ async def test_verify_parts_stage_0_modified_part(monkeypatch, axie_instance, ax
             # Evolve Ears -> Devolve Ears -> Sale -> Process
             [
                 {
-                    'activityType': 'DevolveAxie',
-                    'createdAt': 1739900000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                    "activityType": "DevolveAxie",
+                    "createdAt": 1739900000,
+                    "activityDetails": {"partType": "Ears", "partStage": 1},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739800000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739800000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -415,9 +421,9 @@ async def test_verify_parts_stage_0_modified_part(monkeypatch, axie_instance, ax
             # Evolve Ears (Evolving) -> Sale -> Process
             [
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739800000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739800000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -451,14 +457,14 @@ async def test_verify_parts_stage_0_modified_part(monkeypatch, axie_instance, ax
             # Sale -> Evolve Ears -> Devolve Ears -> Process
             [
                 {
-                    'activityType': 'DevolveAxie',
-                    'createdAt': 1742000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                    "activityType": "DevolveAxie",
+                    "createdAt": 1742000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 1},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1741000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1741000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -492,14 +498,14 @@ async def test_verify_parts_stage_0_modified_part(monkeypatch, axie_instance, ax
             # Evolve Ears (Evolving) -> Sale -> Devolve Ears -> Process
             [
                 {
-                    'activityType': 'DevolveAxie',
-                    'createdAt': 1741000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                    "activityType": "DevolveAxie",
+                    "createdAt": 1741000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 1},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739900000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739900000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -528,13 +534,21 @@ async def test_verify_parts_stage_0_modified_part(monkeypatch, axie_instance, ax
                     "stage": 2,
                 },
             },
-        )
-    ]
+        ),
+    ],
 )
 @pytest.mark.asyncio
-async def test_verify_parts_stage_1_modified_part_stage_1(monkeypatch, mocker, axie_instance, ears_obj, axie_parts, axie_activities, expected_result):
+async def test_verify_parts_stage_1_modified_part_stage_1(
+    monkeypatch,
+    mocker,
+    axie_instance,
+    ears_obj,
+    axie_parts,
+    axie_activities,
+    expected_result,
+):
     """Test the verify_parts_stage method with 1 modified part that is currently at stage 1."""
-    
+
     get_part_mock = mocker.AsyncMock(side_effect=[ears_obj])
     monkeypatch.setattr("axies.Part.get_part", get_part_mock)
 
@@ -545,7 +559,6 @@ async def test_verify_parts_stage_1_modified_part_stage_1(monkeypatch, mocker, a
     assert new_axie_parts == expected_result
 
 
-
 @pytest.mark.parametrize(
     "axie_activities, expected_result",
     [
@@ -553,19 +566,19 @@ async def test_verify_parts_stage_1_modified_part_stage_1(monkeypatch, mocker, a
             # Evolve Ears -> Sale -> Evolve Tail -> Devolve Ears-> Process
             [
                 {
-                    'activityType': 'DevolveAxie',
-                    'createdAt': 1742000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                    "activityType": "DevolveAxie",
+                    "createdAt": 1742000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 1},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1741000000,
-                    'activityDetails': {'partType': 'Tail', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1741000000,
+                    "activityDetails": {"partType": "Tail", "partStage": 2},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739900000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739900000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -592,21 +605,21 @@ async def test_verify_parts_stage_1_modified_part_stage_1(monkeypatch, mocker, a
                 "Tail": {
                     "id": "tail-hare",
                     "stage": 1,
-                }
+                },
             },
         ),
         (
             # Evolve Tail -> Evolve Ears (Evolving) -> Sale -> Process
             [
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739900000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739900000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739800000,
-                    'activityDetails': {'partType': 'Tail', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739800000,
+                    "activityDetails": {"partType": "Tail", "partStage": 2},
                 },
             ],
             {
@@ -633,21 +646,21 @@ async def test_verify_parts_stage_1_modified_part_stage_1(monkeypatch, mocker, a
                 "Tail": {
                     "id": "tail-hare-2",
                     "stage": 2,
-                }
+                },
             },
         ),
         (
             # Sale -> Evolve Tail -> Evolve Ears (Evolving) -> Process
             [
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1742000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1742000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1741000000,
-                    'activityDetails': {'partType': 'Tail', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1741000000,
+                    "activityDetails": {"partType": "Tail", "partStage": 2},
                 },
             ],
             {
@@ -674,15 +687,24 @@ async def test_verify_parts_stage_1_modified_part_stage_1(monkeypatch, mocker, a
                 "Tail": {
                     "id": "tail-hare",
                     "stage": 1,
-                }
+                },
             },
-        )
-    ]
+        ),
+    ],
 )
 @pytest.mark.asyncio
-async def test_verify_parts_stage_2_modified_parts_both_stages(monkeypatch, mocker, axie_instance, ears_obj, tail_obj, axie_parts, axie_activities, expected_result):
+async def test_verify_parts_stage_2_modified_parts_both_stages(
+    monkeypatch,
+    mocker,
+    axie_instance,
+    ears_obj,
+    tail_obj,
+    axie_parts,
+    axie_activities,
+    expected_result,
+):
     """Test the verify_parts_stage method with 2 modified parts, one at stage 1 and the other at stage 2."""
-    
+
     # Must be careful with the order of the mock calls, as the first call will be for ears_obj and the second for tail_obj.
     get_part_mock = mocker.AsyncMock(side_effect=[ears_obj, tail_obj])
     monkeypatch.setattr("axies.Part.get_part", get_part_mock)
@@ -701,19 +723,19 @@ async def test_verify_parts_stage_2_modified_parts_both_stages(monkeypatch, mock
             # Sale -> Evolve Ears -> Evolve Eyes (Evolving) -> Devolve Ears -> Process
             [
                 {
-                    'activityType': 'DevolveAxie',
-                    'createdAt': 1743000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                    "activityType": "DevolveAxie",
+                    "createdAt": 1743000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 1},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1742000000,
-                    'activityDetails': {'partType': 'Eyes', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1742000000,
+                    "activityDetails": {"partType": "Eyes", "partStage": 2},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1741000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1741000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -740,26 +762,26 @@ async def test_verify_parts_stage_2_modified_parts_both_stages(monkeypatch, mock
                 "Tail": {
                     "id": "tail-hare-2",
                     "stage": 2,
-                }
+                },
             },
         ),
         (
             # Evolve Ears -> Evolve Eyes (Evolving) -> Devolve Ears -> Sale -> Process
             [
                 {
-                    'activityType': 'DevolveAxie',
-                    'createdAt': 1739900000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                    "activityType": "DevolveAxie",
+                    "createdAt": 1739900000,
+                    "activityDetails": {"partType": "Ears", "partStage": 1},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739800000,
-                    'activityDetails': {'partType': 'Eyes', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739800000,
+                    "activityDetails": {"partType": "Eyes", "partStage": 2},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739700000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739700000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -786,26 +808,26 @@ async def test_verify_parts_stage_2_modified_parts_both_stages(monkeypatch, mock
                 "Tail": {
                     "id": "tail-hare-2",
                     "stage": 2,
-                }
+                },
             },
         ),
         (
             # Evolve Ears -> Evolve Eyes (Evolving) -> Sale -> Devolve Ears -> Process
             [
                 {
-                    'activityType': 'DevolveAxie',
-                    'createdAt': 1741000000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 1}
+                    "activityType": "DevolveAxie",
+                    "createdAt": 1741000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 1},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739900000,
-                    'activityDetails': {'partType': 'Eyes', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739900000,
+                    "activityDetails": {"partType": "Eyes", "partStage": 2},
                 },
                 {
-                    'activityType': 'EvolveAxie',
-                    'createdAt': 1739800000,
-                    'activityDetails': {'partType': 'Ears', 'partStage': 2}
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1739800000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
                 },
             ],
             {
@@ -832,15 +854,24 @@ async def test_verify_parts_stage_2_modified_parts_both_stages(monkeypatch, mock
                 "Tail": {
                     "id": "tail-hare-2",
                     "stage": 2,
-                }
+                },
             },
         ),
-    ]
+    ],
 )
 @pytest.mark.asyncio
-async def test_verify_parts_stage_2_modified_parts_stage_1(monkeypatch, mocker, axie_instance, ears_obj, eyes_obj, axie_parts, axie_activities, expected_result):
+async def test_verify_parts_stage_2_modified_parts_stage_1(
+    monkeypatch,
+    mocker,
+    axie_instance,
+    ears_obj,
+    eyes_obj,
+    axie_parts,
+    axie_activities,
+    expected_result,
+):
     """Test the verify_parts_stage method with 2 modified parts, both at stage 1."""
-    
+
     # Must be careful with the order of the mock calls, as the first call will be for ears_obj and the second for eyes_obj.
     get_part_mock = mocker.AsyncMock(side_effect=[ears_obj, eyes_obj])
     monkeypatch.setattr("axies.Part.get_part", get_part_mock)
@@ -855,17 +886,17 @@ async def test_verify_parts_stage_2_modified_parts_stage_1(monkeypatch, mocker, 
 @pytest.mark.parametrize(
     "axie_activities, expected_result",
     [
-       (
-           # Sale -> Evolve Ears (Evolving) -> Process
-           [
-               {
-                   'activityType': 'EvolveAxie',
-                   'createdAt': 1741000000,
-                   'activityDetails': {'partType': 'Ears', 'partStage': 2}
-               },
-           ],
-           {
-               "Eyes": {
+        (
+            # Sale -> Evolve Ears (Evolving) -> Process
+            [
+                {
+                    "activityType": "EvolveAxie",
+                    "createdAt": 1741000000,
+                    "activityDetails": {"partType": "Ears", "partStage": 2},
+                },
+            ],
+            {
+                "Eyes": {
                     "id": "eyes-telescope",
                     "stage": 1,
                 },
@@ -888,19 +919,29 @@ async def test_verify_parts_stage_2_modified_parts_stage_1(monkeypatch, mocker, 
                 "Tail": {
                     "id": "tail-hare-2",
                     "stage": 2,
-                }
-           },
-       ) 
-    ]
+                },
+            },
+        )
+    ],
 )
 @pytest.mark.asyncio
-async def test_verify_parts_stage_part_not_found(monkeypatch, mocker, axie_instance, ears_obj, axie_parts, axie_activities, expected_result):
+async def test_verify_parts_stage_part_not_found(
+    monkeypatch,
+    mocker,
+    axie_instance,
+    ears_obj,
+    axie_parts,
+    axie_activities,
+    expected_result,
+):
     """Test the verify_parts_stage method when a part is not found and then found after update."""
-    
+
     # Mock the Part.get_part method to return None the first time and the ears_obj the second time.
     get_part_mock = mocker.AsyncMock(side_effect=[None, ears_obj])
     monkeypatch.setattr("axies.Part.get_part", get_part_mock)
-    monkeypatch.setattr("axies.Part.search_and_update_parts_latest_version", mocker.AsyncMock())
+    monkeypatch.setattr(
+        "axies.Part.search_and_update_parts_latest_version", mocker.AsyncMock()
+    )
 
     new_axie_parts = await axie_instance._Axie__verify_parts_stage(
         axie_parts, axie_activities
@@ -910,21 +951,23 @@ async def test_verify_parts_stage_part_not_found(monkeypatch, mocker, axie_insta
 
 
 @pytest.mark.asyncio
-async def test_verify_parts_stage_part_not_found_after_update(monkeypatch, mocker, axie_instance, axie_parts):
+async def test_verify_parts_stage_part_not_found_after_update(
+    monkeypatch, mocker, axie_instance, axie_parts
+):
     axie_activities = [
         {
-            'activityType': 'EvolveAxie',
-            'createdAt': 1741000000,
-            'activityDetails': {'partType': 'Ears', 'partStage': 2}
+            "activityType": "EvolveAxie",
+            "createdAt": 1741000000,
+            "activityDetails": {"partType": "Ears", "partStage": 2},
         },
     ]
 
     # Mock the Part.get_part method to return None after update.
     get_part_mock = mocker.AsyncMock(side_effect=[None, None])
     monkeypatch.setattr("axies.Part.get_part", get_part_mock)
-    monkeypatch.setattr("axies.Part.search_and_update_parts_latest_version", mocker.AsyncMock())
+    monkeypatch.setattr(
+        "axies.Part.search_and_update_parts_latest_version", mocker.AsyncMock()
+    )
 
     with pytest.raises(ValueError):
-        await axie_instance._Axie__verify_parts_stage(
-            axie_parts, axie_activities
-        )
+        await axie_instance._Axie__verify_parts_stage(axie_parts, axie_activities)
