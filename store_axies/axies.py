@@ -3,6 +3,7 @@ import asyncpg
 import aiohttp
 import json
 import time
+import asyncio
 from asyncpg.exceptions import UniqueViolationError
 from datetime import datetime, timezone
 from parts import Part
@@ -125,18 +126,27 @@ class Axie:
 
         body = {"query": query, "operationName": "GetAxieData", "variables": {}}
 
-        try:
-            async with aiohttp.ClientSession() as http_client:
-                async with http_client.post(
-                    api_url, headers=headers, data=json.dumps(body)
-                ) as axie_data_response:
-                    axie_data = await axie_data_response.json()
-            return axie_data["data"]
-        except Exception as e:
-            logging.error(
-                f"[__get_axie_data] Error fetching axie {self.__axie_id} data: {e}"
-            )
-            raise e
+        retries = 3
+        delay = 5  # Initial delay of 5 seconds before retrying
+        for attempt in range(1, retries + 1):
+            try:
+                async with aiohttp.ClientSession() as http_client:
+                    async with http_client.post(
+                        api_url, headers=headers, data=json.dumps(body)
+                    ) as axie_data_response:
+                        axie_data = await axie_data_response.json()
+                return axie_data["data"]
+            except Exception as e:
+                logging.error(
+                    f"[__get_axie_data] Attempt {attempt} failed fetching axie {self.__axie_id} data: {e}"
+                )
+                if attempt == retries:
+                    logging.error(
+                        f"[__get_axie_data] All {retries} attempts failed for fetching axie {self.__axie_id} data."
+                    )
+                    raise e
+                await asyncio.sleep(delay)
+                delay *= 2  # Exponential backoff
 
     async def __get_axie_activities(self) -> list:
         logging.info(
@@ -193,19 +203,28 @@ class Axie:
             },
         }
 
-        try:
-            async with aiohttp.ClientSession() as http_client:
-                async with http_client.post(
-                    api_url, headers=headers, data=json.dumps(body)
-                ) as axie_activities_response:
-                    axie_activities = await axie_activities_response.json()
+        retries = 3
+        delay = 5  # Initial delay of 5 seconds before retrying
+        for attempt in range(1, retries + 1):
+            try:
+                async with aiohttp.ClientSession() as http_client:
+                    async with http_client.post(
+                        api_url, headers=headers, data=json.dumps(body)
+                    ) as axie_activities_response:
+                        axie_activities = await axie_activities_response.json()
 
-            return axie_activities["data"]
-        except Exception as e:
-            logging.error(
-                f"[__get_axie_activities] Error fetching axie {self.__axie_id} activities: {e}"
-            )
-            raise e
+                return axie_activities["data"]
+            except Exception as e:
+                logging.error(
+                    f"[__get_axie_activities] Attempt {attempt} failed fetching axie {self.__axie_id} activities: {e}"
+                )
+                if attempt == retries:
+                    logging.error(
+                        f"[__get_axie_activities] All {retries} attempts failed for fetching axie {self.__axie_id} activities."
+                    )
+                    raise e
+                asyncio.sleep(delay)
+                delay *= 2  # Exponential backoff
 
     async def __estimate_axie_level(
         self, axie_axp_info: dict, earned_axp_stat: dict, axie_activities: list
@@ -339,7 +358,7 @@ class Axie:
                 # Verify if the axie was evolved within 4 days before the sale.
                 elif activity["createdAt"] < self.__sale_date and activity[
                     "createdAt"
-                ] >= (self.__sale_date - 345600): # 345600 seconds = 4 days
+                ] >= (self.__sale_date - 345600):  # 345600 seconds = 4 days
                     if (
                         activity_type == "EvolveAxie"
                         and not evolved_after_sale
@@ -352,8 +371,8 @@ class Axie:
                         """
                         new_axie_parts[part_type]["stage"] = part_stage
                         modified_parts.add(part_type)
-                        
-                        # We can break here since only one part can be evolved at a time.
+
+                        #  We can break here since only one part can be evolved at a time.
                         break
                     elif activity_type == "DevolveAxie" and not evolved_after_sale:
                         """
