@@ -54,6 +54,60 @@ databaseChangeLog:
            constraintName: unique_axie_sale_transaction
 
 - changeSet:
+      id: create-axieParts-table
+      author: "Samuel Lapointe"
+      changes:
+       - createTable:
+            tableName: axie_parts
+            columns:
+              - column:
+                  name: "id"
+                  type: "varchar(64)"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "class"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "name"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "stage"
+                  type: "smallint"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "previous_stage_part_id"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: true
+              - column:
+                  name: "type"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "special_genes"
+                  type: "varchar(64)"
+                  constraints:
+                    nullable: true
+              - column:
+                  name: "created_at"
+                  type: "timestamptz"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "modified_at"
+                  type: "timestamptz"
+                  constraints:
+                    nullable: false
+
+- changeSet:
       id: create-axies-table
       author: "Samuel Lapointe"
       changes:
@@ -181,60 +235,6 @@ databaseChangeLog:
             referencedTableName: axie_sales
             referencedColumnNames: transaction_hash, axie_id
             constraintName: fk_axie_sale
-
-- changeSet:
-      id: create-axieParts-table
-      author: "Samuel Lapointe"
-      changes:
-       - createTable:
-            tableName: axie_parts
-            columns:
-              - column:
-                  name: "id"
-                  type: "varchar(64)"
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: "class"
-                  type: "varchar(64)"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: "name"
-                  type: "varchar(64)"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: "stage"
-                  type: "smallint"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: "previous_stage_part_id"
-                  type: "varchar(64)"
-                  constraints:
-                    nullable: true
-              - column:
-                  name: "type"
-                  type: "varchar(64)"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: "special_genes"
-                  type: "varchar(64)"
-                  constraints:
-                    nullable: true
-              - column:
-                  name: "created_at"
-                  type: "timestamptz"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: "modified_at"
-                  type: "timestamptz"
-                  constraints:
-                    nullable: false
 
 - changeSet:
       id: create-contracts-table
