@@ -2,6 +2,7 @@ import azure.functions as func
 import logging
 import asyncpg
 import ast
+import asyncio
 from datetime import datetime, timezone
 from azure.identity.aio import DefaultAzureCredential
 from config import Config
@@ -17,6 +18,8 @@ servicebus_topic_axies_subscription_name = (
     Config.get_servicebus_topic_axies_subscription_name()
 )
 servicebus_topic_axies_name = Config.get_servicebus_topic_axies_name()
+dependencies_lock = asyncio.Lock()
+dependencies_initialized = False
 
 
 async def init_dependencies():
@@ -24,32 +27,43 @@ async def init_dependencies():
     Initialize dependencies for the function app.
     This function is called when the function app starts.
     """
-    global db_connection, axie_api_key
+    global db_connection, axie_api_key, dependencies_initialized
 
-    if not db_connection:
-        # Initialize PostgreSQL connection
-        db_connection_string = await Config.get_pg_connection_string(credential)
-        db_connection = await asyncpg.create_pool(
-            dsn=db_connection_string,
-            ssl="require",
-            min_size=1,
-            max_size=10,
-        )
-        logging.info("PostgreSQL connection initialized.")
+    if dependencies_initialized:
+        return
 
-    if not axie_api_key:
-        axie_api_key = await Config.get_axie_api_key(credential)
-        logging.info("Axie API key initialized.")
+    async with dependencies_lock:
+        if dependencies_initialized:
+            return
 
-    # Verify if the versions table contain the current version of parts
-    current_parts_version = await Part.get_current_version(db_connection)
-    if not current_parts_version:
-        logging.error(
-            "Current parts version not found in the database. Please run the init_axie_parts function."
-        )
-        raise Exception(
-            "Current parts version not found in the database. Please run the init_axie_parts function."
-        )
+        logging.info("Initializing dependencies...")
+
+        if not db_connection:
+            # Initialize PostgreSQL connection
+            db_connection_string = await Config.get_pg_connection_string(credential)
+            db_connection = await asyncpg.create_pool(
+                dsn=db_connection_string,
+                ssl="require",
+                min_size=1,
+                max_size=10,
+            )
+            logging.info("PostgreSQL connection initialized.")
+
+        if not axie_api_key:
+            axie_api_key = await Config.get_axie_api_key(credential)
+            logging.info("Axie API key initialized.")
+
+        # Verify if the versions table contain the current version of parts
+        current_parts_version = await Part.get_current_version(db_connection)
+        if not current_parts_version:
+            logging.error(
+                "Current parts version not found in the database. Please run the init_axie_parts function."
+            )
+            raise Exception(
+                "Current parts version not found in the database. Please run the init_axie_parts function."
+            )
+
+        dependencies_initialized = True
 
 
 app = func.FunctionApp()

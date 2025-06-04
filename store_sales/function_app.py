@@ -2,6 +2,7 @@ import azure.functions as func
 import logging
 import ast
 import asyncpg
+import asyncio
 from datetime import datetime, timezone
 from transaction import Transaction
 from sales import StoreSales
@@ -21,6 +22,8 @@ servicebus_topic_sales_subscription_name = (
 )
 servicebus_topic_sales_name = Config.get_servicebus_topic_sales_name()
 servicebus_topic_axies_name = Config.get_servicebus_topic_axies_name()
+dependencies_lock = asyncio.Lock()
+dependencies_initialized = False
 
 
 async def init_dependencies():
@@ -28,35 +31,46 @@ async def init_dependencies():
     Initialize dependencies for the function app.
     This function is called when the function app starts.
     """
-    global servicebus_client, db_connection, w3
+    global servicebus_client, db_connection, w3, dependencies_initialized
 
-    if not servicebus_client:
-        # Initialize Service Bus client and sender
-        servicebus_namespace = Config.get_servicebus_full_namespace()
-        servicebus_client = ServiceBusClient(
-            fully_qualified_namespace=servicebus_namespace,
-            credential=credential,
-            logging_enable=True,
-        )
-        logging.info(
-            f"Service Bus client initialized for namespace: {servicebus_namespace}"
-        )
+    if dependencies_initialized:
+        return
 
-    if not db_connection:
-        # Initialize PostgreSQL connection
-        db_connection_string = await Config.get_pg_connection_string(credential)
-        db_connection = await asyncpg.create_pool(
-            dsn=db_connection_string,
-            ssl="require",
-            min_size=1,
-            max_size=10,
-        )
-        logging.info("PostgreSQL connection initialized.")
+    async with dependencies_lock:
+        if dependencies_initialized:
+            return
 
-    if not w3:
-        # Initialize Web3 provider
-        w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider()))
-        logging.info("Web3 provider initialized.")
+        logging.info("Initializing dependencies...")
+
+        if not servicebus_client:
+            # Initialize Service Bus client and sender
+            servicebus_namespace = Config.get_servicebus_full_namespace()
+            servicebus_client = ServiceBusClient(
+                fully_qualified_namespace=servicebus_namespace,
+                credential=credential,
+                logging_enable=True,
+            )
+            logging.info(
+                f"Service Bus client initialized for namespace: {servicebus_namespace}"
+            )
+
+        if not db_connection:
+            # Initialize PostgreSQL connection
+            db_connection_string = await Config.get_pg_connection_string(credential)
+            db_connection = await asyncpg.create_pool(
+                dsn=db_connection_string,
+                ssl="require",
+                min_size=1,
+                max_size=10,
+            )
+            logging.info("PostgreSQL connection initialized.")
+
+        if not w3:
+            # Initialize Web3 provider
+            w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(Config.get_node_provider()))
+            logging.info("Web3 provider initialized.")
+
+        dependencies_initialized = True
 
 
 app = func.FunctionApp()
