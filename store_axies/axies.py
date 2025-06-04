@@ -442,7 +442,7 @@ class Axie:
                     INSERT INTO axies (
                         transaction_hash,
                         axie_id,
-                        sale_date
+                        sale_date,
                         level,
                         xp,
                         breed_count,
@@ -486,7 +486,7 @@ class Axie:
             )
         except Exception as e:
             logging.error(
-                f"[__store_axie_data] An error occurred while storing axie {axie_data} data: {e}"
+                f"[__store_axie_data] An error occurred while storing axie {self.__axie_id}:{axie_data} data: {e}"
             )
             raise e
 
