@@ -44,7 +44,12 @@ async def init_dependencies():
     # Verify if the versions table contain the current version of parts
     current_parts_version = await Part.get_current_version(db_connection)
     if not current_parts_version:
-        await Part.search_and_update_parts_latest_version(db_connection)
+        logging.error(
+            "Current parts version not found in the database. Please run the init_axie_parts function."
+        )
+        raise Exception(
+            "Current parts version not found in the database. Please run the init_axie_parts function."
+        )
 
 
 app = func.FunctionApp()
@@ -91,3 +96,28 @@ def timer_function(timer: func.TimerRequest) -> None:
     # This function is used to keep the function app alive.
     # It does not do anything else.
     # It is called every minute.
+
+
+@app.route(route="init_axie_parts")
+async def init_axie_parts(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("Python HTTP trigger received a request to initialize axie parts.")
+
+    global db_connection
+
+    # Verify if the versions table contain the current version of parts
+    current_parts_version = await Part.get_current_version(db_connection)
+    if not current_parts_version:
+        await Part.search_and_update_parts_latest_version(db_connection)
+        return func.HttpResponse(
+            "Axie parts initialized successfully.",
+            status_code=200,
+        )
+    else:
+        logging.info(
+            "Axie parts already initialized with version: %s",
+            current_parts_version,
+        )
+        return func.HttpResponse(
+            "Axie parts already initialized.",
+            status_code=200,
+        )
