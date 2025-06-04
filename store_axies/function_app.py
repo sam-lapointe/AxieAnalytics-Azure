@@ -104,6 +104,17 @@ async def init_axie_parts(req: func.HttpRequest) -> func.HttpResponse:
 
     global db_connection
 
+    if not db_connection:
+        # Initialize PostgreSQL connection
+        db_connection_string = await Config.get_pg_connection_string(credential)
+        db_connection = await asyncpg.create_pool(
+            dsn=db_connection_string,
+            ssl="require",
+            min_size=1,
+            max_size=10,
+        )
+        logging.info("PostgreSQL connection initialized.")
+
     # Verify if the versions table contain the current version of parts
     current_parts_version = await Part.get_current_version(db_connection)
     if not current_parts_version:
