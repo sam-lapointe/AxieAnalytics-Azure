@@ -481,7 +481,7 @@ class Axie:
                     current_time_utc,
                 )
         except UniqueViolationError:
-            logging.warning(
+            logging.info(
                 f"[__store_axie_data] Axie {self.__axie_id} already exists in the database. Skipping insertion."
             )
         except Exception as e:
