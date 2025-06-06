@@ -13,18 +13,21 @@ import {
 
 export function CardCollection() {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Card Title</CardTitle>
-                <CardDescription>Card Description</CardDescription>
-                <CardAction>Card Action</CardAction>
-            </CardHeader>
-            <CardContent>
-                <p>Card Content</p>
-            </CardContent>
-            <CardFooter>
-                <p>Card Footer</p>
-            </CardFooter>
-        </Card>
+        <div className="">
+            <Card>
+                <CardHeader className="border-b-2">
+                    <CardTitle>Card Title</CardTitle>
+                    <CardDescription>Card Description</CardDescription>
+                    <CardAction>Card Action</CardAction>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center p-6">
+                    <p>Card Content</p>
+                </CardContent>
+                <CardFooter className="border-t-2">
+                    <p>Card Footer</p>
+                </CardFooter>
+            </Card>
+        </div>
+        
     )
 }
