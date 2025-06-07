@@ -1,7 +1,7 @@
 import "react";
 import { useState, useEffect } from "react";
 import { CardCollection } from "./card_collection";
-import { Button } from "@/components/ui/button";
+import { TitleAndDefaultTimerange } from "./title_and_default_timerange";
 import {
     Carousel,
     CarouselContent,
@@ -9,49 +9,19 @@ import {
     CarouselNext,
     CarouselPrevious,
   } from "@/components/ui/carousel";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 
 export function OverviewByCollection({data}) {
     const [isLoading, setIsLoading] = useState(false);
+    const [timeframe, setTimeframe] =useState("24h")
 
     // Set the variables for the data of each collection.
 
     return (
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
-            <div className="flex row-span-2">
-                <h1 className="font-bold text-2xl">Overall By Collection</h1>
-
-                {/* Buttons for medium and up */}
-                <div className="md:flex gap-3 ml-auto hidden">
-                    <Button>24H</Button>
-                    <Button>7D</Button>
-                    <Button>30D</Button>
-                </div>
-
-                {/* Dropdown for small screens */}
-                <div className="md:hidden ml-auto">
-                    <Select defaultValue="24h">
-                        <SelectTrigger>
-                            <SelectValue placeholder="24H" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                            <SelectItem value="24h">24H</SelectItem>
-                            <SelectItem value="7d">7D</SelectItem>
-                            <SelectItem value="30d">30D</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className="row-span-2">
+                <TitleAndDefaultTimerange title="Overall By Collection"/>
             </div>
+
             <div className="flex justify-center w-full max-w-full relative overflow-hidden">
                 <Carousel
                     opts={{
