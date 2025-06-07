@@ -1,5 +1,5 @@
-import "react"
-
+import "react";
+import { useState, useEffect } from "react";
 import { CardCollection } from "./card_collection";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +8,7 @@ import {
     CarouselItem,
     CarouselNext,
     CarouselPrevious,
-  } from "@/components/ui/carousel"
+  } from "@/components/ui/carousel";
 import {
     Select,
     SelectContent,
@@ -17,9 +17,13 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
-export function OverviewByCollection() {
+export function OverviewByCollection({data}) {
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Set the variables for the data of each collection.
+
     return (
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
             <div className="flex row-span-2">
@@ -48,7 +52,7 @@ export function OverviewByCollection() {
                     </Select>
                 </div>
             </div>
-            <div className="flex justify-center mt-6 w-full max-w-full relative overflow-hidden">
+            <div className="flex justify-center w-full max-w-full relative overflow-hidden">
                 <Carousel
                     opts={{
                         align: "start",
@@ -56,11 +60,9 @@ export function OverviewByCollection() {
                     className="w-full"
                     >
                     <CarouselContent>
-                        {Array.from({ length: 8 }).map((_, index) => (
+                        {Array.from({ length: 9 }).map((_, index) => (
                         <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                            <div className="p-2">
-                                <CardCollection />
-                            </div>
+                            <CardCollection />
                         </CarouselItem>
                         ))}
                     </CarouselContent>

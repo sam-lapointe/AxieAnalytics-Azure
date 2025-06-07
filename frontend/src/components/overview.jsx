@@ -2,6 +2,7 @@ import "react";
 import { useState, useEffect } from "react";
 import { ChartOverview } from "./chart_overview";
 import { Button } from "@/components/ui/button";
+import eth_logo from "../assets/eth_logo.svg"
 
 import {
   Select,
@@ -34,6 +35,15 @@ export function Overview() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null)
 
+    const insert_eth_logo = (text) => {
+        return (
+            <div className="flex">
+                <p>{text}</p>
+                <img src={eth_logo} className="w-4 h-4 ml-2 my-auto"/>
+            </div>
+        )
+    }
+
     return (
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
             <div className="flex row-span-2">
@@ -64,8 +74,8 @@ export function Overview() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 col-span-full">
                 <ChartOverview data={chartData} label="Total Sales" keyName="Axies Sold"/>
-                <ChartOverview data={chartData} label="Total Volume ETH" keyName="ETH"/>
-                <ChartOverview data={chartData} label="Average Price ETH" keyName="ETH"/>
+                <ChartOverview data={chartData} label={insert_eth_logo("Total Volume")} keyName="ETH"/>
+                <ChartOverview data={chartData} label={insert_eth_logo("Average Price")} keyName="ETH"/>
             </div>
         </div>
     )

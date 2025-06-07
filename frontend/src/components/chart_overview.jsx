@@ -16,17 +16,17 @@ import {
 
 
 export function ChartOverview({data, label, keyName=""}) {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null)
 
-    const chartConfig = {
-        overview: {
-            label: keyName,
-            color: "var(--chart-1)",
-        },
-    };
+  const chartConfig = {
+      overview: {
+          label: keyName,
+          color: "var(--chart-1)",
+      },
+  };
 
-    return (
+  return (
     <Card>
       <CardHeader>
         <CardTitle>{label}</CardTitle>
