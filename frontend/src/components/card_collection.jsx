@@ -1,6 +1,6 @@
 import "react"
 import eth_logo from "../assets/eth_logo.svg"
-import { ChartOverview } from "./chart_overview"
+import { OverviewLineChart } from "./overview_line_chart"
 import {
   Card,
   CardAction,
@@ -28,7 +28,7 @@ const chartData = [
 ];
 
 
-export function CardCollection({collection="Collection", data}) {
+export function CardCollection({collection="Collection", label = "Total Sales", data}) {
     return (
         <div className="">
             <Card className="pt-2 pb-0 gap-0">
@@ -37,9 +37,9 @@ export function CardCollection({collection="Collection", data}) {
                 </CardHeader>
                 <CardContent className="px-0 py-0">
                     <div className="[&_.bg-card]:rounded-none [&_.bg-card]:border-0">
-                        <ChartOverview
+                        <OverviewLineChart
                         data={chartData}
-                        label="Overview"
+                        label={label}
                         keyName="Axies Sold"
                         className="px-0"
                     />

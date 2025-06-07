@@ -1,6 +1,6 @@
 import "react";
 import { useState, useEffect } from "react";
-import { ChartOverview } from "./chart_overview";
+import { OverviewLineChart } from "./overview_line_chart";
 import { TitleAndDefaultTimerange } from "./title_and_default_timerange";
 import eth_logo from "../assets/eth_logo.svg"
 
@@ -41,9 +41,9 @@ export function Overview({data}) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 col-span-full">
-                <ChartOverview data={chartData} label="Total Sales" keyName="Axies Sold"/>
-                <ChartOverview data={chartData} label={insert_eth_logo("Total Volume")} keyName="ETH"/>
-                <ChartOverview data={chartData} label={insert_eth_logo("Average Price")} keyName="ETH"/>
+                <OverviewLineChart data={chartData} label="Total Sales" keyName="Axies Sold"/>
+                <OverviewLineChart data={chartData} label={insert_eth_logo("Total Volume")} keyName="ETH"/>
+                <OverviewLineChart data={chartData} label={insert_eth_logo("Average Price")} keyName="ETH"/>
             </div>
         </div>
     )

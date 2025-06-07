@@ -32,7 +32,7 @@ export function OverviewByCollection({data}) {
                     <CarouselContent>
                         {Array.from({ length: 9 }).map((_, index) => (
                         <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                            <CardCollection />
+                            <CardCollection label=""/>
                         </CarouselItem>
                         ))}
                     </CarouselContent>

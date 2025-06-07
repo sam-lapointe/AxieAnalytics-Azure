@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/chart"
 
 
-export function ChartOverview({data, label, keyName=""}) {
+export function OverviewLineChart({data, label, keyName=""}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null)
 
@@ -28,9 +28,14 @@ export function ChartOverview({data, label, keyName=""}) {
 
   return (
     <Card>
-      <CardHeader>
+      <>
+      {label && (
+        <CardHeader>
         <CardTitle>{label}</CardTitle>
       </CardHeader>
+      )}
+      </>
+
       <CardContent>
         <ChartContainer config={chartConfig} className="h-24 md:h-32 w-full">
           <LineChart
