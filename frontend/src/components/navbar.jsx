@@ -1,22 +1,17 @@
 import "react"
+import { Link } from "react-router-dom"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
 } from "@/components/ui/navigation-menu"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -34,13 +29,13 @@ export function Navbar() {
                     <NavigationMenu className="flex">
                         <NavigationMenuList className="flex gap-6">
                             <NavigationMenuItem>
-                                <NavigationMenuLink href="/" className="text-lg font-semibold">
-                                    Home
+                                <NavigationMenuLink className="text-lg font-semibold">
+                                    <Link to="/">Home</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavigationMenuLink href="/axies" className="text-lg font-semibold">
-                                    Axies
+                                <NavigationMenuLink className="text-lg font-semibold">
+                                    <Link to="/axies">Axies</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                         </NavigationMenuList>

@@ -1,16 +1,19 @@
-import { Navbar } from "./components/navbar.jsx";
-import { Overview } from "./components/overview.jsx";
-import { OverviewByCollection } from "./components/overview_by_collection.jsx";
-import { OverviewByBreedCount } from "./components/overview_by_breedcount.jsx";
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { Home } from "./pages/home.jsx"
+import { Axies } from "./pages/axies.jsx"
+import { Layout } from "./pages/layout.jsx"
 
 function App() {
   return (
-    <>
-      <Navbar />
-      <Overview />
-      <OverviewByCollection />
-      <OverviewByBreedCount />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />}/>
+          <Route path="axies/*" element={<Axies />} />
+          <Route path="*" element={<Home />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 

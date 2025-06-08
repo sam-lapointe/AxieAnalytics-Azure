@@ -21,7 +21,7 @@ const chartData = [
 ];
 
 
-export function Overview({data}) {
+export function Overview({data, title="Overall Stats"}) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null)
 
@@ -37,7 +37,7 @@ export function Overview({data}) {
     return (
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
             <div className="row-span-2">
-                <TitleAndDefaultTimerange title="Overall By Collection"/>
+                <TitleAndDefaultTimerange title={title}/>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 col-span-full">

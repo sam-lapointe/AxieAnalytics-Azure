@@ -107,7 +107,6 @@ function ChartTooltipContent({
     }
 
     const [item] = payload
-    console.log(item)
     const key = `${labelKey || item?.dataKey || item?.name || "value"}`
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
     const value =
@@ -156,7 +155,6 @@ function ChartTooltipContent({
   }
 
   const nestLabel = payload.length === 1 && indicator !== "dot"
-  console.log(fullPayload)
   return (
     <div
       className={cn(
