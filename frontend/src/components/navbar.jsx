@@ -29,13 +29,13 @@ export function Navbar() {
                     <NavigationMenu className="flex">
                         <NavigationMenuList className="flex gap-6">
                             <NavigationMenuItem>
-                                <NavigationMenuLink className="text-lg font-semibold">
-                                    <Link to="/">Home</Link>
+                                <NavigationMenuLink asChild>
+                                    <Link to="/" className="text-lg font-semibold">Home</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavigationMenuLink className="text-lg font-semibold">
-                                    <Link to="/axies">Axies</Link>
+                                <NavigationMenuLink asChild>
+                                    <Link to="/axies" className="text-lg font-semibold">Axies</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                         </NavigationMenuList>
@@ -58,7 +58,7 @@ export function Navbar() {
                                 <a href="/">Home</a>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <a href="/about">Axies</a>
+                                <a href="/axies">Axies</a>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
