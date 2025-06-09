@@ -1,8 +1,11 @@
 import "react"
 import { Timeframe } from "./timeframe"
+import { SearchParts } from "./search_parts"
+import { SelectClass } from "./select_class"
+import { SelectLevel } from "./select_level"
+import { SelectBreedCount } from "./select_breed_count"
+import { SelectCollection } from "./select_collection"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import {
     Dialog,
     DialogClose,
@@ -22,17 +25,20 @@ import {
                 <DialogTrigger asChild>
                 <Button variant="outline">Filter</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent
+                    className="sm:max-w-[425px]"
+                >
                     <DialogHeader className="text-left">
-                        <DialogTitle className="text-xl">Filter</DialogTitle>
+                        <DialogTitle className="text-xl" autoFocus tabIndex={0}>Filter</DialogTitle>
                     </DialogHeader>
                     <DialogDescription className="hidden"/>
                     <div className="grid gap-4">
                         <Timeframe />
-                        <div className="grid gap-3">
-                            <Label htmlFor="username-1">Username</Label>
-                            <Input id="username-1" name="username" defaultValue="@peduarte" />
-                        </div>
+                        <SearchParts />
+                        <SelectClass />
+                        <SelectLevel />
+                        <SelectBreedCount />
+                        <SelectCollection />
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>

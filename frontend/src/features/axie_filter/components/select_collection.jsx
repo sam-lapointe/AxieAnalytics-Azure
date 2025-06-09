@@ -1,11 +1,10 @@
 import "react"
-import { Button } from "@/components/ui/button"
 
 
-export function SearchParts() {
+export function SelectCollection() {
     return (
         <div>
-            <h3 className="text-lg font-medium">Parts</h3>
+            <h3 className="text-lg font-medium">Special Collection</h3>
             
             <div className="flex gap-3 items-center">
             </div>
