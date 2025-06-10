@@ -44,7 +44,7 @@ export function SelectClass() {
             
             <div className="flex flex-wrap gap-2">
                 {Object.keys(classColorMap).map((axieClass) => {
-                    const isActive = selectedClasses.includes(axieClass);
+                    const isActive = selectedClasses.includes(axieClass)
                     return (
                         <Button
                             key={axieClass}

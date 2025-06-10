@@ -42,8 +42,8 @@ export function Overview({data, title="Overall Stats"}) {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 col-span-full">
                 <OverviewLineChart data={chartData} label="Total Sales" keyName="Axies Sold"/>
-                <OverviewLineChart data={chartData} label={insert_eth_logo("Total Volume")} keyName="ETH"/>
-                <OverviewLineChart data={chartData} label={insert_eth_logo("Average Price")} keyName="ETH"/>
+                <OverviewLineChart data={chartData} label={insert_eth_logo("Total Volume")} keyName={<img src={eth_logo} className="w-3 h-3 my-auto"/>} />
+                <OverviewLineChart data={chartData} label={insert_eth_logo("Average Price")} keyName={<img src={eth_logo} className="w-3 h-3 my-auto"/>} />
             </div>
         </div>
     )

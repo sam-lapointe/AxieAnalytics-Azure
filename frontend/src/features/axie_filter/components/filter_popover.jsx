@@ -26,13 +26,13 @@ import {
                 <Button variant="outline">Filter</Button>
                 </DialogTrigger>
                 <DialogContent
-                    className="sm:max-w-[425px]"
+                    className="sm:max-w-[425px] max-h-[90vh] flex flex-col"
                 >
                     <DialogHeader className="text-left">
                         <DialogTitle className="text-xl" autoFocus tabIndex={0}>Filter</DialogTitle>
                     </DialogHeader>
                     <DialogDescription className="hidden"/>
-                    <div className="grid gap-4">
+                    <div className="grid gap-4 flex-1 overflow-y-auto">
                         <Timeframe />
                         <SearchParts />
                         <SelectClass />
