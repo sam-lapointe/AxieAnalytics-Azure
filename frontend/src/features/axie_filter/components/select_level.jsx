@@ -12,7 +12,7 @@ export function SelectLevel() {
     const maxLevel = 60
 
     return (
-        <div>
+        <div className="mx-2">
             <h3 className="text-lg font-medium">Level</h3>
 
             <Slider.Root

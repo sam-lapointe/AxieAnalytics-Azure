@@ -15,9 +15,10 @@ import {
 
 export function Timeframe() {
     const [number, setNumber] = useState(30)
+    const [timeUnit, setTimeUnit] = useState("days")
 
     return (
-        <div>
+        <div className="mx-2">
             <h3 className="text-lg font-medium">Timeframe</h3>
             
             <div className="flex gap-3 items-center">
@@ -37,9 +38,12 @@ export function Timeframe() {
                     max={365}
                     className="!w-15"
                 />
-                <Select defaultValue="days">
+                <Select
+                    defaultValue={timeUnit}
+                    onValueChange={(e) => setTimeUnit(e)}
+                >
                     <SelectTrigger className="!h-6 py-1 text-sm">
-                        <SelectValue placeholder="Days" />
+                        <SelectValue placeholder={timeUnit.charAt(0).toUpperCase() + timeUnit.slice(1)} />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>

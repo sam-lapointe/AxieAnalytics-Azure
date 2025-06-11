@@ -29,7 +29,7 @@ import {
                     className="sm:max-w-[425px] max-h-[90vh] flex flex-col"
                 >
                     <DialogHeader className="text-left">
-                        <DialogTitle className="text-xl" autoFocus tabIndex={0}>Filter</DialogTitle>
+                        <DialogTitle className="text-xl ml-2" autoFocus tabIndex={0}>Filter</DialogTitle>
                     </DialogHeader>
                     <DialogDescription className="hidden"/>
                     <div className="grid gap-4 flex-1 overflow-y-auto">
@@ -41,8 +41,9 @@ import {
                         <SelectCollection />
                     </div>
                     <DialogFooter>
+                        <Button variant="outline" className="hover:border-black">Clear all</Button>
                         <DialogClose asChild>
-                            <Button variant="outline">Apply</Button>
+                            <Button variant="outline" className="hover:border-black">Apply</Button>
                         </DialogClose>
                     </DialogFooter>
                 </DialogContent>

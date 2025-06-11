@@ -11,7 +11,7 @@ export function SelectBreedCount() {
     const maxBreedCount = 7
 
     return (
-        <div>
+        <div className="mx-2">
             <h3 className="text-lg font-medium">Breed Count</h3>
 
             <Slider.Root

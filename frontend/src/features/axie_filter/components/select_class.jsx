@@ -39,7 +39,7 @@ export function SelectClass() {
     };
 
     return (
-        <div>
+        <div className="mx-2">
             <h3 className="text-lg font-medium">Class</h3>
             
             <div className="flex flex-wrap gap-2">
