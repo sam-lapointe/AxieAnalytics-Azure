@@ -60,6 +60,13 @@ export function SearchParts() {
 
     const inputRef = useRef(null)
 
+    const filteredParts = Object.keys(parts).filter(
+        (part) =>
+            part.toLowerCase().startsWith(inputValue.toLowerCase()) &&
+            parts[part]["partsIds"].length > 0
+    )
+    console.log(filteredParts);
+
     const handleSelectPart = (partName, axieParts, action) => {
         if (inputRef.current) {
             inputRef.current.focus()
@@ -176,12 +183,13 @@ export function SearchParts() {
                         className="w-full min-w-[var(--radix-popover-trigger-width)] max-h-90 overflow-y-auto"
                     >
                         <div>
-                            {Object.keys(parts).map((part) => {
-                                if (
-                                    part.toLowerCase().startsWith(inputValue.toLowerCase())
-                                    && parts[part]["partsIds"].length > 0
-                                ) {
-                                    return (
+                            {
+                                filteredParts.length === 0 ? (
+                                    <div className="bg-gray-100 p-2 rounded-xl flex">
+                                        <p className="mx-auto">Parts not found.</p>
+                                    </div>
+                                ) : (
+                                    filteredParts.map((part) => (
                                         <div className="m-2 bg-gray-100 p-2 rounded-xl mb-4" key={part}>
                                             <div className="flex">
                                                 <p className="font-bold">{part}</p>
@@ -228,9 +236,9 @@ export function SearchParts() {
                                                 })
                                             }
                                         </div>
-                                    )
-                                }
-                            })}
+                                    ))
+                                )
+                            }
                         </div>
                     </PopoverContent>
                 </Popover>
@@ -240,10 +248,17 @@ export function SearchParts() {
                     Object.keys(selectedParts).map((selectedPart) => {
                         return (
                             <div key={selectedPart} className="flex items-center align-center border-2 border-gray rounded-lg p-1">
-                                <p className="text-xs">{selectedPart}</p>
+                                <p
+                                    className={`
+                                        text-xs
+                                        ${selectedParts[selectedPart]["action"] === "exclude" ? "line-through" : ""}    
+                                    `}
+                                >
+                                    {selectedPart}
+                                </p>
                                 <Button
-                                    className="text-xs text-black bg-white shadow-none hover:bg-gray-200 w-4 h-4"
                                     size="icon"
+                                    className="text-xs text-black bg-white shadow-none hover:bg-gray-200 w-4 h-4"
                                     onClick={() => handleUnselectPart(selectedPart, selectedParts[selectedPart])}
                                 >
                                     X
