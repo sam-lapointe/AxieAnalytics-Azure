@@ -127,7 +127,7 @@ export function FilterSection({timeframe, setTimeframe}) {
                         ...prev,
                         [partName]: {
                             ...prev[partName],
-                            "partsIds": [...prev[partName]["partsIds"], partWithoutAction]
+                            "partsIds": [...prev[partName]["partsIds"], partWithoutAction].sort((a, b) => a.stage - b.stage)
                         }
                     }
                 )
