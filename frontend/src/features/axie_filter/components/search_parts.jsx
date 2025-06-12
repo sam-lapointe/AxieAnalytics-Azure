@@ -1,12 +1,12 @@
 import "react"
 import { useState, useRef } from "react"
+import { SelectedFilter } from "./selected_filter"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverAnchor,
-  PopoverTrigger,
 } from "@/components/ui/popover"
 
 
@@ -52,9 +52,7 @@ const partNameButton = "w-14 h-6 text-xs bg-white text-black border-1 border-gre
 const partStageButton = "w-10 h-4 border-1 bg-white text-black border-grey hover:bg-white hover:border-black"
 
 
-export function SearchParts() {
-    const [parts, setParts] = useState(test_parts)
-    const [selectedParts, setSelectedParts] = useState({})
+export function SearchParts({selectedParts, onSelectPart, onUnselectPart, onClearParts, parts}) {
     const [inputValue, setInputValue] = useState("")
     const [isInputFocus, setIsInputFocus] = useState(false)
 
@@ -65,80 +63,13 @@ export function SearchParts() {
             part.toLowerCase().startsWith(inputValue.toLowerCase()) &&
             parts[part]["partsIds"].length > 0
     )
-    console.log(filteredParts);
 
     const handleSelectPart = (partName, axieParts, action) => {
         if (inputRef.current) {
             inputRef.current.focus()
         }
 
-        if (partName && axieParts && action) {
-            for (let p = 0; p < axieParts.length; p++) {
-                const displayName = `${partName}-${axieParts[p]["stage"]}`
-
-                // Add the part to the selectedParts
-                setSelectedParts((prev) => {
-                    if (!prev.hasOwnProperty(displayName)) {
-                        return (
-                            {
-                                ...prev,
-                                [displayName]: {
-                                    ...axieParts[p],
-                                    "action": action
-                                }
-                            }
-                        )
-                    }
-                })
-
-                // Remove the part from the parts[partName][partsIds] list
-                setParts((prev) => {
-                    return (
-                        {
-                            ...prev,
-                            [partName]: {
-                                ...prev[partName],
-                                "partsIds": prev[partName]["partsIds"].filter((item) => item.id !== axieParts[p]["id"])
-                            }
-                        }
-                    )
-                })
-            }
-        }
-    }
-
-    const handleUnselectPart = (displayName, partInfo) => {
-        if (displayName && partInfo) {
-            const partName = displayName.split("-")[0]
-            const {partAction, ...partWithoutAction} = partInfo
-
-            // Remove the part from the selectedParts
-            setSelectedParts((prev) => {
-                if (prev.hasOwnProperty(displayName)) {
-                    return Object.fromEntries(
-                        Object.entries(prev).filter(([p]) => p !== displayName)
-                    )
-                }
-            })
-
-            // Add the part to the parts[partName][partsIds] list
-            setParts((prev) => {
-                return (
-                    {
-                        ...prev,
-                        [partName]: {
-                            ...prev[partName],
-                            "partsIds": [...prev[partName]["partsIds"], partWithoutAction]
-                        }
-                    }
-                )
-            })
-        }
-    }
-
-    const clearParts = () => {
-        setSelectedParts({})
-        setParts(test_parts)
+        onSelectPart(partName, axieParts, action)
     }
 
     return (
@@ -149,7 +80,7 @@ export function SearchParts() {
                     size="sm"
                     variant="outline"
                     className="ml-auto w-20 h-7 hover:border-black"
-                    onClick={() => clearParts()}
+                    onClick={onClearParts}
                 >
                     Clear Parts
                 </Button>
@@ -247,23 +178,12 @@ export function SearchParts() {
                 {
                     Object.keys(selectedParts).map((selectedPart) => {
                         return (
-                            <div key={selectedPart} className="flex items-center align-center border-2 border-gray rounded-lg p-1">
-                                <p
-                                    className={`
-                                        text-xs
-                                        ${selectedParts[selectedPart]["action"] === "exclude" ? "line-through" : ""}    
-                                    `}
-                                >
-                                    {selectedPart}
-                                </p>
-                                <Button
-                                    size="icon"
-                                    className="text-xs text-black bg-white shadow-none hover:bg-gray-200 w-4 h-4"
-                                    onClick={() => handleUnselectPart(selectedPart, selectedParts[selectedPart])}
-                                >
-                                    X
-                                </Button>
-                            </div>
+                            <SelectedFilter
+                                key={selectedPart}
+                                text={selectedPart}
+                                action={selectedParts[selectedPart]["action"]}
+                                removeFilter={() => onUnselectPart(selectedPart, selectedParts[selectedPart])}
+                            />
                         )
                     })
                 }

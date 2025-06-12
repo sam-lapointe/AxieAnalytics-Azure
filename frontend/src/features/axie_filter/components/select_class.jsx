@@ -27,9 +27,7 @@ const classHoverSettingMap = {
 }
 
 
-export function SelectClass() {
-    const [selectedClasses, setSelectedClasses] = useState([]);
-
+export function SelectClass({selectedClasses, setSelectedClasses}) {
     const toggleSelected = (selectedClass) => {
         setSelectedClasses((prev) => 
             prev.includes(selectedClass)

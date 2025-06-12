@@ -1,36 +1,29 @@
 import "react"
-import { useState } from "react"
-import * as Slider from "@radix-ui/react-slider"
 import { NumberInput } from "./number_input"
-import { Input } from "@/components/ui/input"
+import * as Slider from "@radix-ui/react-slider"
 
 
-export function SelectLevel() {
-    const [levelRange, setLevelRange] = useState([1, 60])
-
-    const minLevel = 1
-    const maxLevel = 60
-
+export function FilterSlider({title, min, max, numberInput=true, range, setRange}) {
     return (
         <div className="mx-2">
-            <h3 className="text-lg font-medium">Level</h3>
+            <h3 className="text-lg font-medium">{title}</h3>
 
             <Slider.Root
                 className="relative flex items-center select-none touch-none w-full h-6"
-                min={minLevel}
-                max={maxLevel}
+                min={min}
+                max={max}
                 step={1}
                 minStepsBetweenThumbs={0}
-                value={levelRange}
+                value={range}
                 onValueChange={(newRange) => {
                     const [newMin, newMax] = newRange;
                     
-                    if (newMin !== levelRange[0] && newMin <= levelRange[1]) {
-                        setLevelRange([newMin, levelRange[1]])
+                    if (newMin !== range[0] && newMin <= range[1]) {
+                        setRange([newMin, range[1]])
                     }
 
-                    if (newMax !== levelRange[1] && newMax >= levelRange[0]) {
-                        setLevelRange([levelRange[0], newMax])
+                    if (newMax !== range[1] && newMax >= range[0]) {
+                        setRange([range[0], newMax])
                     }
                 }}
             >
@@ -46,21 +39,23 @@ export function SelectLevel() {
                     aria-label="Maximum"
                 />
             </Slider.Root>
-            <div className="flex items-center columns-3 justify-between text-sm text-gray-600">
+            {numberInput && (
+                <div className="flex items-center columns-3 justify-between text-sm text-gray-600">
                 <NumberInput
-                    value={levelRange[0]}
-                    onChange={(newMin) => setLevelRange([newMin, levelRange[1]])}
-                    min={minLevel}
-                    max={levelRange[1]}
+                    value={range[0]}
+                    onChange={(newMin) => setRange([newMin, range[1]])}
+                    min={min}
+                    max={range[1]}
                 />
                 <p className="text-2xl mx-4">-</p>
                 <NumberInput
-                    value={levelRange[1]}
-                    onChange={(newMax) => setLevelRange([levelRange[0], newMax])}
-                    min={levelRange[0]}
-                    max={maxLevel}
+                    value={range[1]}
+                    onChange={(newMax) => setRange([range[0], newMax])}
+                    min={range[0]}
+                    max={max}
                 />
             </div>
+            )}
         </div>
     )
 }

@@ -13,37 +13,26 @@ import {
 } from "@/components/ui/select";
 
 
-export function Timeframe() {
-    const [number, setNumber] = useState(30)
-    const [timeUnit, setTimeUnit] = useState("days")
-
+export function Timeframe({value, onChange}) {
     return (
         <div className="mx-2">
             <h3 className="text-lg font-medium">Timeframe</h3>
             
             <div className="flex gap-3 items-center">
                 <p>Last</p>
-                {/* <Input
-                    id="timeNum"
-                    name="timeNum"
-                    type="number"
-                    defaultValue={30}
-                    min={1}
-                    className="w-15 h-6"
-                /> */}
                 <NumberInput
-                    value={number}
-                    onChange={(newNumber) => setNumber(newNumber)}
+                    value={value[0]}
+                    onChange={(newNumber) => onChange([newNumber, value[1]])}
                     min={1}
                     max={365}
                     className="!w-15"
                 />
                 <Select
-                    defaultValue={timeUnit}
-                    onValueChange={(e) => setTimeUnit(e)}
+                    defaultValue={value[1]}
+                    onValueChange={(e) => onChange([value[0], e])}
                 >
                     <SelectTrigger className="!h-6 py-1 text-sm">
-                        <SelectValue placeholder={timeUnit.charAt(0).toUpperCase() + timeUnit.slice(1)} />
+                        <SelectValue placeholder={value[1].charAt(0).toUpperCase() + value[1].slice(1)} />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>

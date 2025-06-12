@@ -2,6 +2,7 @@ import "react"
 import { useState } from "react"
 import { NumberInput } from "./number_input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { FilterSlider } from "./filter_slider"
 
 
 const special_collections = {
@@ -18,9 +19,7 @@ const special_collections = {
 }
 
 
-export function SelectCollection() {
-    const [collections, setCollections] = useState({})
-
+export function SelectCollection({collections, setCollections}) {
     const handleCollectionSelection = (selectedCollection) => {
         setCollections((prev) => {
             if (prev.hasOwnProperty(selectedCollection)) {
@@ -29,7 +28,7 @@ export function SelectCollection() {
                 )
             } else {
                 return special_collections[selectedCollection]["isParts"]
-                    ? {...prev, [selectedCollection]: {"numParts": 1}}
+                    ? {...prev, [selectedCollection]: {"numParts": [1, 6]}}
                     : {...prev, [selectedCollection]: {}}
             }
         })
@@ -60,19 +59,19 @@ export function SelectCollection() {
                     const isSelected = collections.hasOwnProperty(col)
 
                     return (
-                        <div className="flex sm:flex-wrap items-center" key={col}>
+                        <div className="flex flex-wrap items-center" key={col}>
                             <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={() => handleCollectionSelection(col)}
                             />
                             <p className="ml-2">{col}</p>
                             {isSelected && special_collections[col]["isParts"] && (
-                                <NumberInput
-                                    value={1}
-                                    onChange={(numParts) => handleCollectionParts(col, numParts)}
+                                <FilterSlider
+                                    title=""
                                     min={1}
-                                    max={7}
-                                    className="w-10 ml-2"
+                                    max={6}
+                                    range={collections[col]["numParts"]}
+                                    setRange={(numParts) => handleCollectionParts(col, numParts)}
                                 />
                             )}
                         </div>
