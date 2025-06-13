@@ -1,29 +1,28 @@
 import "react"
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 
 const classColorMap = {
-    Beast: "bg-amber-600",
-    Aquatic: "bg-blue-400",
-    Plant: "bg-green-600",
-    Bug: "bg-red-600",
-    Bird: "bg-pink-600",
-    Reptile: "bg-purple-600",
-    Mech: "bg-gray-600",
-    Dawn: "bg-indigo-600",
-    Dusk: "bg-cyan-600",
+    Beast: "bg-beast",
+    Aquatic: "bg-aquatic",
+    Plant: "bg-plant",
+    Bug: "bg-bug",
+    Bird: "bg-bird",
+    Reptile: "bg-reptile",
+    Mech: "bg-mech",
+    Dawn: "bg-dawn",
+    Dusk: "bg-dusk",
 }
 
 const classHoverSettingMap = {
-    Beast: "hover:bg-amber-500",
-    Aquatic: "hover:bg-blue-300",
-    Plant: "hover:bg-green-500",
-    Bug: "hover:bg-red-500",
-    Bird: "hover:bg-pink-500",
-    Reptile: "hover:bg-purple-500",
-    Mech: "hover:bg-gray-500",
-    Dawn: "hover:bg-indigo-500",
-    Dusk: "hover:bg-cyan-500",
+    Beast: "hover:bg-beast-hover",
+    Aquatic: "hover:bg-aquatic-hover",
+    Plant: "hover:bg-plant-hover",
+    Bug: "hover:bg-bug-hover",
+    Bird: "hover:bg-bird-hover",
+    Reptile: "hover:bg-reptile-hover",
+    Mech: "hover:bg-mech-hover",
+    Dawn: "hover:bg-dawn-hover",
+    Dusk: "hover:bg-dusk-hover",
 }
 
 

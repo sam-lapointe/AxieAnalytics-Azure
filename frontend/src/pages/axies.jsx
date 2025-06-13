@@ -2,6 +2,7 @@ import "react"
 import { useState, useEffect } from "react"
 import { Overview } from "../components/overview.jsx"
 import { FilterSection } from "../features/axie_filter/components/filter_section.jsx"
+import { AxieSalesTable } from "../features/axie_filter/components/axie_sales_table.jsx"
 
 
 export function Axies() {
@@ -20,7 +21,7 @@ export function Axies() {
                 </div>
 
                 <div className="">
-                    <h1>Hello</h1>
+                    <AxieSalesTable />
                 </div>
             </div>
         </>
