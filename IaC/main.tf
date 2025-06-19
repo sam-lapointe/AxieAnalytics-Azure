@@ -28,14 +28,16 @@ locals {
   }
 
   # Enter each secret name that will be created in Azure Key Vault here to centrally manage them for Key Vault and Functions Apps
-  ALCHEMY_SIGNING_KEY_NAME       = "alchemy-signing-key"
-  POSTGRESQL_ADMIN_USERNAME_NAME = "postgres-admin-username"
-  POSTGRESQL_ADMIN_PASSWORD_NAME = "postgres-admin-password"
-  POSTGRESQL_SALES_USERNAME_NAME = "postgres-sales-username"
-  POSTGRESQL_SALES_PASSWORD_NAME = "postgres-sales-password"
-  POSTGRESQL_AXIES_USERNAME_NAME = "postgres-axies-username"
-  POSTGRESQL_AXIES_PASSWORD_NAME = "postgres-axies-password"
-  AXIE_API_KEY_NAME              = "axie-api-key"
+  ALCHEMY_SIGNING_KEY_NAME         = "alchemy-signing-key"
+  POSTGRESQL_ADMIN_USERNAME_NAME   = "postgres-admin-username"
+  POSTGRESQL_ADMIN_PASSWORD_NAME   = "postgres-admin-password"
+  POSTGRESQL_SALES_USERNAME_NAME   = "postgres-sales-username"
+  POSTGRESQL_SALES_PASSWORD_NAME   = "postgres-sales-password"
+  POSTGRESQL_AXIES_USERNAME_NAME   = "postgres-axies-username"
+  POSTGRESQL_AXIES_PASSWORD_NAME   = "postgres-axies-password"
+  POSTGRESQL_BACKEND_USERNAME_NAME = "postgres-backend-username"
+  POSTGRESQL_BACKEND_PASSWORD_NAME = "postgres-backend-password"
+  AXIE_API_KEY_NAME                = "axie-api-key"
 
   # Servicebus
   SERVICEBUS_TOPIC_SALES_NAME   = "sales"
@@ -106,11 +108,13 @@ module "key_vault_internal" {
   secrets_user_ids    = [azurerm_user_assigned_identity.umi_functionapp_internal.principal_id]
   secrets_officer_ids = [data.azurerm_client_config.current.object_id]
   secrets = {
-    (local.POSTGRESQL_SALES_USERNAME_NAME) = var.POSTGRESQL_SALES_USERNAME
-    (local.POSTGRESQL_SALES_PASSWORD_NAME) = var.POSTGRESQL_SALES_PASSWORD
-    (local.POSTGRESQL_AXIES_USERNAME_NAME) = var.POSTGRESQL_AXIES_USERNAME
-    (local.POSTGRESQL_AXIES_PASSWORD_NAME) = var.POSTGRESQL_AXIES_PASSWORD
-    (local.AXIE_API_KEY_NAME)              = var.AXIE_API_KEY
+    (local.POSTGRESQL_SALES_USERNAME_NAME)   = var.POSTGRESQL_SALES_USERNAME
+    (local.POSTGRESQL_SALES_PASSWORD_NAME)   = var.POSTGRESQL_SALES_PASSWORD
+    (local.POSTGRESQL_AXIES_USERNAME_NAME)   = var.POSTGRESQL_AXIES_USERNAME
+    (local.POSTGRESQL_AXIES_PASSWORD_NAME)   = var.POSTGRESQL_AXIES_PASSWORD
+    (local.POSTGRESQL_BACKEND_USERNAME_NAME) = var.POSTGRESQL_BACKEND_USERNAME
+    (local.POSTGRESQL_BACKEND_PASSWORD_NAME) = var.POSTGRESQL_BACKEND_PASSWORD
+    (local.AXIE_API_KEY_NAME)                = var.AXIE_API_KEY
   }
 
   depends_on = [azurerm_user_assigned_identity.umi_functionapp_internal]

@@ -111,6 +111,9 @@ class Part:
                 special_genes = value["special_genes"]
                 current_time_utc = datetime.now(timezone.utc)
 
+                if "shiny" in part_name.lower():
+                    special_genes = special_genes + "_shiny"
+
                 async with connection.acquire() as conn:
                     await conn.execute(
                         """

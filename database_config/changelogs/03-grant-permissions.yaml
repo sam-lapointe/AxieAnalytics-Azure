@@ -30,3 +30,18 @@ databaseChangeLog:
                 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE axie_parts, versions TO ${store_axies_username};
               END
               $$;
+
+  - changeSet:
+      id: grant-permissions-backend-user
+      author: "Samuel Lapointe"
+      changes:
+        - sql:
+            dbms: 'postgresql'
+            splitStatements: false
+            sql: |
+              DO
+              $$
+              BEGIN
+                GRANT SELECT ON TABLE axies, axie_parts, axie_sales TO ${backend_username};
+              END
+              $$;

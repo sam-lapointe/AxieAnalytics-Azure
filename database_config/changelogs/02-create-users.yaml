@@ -32,3 +32,20 @@ databaseChangeLog:
                 END IF;
               END
               $$;
+
+  - changeSet:
+      id: create-backend-user
+      author: "Samuel Lapointe"
+      changes:
+        - sql:
+            dbms: 'postgresql'
+            splitStatements: false
+            sql: |
+              DO
+              $$
+              BEGIN
+                IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${backend_username}') THEN
+                  CREATE ROLE ${backend_username} WITH LOGIN PASSWORD '${backend_password}';
+                END IF;
+              END
+              $$;

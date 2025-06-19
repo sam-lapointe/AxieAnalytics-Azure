@@ -68,6 +68,16 @@ variable "POSTGRESQL_AXIES_PASSWORD" {
   sensitive = true
 }
 
+variable "POSTGRESQL_BACKEND_USERNAME" {
+  type      = string
+  sensitive = true
+}
+
+variable "POSTGRESQL_BACKEND_PASSWORD" {
+  type      = string
+  sensitive = true
+}
+
 variable "AXIE_API_KEY" {
   type      = string
   sensitive = true
