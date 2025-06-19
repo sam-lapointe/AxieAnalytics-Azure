@@ -189,8 +189,8 @@ stages:
           store_sales_password: $(TF_VAR_POSTGRESQL_SALES_PASSWORD)
           store_axies_username: $(TF_VAR_POSTGRESQL_AXIES_USERNAME)
           store_axies_password: $(TF_VAR_POSTGRESQL_AXIES_PASSWORD)
-          store_backend_username: $(TF_VAR_POSTGRESQL_BACKEND_USERNAME)
-          sotre_backend_password: $(TF_VAR_POSTGRESQL_BACKEND_PASSWORD)
+          backend_username: $(TF_VAR_POSTGRESQL_BACKEND_USERNAME)
+          backend_password: $(TF_VAR_POSTGRESQL_BACKEND_PASSWORD)
 
     - job: DeployDevCode
       dependsOn:

@@ -111,6 +111,7 @@ class Part:
                 special_genes = value["special_genes"]
                 current_time_utc = datetime.now(timezone.utc)
 
+                # In the list of parts from Axie Infinity, the Shiny parts are set in the name instead of special_genes.
                 if "shiny" in part_name.lower():
                     special_genes = special_genes + "_shiny"
 
