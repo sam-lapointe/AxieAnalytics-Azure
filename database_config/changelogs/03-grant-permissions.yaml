@@ -46,17 +46,17 @@ databaseChangeLog:
               END
               $$;
 
-  - changeSet:
-      id: grant-new-permissions-axie_full_info-view-backend-user
-      author: "Samuel Lapointe"
-      changes:
-        - sql:
-            dbms: 'postgresql'
-            splitStatements: false
-            sql: |
-              DO
-              $$
-              BEGIN
-                GRANT SELECT ON TABLE axies_full_info TO ${backend_username};
-              END
-              $$;
+  # - changeSet:
+  #     id: grant-new-permissions-axie_full_info-view-backend-user
+  #     author: "Samuel Lapointe"
+  #     changes:
+  #       - sql:
+  #           dbms: 'postgresql'
+  #           splitStatements: false
+  #           sql: |
+  #             DO
+  #             $$
+  #             BEGIN
+  #               GRANT SELECT ON TABLE axies_full_info TO ${backend_username};
+  #             END
+  #             $$;
