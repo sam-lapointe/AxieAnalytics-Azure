@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-axie-full-info-view
+      author: "Samuel Lapointe"
+      changes:
+        - createView:
+            viewName: axies_full_info
+            replaceIfExists: true
+            selectQuery: |
+              SELECT a.*, s.price_eth
+              FROM axies a
+              JOIN axie_sales s
+                ON a.transaction_hash = s.transaction_hash AND a.axie_id = s.axie_id
+              JOIN axie_parts eyes  ON eyes.id  = a.eyes_id
+              JOIN axie_parts ears  ON ears.id  = a.ears_id
+              JOIN axie_parts mouth ON mouth.id = a.mouth_id
+              JOIN axie_parts horn  ON horn.id  = a.horn_id
+              JOIN axie_parts back  ON back.id  = a.back_id
+              JOIN axie_parts tail  ON tail.id  = a.tail_id
