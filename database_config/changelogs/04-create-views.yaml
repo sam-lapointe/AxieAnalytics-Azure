@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: create-axie-full-info-view
       author: "Samuel Lapointe"
+      runOnChange: true
       changes:
         - createView:
             viewName: axies_full_info
