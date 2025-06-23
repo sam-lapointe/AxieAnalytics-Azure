@@ -49,6 +49,7 @@ databaseChangeLog:
   - changeSet:
       id: grant-new-permissions-axie_full_info-view-backend-user
       author: "Samuel Lapointe"
+      runOnChange: true
       changes:
         - sql:
             dbms: 'postgresql'

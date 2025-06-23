@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, RootModel, Field, field_validator
 from typing import Literal, List, Dict, Annotated, Optional
 
 Axie_Classes = Literal[
@@ -11,6 +11,32 @@ Axie_Classes = Literal[
     "mech",
     "dawn",
     "dusk"
+]
+
+Axie_Collection_Parts = Literal[
+    "Mystic",
+    "Summer",
+    "Japan",
+    "Shiny",
+    "Xmas",
+    "Nightmare",
+]
+
+Axie_Collection_Titles = Literal[
+    "MEO Corp",
+    "MEO Corp II",
+    "Origin",
+    "AgamoGenesis",
+]
+
+Axie_Parts = Literal[
+    "eyes",
+    "ears",
+    "mouth",
+    "horn",
+    "back",
+    "tail",
+    "body",
 ]
 
 
@@ -31,18 +57,16 @@ def validate_two_number_range(
 
 
 class CollectionDetail(BaseModel):
-    numParts: Optional[List[int]] = None
+    numParts: Annotated[List[int], Field(default_factory=lambda: [1, 6])]
 
     @field_validator("numParts")
     @classmethod
     def validate_num_parts(cls, v):
-        return validate_two_number_range(v, 1, 6, "numParts") if v else v
+        return validate_two_number_range(v, 1, 6, "numParts")
 
 
-class CollectionWrapper(BaseModel):
-    __root__: Dict[str, CollectionDetail]
-
-    @field_validator("__root__")
+class CollectionWrapper(RootModel[Dict[Axie_Collection_Parts, CollectionDetail]]):
+    @field_validator("root")
     @classmethod
     def one_key_only(cls, v):
         if len(v) != 1:
@@ -53,13 +77,14 @@ class CollectionWrapper(BaseModel):
 class AxieSalesSearch(BaseModel):
     time_unit: Literal["days", "hours"] = "days"
     time_num: Annotated[int, Field(default=30, gt=0, lt=366)]
-    include_parts: Annotated[List[str], Field(default_factory=list)]
-    exclude_parts: Annotated[List[str], Field(default_factory=list)]
+    include_parts: Annotated[Dict[Axie_Parts, List[str]], Field(default_factory=list)]
+    exclude_parts: Annotated[Dict[Axie_Parts, List[str]], Field(default_factory=list)]
     axie_class: Annotated[List[Axie_Classes], Field(default_factory=list)]
     level: Annotated[List[int], Field(default_factory=lambda: [1, 60])]
     breed_count: Annotated[List[int], Field(default_factory=lambda: [0, 7])]
     evolved_parts_count: Annotated[List[int], Field(default_factory=lambda: [0, 6])]
-    collections: Annotated[List[CollectionWrapper], Field(default_factory=list)]
+    collection_parts: Annotated[List[CollectionWrapper], Field(default_factory=list)]
+    collection_titles: Annotated[List[Axie_Collection_Titles], Field(default_factory=list)]
 
     @field_validator("level")
     @classmethod

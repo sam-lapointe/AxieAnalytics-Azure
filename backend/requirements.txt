@@ -1,3 +1,7 @@
 fastapi
 uvicorn
 pydantic
+asyncpg
+azure-identity
+azure-keyvault-secrets
+aiohttp
