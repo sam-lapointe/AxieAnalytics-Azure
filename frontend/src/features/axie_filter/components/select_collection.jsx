@@ -1,6 +1,4 @@
 import "react"
-import { useState } from "react"
-import { NumberInput } from "./number_input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FilterSlider } from "./filter_slider"
 

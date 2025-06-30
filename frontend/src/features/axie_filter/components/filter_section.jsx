@@ -1,5 +1,5 @@
 import "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Timeframe } from "./timeframe"
 import { SearchParts } from "./search_parts"
 import { SelectClass } from "./select_class"

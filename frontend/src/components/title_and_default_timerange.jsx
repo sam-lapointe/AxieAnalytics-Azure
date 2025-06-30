@@ -1,5 +1,4 @@
 import "react"
-import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
     Select,
@@ -12,8 +11,7 @@ import {
 } from "@/components/ui/select";
 
 
-export function TitleAndDefaultTimerange({title, customTimeframe=[]}) {
-
+export function TitleAndDefaultTimerange({title, timeframe=[1, "days"], setTimeframe="", customTimeframe=[]}) {
     return (
         <div className="flex items-baseline">
                 <h1 className="font-bold text-2xl">{title}</h1>
@@ -24,22 +22,34 @@ export function TitleAndDefaultTimerange({title, customTimeframe=[]}) {
                         <>
                             {/* Buttons for medium and up */}
                             <div className="md:flex gap-3 ml-auto hidden">
-                                <Button>24H</Button>
-                                <Button>7D</Button>
-                                <Button>30D</Button>
+                                <Button
+                                    className={timeframe[0] === 1 ? "bg-blue-600" : ""}
+                                    onClick={() => setTimeframe([1, "days"])}
+                                >24H</Button>
+                                <Button
+                                    className={timeframe[0] === 7 ? "bg-blue-600" : ""}
+                                    onClick={() => setTimeframe([7, "days"])}
+                                >7D</Button>
+                                <Button
+                                    className={timeframe[0] === 30 ? "bg-blue-600" : ""}
+                                    onClick={() => setTimeframe([30, "days"])}
+                                >30D</Button>
                             </div>
 
                             {/* Dropdown for small screens */}
                             <div className="md:hidden ml-auto">
-                                <Select defaultValue="24h">
+                                <Select
+                                    defaultValue={timeframe[0]}
+                                    onValueChange={(e) => setTimeframe([e, "days"])}
+                                >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="24H" />
+                                        <SelectValue placeholder="24H"/>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                        <SelectItem value="24h">24H</SelectItem>
-                                        <SelectItem value="7d">7D</SelectItem>
-                                        <SelectItem value="30d">30D</SelectItem>
+                                        <SelectItem value="1">24H</SelectItem>
+                                        <SelectItem value="7">7D</SelectItem>
+                                        <SelectItem value="30">30D</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

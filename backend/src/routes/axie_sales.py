@@ -1,9 +1,7 @@
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
 from src.models.axie_sales_search import AxieSalesSearch
 from src.services.axie_sales import get_all_data
 import time
-from datetime import datetime
 
 router = APIRouter()
 
@@ -15,13 +13,13 @@ async def get_graph(filters: AxieSalesSearch):
         "total_sales": 0,
         "total_volume_eth": 0,
         "avg_price_eth": 0,
-        "chart": {}
+        "chart": []
     }
 
     def update_data_chart(idx: int) -> None:
         data["total_sales"] += data["chart"][idx]["sales"]
         data["total_volume_eth"] += data["chart"][idx]["volume_eth"]
-        data["chart"][idx]["avg_price_eth"] = data["chart"][idx]["volume_eth"] / data["chart"][idx]["sales"]
+        data["chart"][idx]["avg_price_eth"] = round(data["chart"][idx]["volume_eth"] / data["chart"][idx]["sales"], 5)
 
     current_time = time.time()
     if filters.time_unit == "hours":
@@ -30,32 +28,28 @@ async def get_graph(filters: AxieSalesSearch):
         timeframe_seconds = 86400 * filters.time_num
     start_time = current_time - timeframe_seconds
 
-    print(int(current_time - start_time))
-    print(len(raw_data))
-
     chart_timestamps = (current_time - start_time) // 30
     chart_idx = 0
     for i in range(len(raw_data) - 1, 0, -1):
         while raw_data[i]["sale_date"] >= start_time + (chart_timestamps * (chart_idx + 1)):
-            if chart_idx in data["chart"]:
+            if chart_idx  == len(data["chart"]) - 1:
                 update_data_chart(chart_idx)
             else:
-                data["chart"][chart_idx] = {"sales": 0, "volume_eth": 0, "avg_price_eth": 0}
+                data["chart"].append({"sales": 0, "volume_eth": 0, "avg_price_eth": 0})
 
             chart_idx += 1
 
-        if chart_idx in data["chart"]:
+        if chart_idx == len(data["chart"]) - 1:
             data["chart"][chart_idx]["sales"] += 1
             data["chart"][chart_idx]["volume_eth"] += raw_data[i]["price_eth"]
         else:
-            data["chart"][chart_idx] = {}
+            data["chart"].append({})
             data["chart"][chart_idx]["sales"] = 1
             data["chart"][chart_idx]["volume_eth"] = raw_data[i]["price_eth"]
 
-        print(f"{i} - {datetime.fromtimestamp(raw_data[i]['sale_date'])} - {chart_idx} - {data['chart'][chart_idx]}")
-
     update_data_chart(29)  # Update the last data chart index.
-    data["avg_price_eth"] = data["total_volume_eth"] / data["total_sales"]
+    data["avg_price_eth"] = round(data["total_volume_eth"] / data["total_sales"], 5)
+    data["total_volume_eth"] = round(data["total_volume_eth"], 5)
 
     return data
 
