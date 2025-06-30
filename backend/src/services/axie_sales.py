@@ -4,13 +4,12 @@ from src.models.axie_sales_search import AxieSalesSearch
 from src.database import db
 
 
-async def get_all_data(custom_query: str, filter: AxieSalesSearch) -> dict:
+async def get_all_data(query: str, filter: AxieSalesSearch) -> dict:
     logging.info(["[get_graph_data] Retrieving data for graph..."])
     try:
         if db.database is None or not hasattr(db.database, "pool"):
             raise RuntimeError("Database is not initialized or not connected.")
 
-        query = custom_query
         query_values = {}
         param_idx = 1
 
@@ -89,8 +88,6 @@ async def get_all_data(custom_query: str, filter: AxieSalesSearch) -> dict:
         if filter.collection_parts:
             for wrapper in filter.collection_parts:
                 for key, value in wrapper.root.items():
-                    print(key.lower())
-                    print(type(key.lower()))
                     numParts = value.numParts
                     query += f""" AND
                         (CASE WHEN eyes_special_genes LIKE ('%' || ${param_idx} || '%') THEN 1 ELSE 0 END +
@@ -113,6 +110,8 @@ async def get_all_data(custom_query: str, filter: AxieSalesSearch) -> dict:
                 query_values[param_idx] = title.lower()
                 param_idx +=1
 
+        # Order By
+        query += " ORDER BY sale_date DESC"
 
         # Prepare parameters in order for asyncpg
         params = [query_values[i] for i in range(1, param_idx)]
