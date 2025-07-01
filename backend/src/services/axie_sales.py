@@ -4,8 +4,8 @@ from src.models.axie_sales_search import AxieSalesSearch
 from src.database import db
 
 
-async def get_all_data(query: str, filter: AxieSalesSearch) -> dict:
-    logging.info(["[get_graph_data] Retrieving data for graph..."])
+async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
+    logging.info(["[get_all_data] Retrieving data for graph..."])
     try:
         if db.database is None or not hasattr(db.database, "pool"):
             raise RuntimeError("Database is not initialized or not connected.")
@@ -121,6 +121,61 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> dict:
         return data
     except Exception as e:
         logging.error(
-            f"[get_graph_data] An error occured while retrieving data for graph: {e}"
+            f"[get_all_data] An error occured while retrieving all data: {e}"
+        )
+        raise e
+
+async def get_data_by_breed_count(time_unit: str, time_num: int) -> dict:
+    logging.info(["[get_data_by_breed_count] Retrieving data by breed count for bar graph..."])
+    try:
+        if db.database is None or not hasattr(db.database, "pool"):
+            raise RuntimeError("Database is not initialized or not connected.")
+
+        query = """
+            SELECT
+                CASE
+                    WHEN breed_count = 0 THEN '0'
+                    WHEN breed_count = 1 THEN '1'
+                    WHEN breed_count = 2 THEN '2'
+                    WHEN breed_count = 3 THEN '3'
+                    WHEN breed_count = 4 THEN '4'
+                    WHEN breed_count = 5 THEN '5'
+                    WHEN breed_count = 6 THEN '6'
+                    WHEN breed_count = 7 THEN '7'
+                END AS breed_count_range,
+                COUNT(*) as sales,
+                SUM(price_eth) as volume_eth,
+                AVG(price_eth) as avg_price_eth
+            FROM axies_full_info
+        """
+        query_values = {}
+        param_idx = 1
+
+        # Time filter
+        if time_unit == "hours":
+            timeframe_seconds = 3600 * time_num
+        elif time_unit == "days":
+            timeframe_seconds = 86400 * time_num
+        now = int(datetime.now().timestamp())  # Current epoch time
+        start_time = now - timeframe_seconds
+        query += f" WHERE sale_date >= ${param_idx}"
+        query_values[param_idx] = start_time
+        param_idx += 1
+
+        # Group By
+        query += " GROUP BY breed_count_range"
+
+        # Order By
+        query += " ORDER BY MIN(breed_count)"
+
+        # Prepare parameters in order for asyncpg
+        params = [query_values[i] for i in range(1, param_idx)]
+
+        async with db.database.pool.acquire() as conn:
+            data = await conn.fetch(query, *params)
+        return data
+    except Exception as e:
+        logging.error(
+            f"[get_data_by_breed_count] An error occured while retrieving data by breed count for bar graph: {e}"
         )
         raise e

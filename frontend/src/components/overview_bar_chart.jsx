@@ -26,31 +26,26 @@ const chartData = [
   { level: "60", sales: 17, averagePrice: 0.004 },
 ]
 
-const chartConfig = {
-  sales: {
-    label: "Axies Sold",
-    color: "#00B4D8",
-  },
-  averagePrice: {
-    label: (
-      <div className="flex">
-          <p>Avg</p>
-          <img src={eth_logo} className="w-3 h-3 ml-2 my-auto"/>
-      </div>
-    )
+
+export function OverviewBarChart({data, keyName="", keyValue="", label="", additionalValue="", additionalLabel=""}) {
+  const chartConfig = {
+    [keyValue]: {
+      label: label,
+      color: "#00B4D8",
+    },
+    [additionalValue]: {
+      label: additionalLabel
+    }
   }
-}
 
-
-export function OverviewBarChart() {
     return (
         <Card>
             <CardContent>
                 <ChartContainer config={chartConfig}>
-                <BarChart accessibilityLayer data={chartData}>
+                <BarChart accessibilityLayer data={data}>
                     <CartesianGrid vertical={false} />
                     <XAxis
-                      dataKey="level"
+                      dataKey={keyName}
                       tickLine={false}
                       tickMargin={10}
                       axisLine={false}
@@ -58,10 +53,10 @@ export function OverviewBarChart() {
                     />
                     <ChartTooltip
                       cursor={false}
-                      content={<ChartTooltipContent hideIndicator additionalPayload="averagePrice"/>}
+                      content={<ChartTooltipContent hideIndicator additionalPayload={additionalValue}/>}
                       // ChartTooltipContent has been customized to allow additionalPayload without having to display a second bar.
                     />
-                    <Bar dataKey="sales" fill={chartConfig["sales"]["color"]} radius={8} />
+                    <Bar dataKey={keyValue} fill={chartConfig[`${keyValue}`]["color"]} radius={8} />
                 </BarChart>
                 </ChartContainer>
             </CardContent>

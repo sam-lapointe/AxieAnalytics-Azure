@@ -1,58 +1,74 @@
 from fastapi import APIRouter
 from src.models.axie_sales_search import AxieSalesSearch
-from src.services.axie_sales import get_all_data
-import time
+from src.services.axie_sales import get_all_data, get_data_by_breed_count
+from src.utils import format_data_line_graph, format_data_bar_graph
+import copy
+import asyncio
 
 router = APIRouter()
 
-@router.post("/graph")
-async def get_graph(filters: AxieSalesSearch):
-    query_select = "SELECT price_eth, sale_date from axies_full_info"
-    raw_data = await get_all_data(query_select, filters)
+@router.get("/graph/overview")
+async def get_graph():
+    """
+    Query all axies sales for the last 30 days and format the data into 3 timeframes: 24H, 7D and 30D.
+    """
+    query_select = "SELECT price_eth, sale_date FROM axies_full_info"
+    filter = AxieSalesSearch()
+    raw_data = await get_all_data(query_select, filter)
+
+    d1_data = format_data_line_graph(raw_data, "days", 1)
+    d7_data = format_data_line_graph(raw_data, "days", 7)
+    d30_data = format_data_line_graph(raw_data, "days", 30)
+
     data = {
-        "total_sales": 0,
-        "total_volume_eth": 0,
-        "avg_price_eth": 0,
-        "chart": []
+        "1d": d1_data,
+        "7d": d7_data,
+        "30d": d30_data,
     }
+    return data
 
-    def update_data_chart(idx: int) -> None:
-        data["total_sales"] += data["chart"][idx]["sales"]
-        data["total_volume_eth"] += data["chart"][idx]["volume_eth"]
-        data["chart"][idx]["avg_price_eth"] = round(data["chart"][idx]["volume_eth"] / data["chart"][idx]["sales"], 5)
+@router.get("/graph/collection")
+async def get_graph_collection():
+    query_select = "SELECT price_eth, sale_date from axies_full_info"
 
-    current_time = time.time()
-    if filters.time_unit == "hours":
-            timeframe_seconds = 3600 * filters.time_num
-    elif filters.time_unit == "days":
-        timeframe_seconds = 86400 * filters.time_num
-    start_time = current_time - timeframe_seconds
-
-    chart_timestamps = (current_time - start_time) // 30
-    chart_idx = 0
-    for i in range(len(raw_data) - 1, 0, -1):
-        while raw_data[i]["sale_date"] >= start_time + (chart_timestamps * (chart_idx + 1)):
-            if chart_idx  == len(data["chart"]) - 1:
-                update_data_chart(chart_idx)
-            else:
-                data["chart"].append({"sales": 0, "volume_eth": 0, "avg_price_eth": 0})
-
-            chart_idx += 1
-
-        if chart_idx == len(data["chart"]) - 1:
-            data["chart"][chart_idx]["sales"] += 1
-            data["chart"][chart_idx]["volume_eth"] += raw_data[i]["price_eth"]
-        else:
-            data["chart"].append({})
-            data["chart"][chart_idx]["sales"] = 1
-            data["chart"][chart_idx]["volume_eth"] = raw_data[i]["price_eth"]
-
-    update_data_chart(29)  # Update the last data chart index.
-    data["avg_price_eth"] = round(data["total_volume_eth"] / data["total_sales"], 5)
-    data["total_volume_eth"] = round(data["total_volume_eth"], 5)
+    # filter_mystic = filters["collection_parts"] = [{"Mystic": {"num_parts": [1, 6]}}]
+    
+    data = {
+        "normal": "",
+        "mystic": "",
+        "origin_data": "",
+        "meo_data": "",
+        "xmas": "",
+        "shiny": "",
+        "japan": "",
+        "nightmare": "",
+        "summer": "",
+    }
 
     return data
 
+@router.get("/graph/breed_count")
+async def get_graph_breed_count():
+    d1_data = await get_data_by_breed_count("days", 1)
+    d7_data = await get_data_by_breed_count("days", 7)
+    d30_data = await get_data_by_breed_count("days", 30)
+
+    data = {
+        "1d": d1_data,
+        "7d": d7_data,
+        "30d": d30_data,
+    }
+
+    # Convert to dict and round values
+    for key in data:
+        new_list = []
+        for item in data[key]:
+            d = dict(item)
+            d["volume_eth"] = round(d["volume_eth"], 5)
+            d["avg_price_eth"] = round(d["avg_price_eth"], 5)
+            new_list.append(d)
+        data[key] = new_list
+    return data
 
 @router.post("/list")
 async def get_list_data(filters: AxieSalesSearch):
@@ -120,8 +136,3 @@ async def get_list_data(filters: AxieSalesSearch):
         )
     
     return data
-
-@router.get("/")
-async def test(filter: AxieSalesSearch):
-    data = await get_all_data(filter)
-    print(len(data))

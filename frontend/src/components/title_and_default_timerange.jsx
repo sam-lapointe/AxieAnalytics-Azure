@@ -39,17 +39,17 @@ export function TitleAndDefaultTimerange({title, timeframe=[1, "days"], setTimef
                             {/* Dropdown for small screens */}
                             <div className="md:hidden ml-auto">
                                 <Select
-                                    defaultValue={timeframe[0]}
+                                    value={timeframe[0]}
                                     onValueChange={(e) => setTimeframe([e, "days"])}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="24H"/>
+                                        <SelectValue/>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                        <SelectItem value="1">24H</SelectItem>
-                                        <SelectItem value="7">7D</SelectItem>
-                                        <SelectItem value="30">30D</SelectItem>
+                                        <SelectItem value={1}>24H</SelectItem>
+                                        <SelectItem value={7}>7D</SelectItem>
+                                        <SelectItem value={30}>30D</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
