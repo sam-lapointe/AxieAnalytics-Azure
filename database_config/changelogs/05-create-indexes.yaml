@@ -76,4 +76,14 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-      
+
+  - changeSet:
+      id: idx-axies-sale-date
+      author: "Samuel Lapointe"
+      changes:
+        - createIndex:
+            tableName: axies
+            indexName: idx_axies_sale_date
+            columns:
+              - column:
+                name: sale_date
