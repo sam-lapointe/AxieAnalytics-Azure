@@ -9,6 +9,7 @@ trigger:
       - database_config/**
       - store_sales/**
       - store_axies/**
+      - backend/**
     exclude:
       - '**/README.md'
       - '**/docs/**'
@@ -45,6 +46,8 @@ stages:
             echo "##vso[task.setvariable variable=runStoreSalesCI;isOutput=true]$runStoreSalesCI"
             if grep "store_axies/" changed.txt; then runStoreAxiesCI=true; else runStoreAxiesCI=false;fi
             echo "##vso[task.setvariable variable=runStoreAxiesCI;isOutput=true]$runStoreAxiesCI"
+            if grep "backend/" changed.txt; then runBackendCI=true; else runBackendCI=false;fi
+            echo "##vso[task.setvariable variable=runBackendCI;isOutput=true]$runBackendCI"
             echo "##[endgroup]"
           displayName: Check Changes
           name: CheckChanges
@@ -56,6 +59,7 @@ stages:
     - group: Service-WebhookListener
     - group: Service-StoreSales
     - group: Service-StoreAxies
+    - group: Service-Backend
     jobs:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
@@ -82,6 +86,13 @@ stages:
         - template: ci-storeaxies.yml
           parameters:
             artifactName: $(AXIES_ARTIFACT_NAME)
+
+    - job: BackendCI
+      condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runBackendCI'], 'true')
+      steps:
+        - template: ci-backend.yml
+          parameters:
+            artifactName: $(BACKEND_ARTIFACT_NAME)
 
   - stage: DeployDev
     displayName: Deployment to Dev
@@ -200,12 +211,15 @@ stages:
       - group: Service-WebhookListener
       - group: Service-StoreSales
       - group: Service-StoreAxies
+      - group: Service-Backend
       - name: WEBHOOK_FUNCTION_APP_NAME
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.webhook_function_name']]
       - name: SALES_FUNCTION_APP_NAME
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.sales_function_name']]
       - name: AXIES_FUNCTION_APP_NAME
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.axies_function_name']]
+      - name: BACKEND_WEB_APP_NAME
+        value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.backend_web_app_name']]
       steps:
       - task: AzureCli@2
         displayName: Deploy store_axies to production slot
@@ -253,6 +267,18 @@ stages:
               --name "$(SALES_FUNCTION_APP_NAME)" \
               --src "$(Pipeline.Workspace)/$(SALES_ARTIFACT_NAME)/$(SALES_ARTIFACT_NAME).zip" \
               --build-remote true
+
+      - task: AzureCli@2
+        displayName: Deploy backend to production slot
+        inputs:
+          azureSubscription: 'AxieMarket-Dev'
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az webapp deploy \
+              --resource-group $(RESOURCE_GROUP_NAME) \
+              --name "$(BACKEND_WEB_APP_NAME)" \
+              --src "$(Pipeline.Workspace)/$(BACKEND_ARTIFACT_NAME)/$(BACKEND_ARTIFACT_NAME).zip" \
 
     - job: TestDev
       dependsOn:

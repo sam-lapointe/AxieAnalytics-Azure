@@ -22,6 +22,10 @@ output "axies_function_name" {
   value = module.store_axies_function_app.function_app_name
 }
 
+output "backend_web_app_name" {
+  value = module.backend.web_app_name
+}
+
 output "database_hostname" {
   value = module.postgresql_server.hostname
 }

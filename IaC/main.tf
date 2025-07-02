@@ -315,3 +315,39 @@ module "postgresql_server" {
   authorized_ips          = var.POSTGRESQL_AUTHORIZED_IPS
   databases               = [local.AXIEMARKET_DATABASE]
 }
+
+resource "azurerm_service_plan" "web_app_service_plan" {
+  name                = "${var.environment}-axie-web-app-sp"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  tags                = local.tags
+
+  os_type  = "Linux"
+  sku_name = "B1"
+}
+
+module "backend" {
+  source = "./modules/web-app"
+
+  web_app_name            = "${var.environment}-axie-web-backend"
+  resource_group_name     = data.azurerm_resource_group.rg.name
+  location                = data.azurerm_resource_group.rg.location
+  tags                    = local.tags
+  service_plan_id         = azurerm_service_plan.web_app_service_plan.id
+  umi_key_vault           = azurerm_user_assigned_identity.umi_functionapp_internal.id
+  user_managed_identities = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
+  python_version          = "3.11"
+  startup_command         = "uvicorn src.app:app --host 0.0.0.0 --port 443 --workers 2"
+
+  app_settings = {
+    "KEY_VAULT_NAME"                 = module.key_vault_internal.key_vault_name
+    "PG_HOST"                        = "${module.postgresql_server.hostname}.postgres.database.azure.com"
+    "PG_PORT"                        = 5432
+    "PG_DATABASE"                    = local.AXIEMARKET_DATABASE
+    "KV_PG_USERNAME"                 = local.POSTGRESQL_BACKEND_USERNAME_NAME
+    "KV_PG_PASSWORD"                 = local.POSTGRESQL_BACKEND_PASSWORD_NAME
+    "AZURE_CLIENT_ID"                = azurerm_user_assigned_identity.umi_functionapp_internal.client_id
+    "AXIE_API_KEY_NAME"              = local.AXIE_API_KEY_NAME
+    "SCM_DO_BUILD_DURING_DEPLOYMENT" = "true"
+  }
+}
