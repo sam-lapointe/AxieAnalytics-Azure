@@ -5,7 +5,7 @@ resource "azurerm_linux_web_app" "web_app" {
   tags                = var.tags
 
   service_plan_id                 = var.service_plan_id
-  key_vault_reference_identity_id = var.umi_key_vault
+  key_vault_reference_identity_id = var.umi_key_vault != "" ? var.umi_key_vault : null
 
   site_config {
     application_stack {
