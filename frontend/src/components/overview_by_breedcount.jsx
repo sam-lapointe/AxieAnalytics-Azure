@@ -9,7 +9,7 @@ export function OverviewByBreedCount({data, timeframe, setTimeframe}) {
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
             <div className="row-span-2">
                 <TitleAndDefaultTimerange
-                    title="Normal Axies Sold By Breed Count"
+                    title="Normal Axies Sales By Breed Count"
                     timeframe={timeframe}
                     setTimeframe={setTimeframe}
                 />

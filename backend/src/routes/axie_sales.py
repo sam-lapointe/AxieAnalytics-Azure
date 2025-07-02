@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from src.models.axie_sales_search import AxieSalesSearch
+from src.models.axie_sales_search import AxieSalesSearch, CollectionWrapper, CollectionDetail
 from src.services.axie_sales import get_all_data, get_data_by_breed_count
-from src.utils import format_data_line_graph, format_data_bar_graph
+from src.utils import format_data_line_graph, format_data_line_graph_by_collection
 import copy
 import asyncio
 
@@ -29,22 +29,31 @@ async def get_graph():
 
 @router.get("/graph/collection")
 async def get_graph_collection():
-    query_select = "SELECT price_eth, sale_date from axies_full_info"
+    query_select = """
+        SELECT
+            price_eth,
+            sale_date,
+            eyes_special_genes,
+            ears_special_genes,
+            mouth_special_genes,
+            horn_special_genes,
+            back_special_genes,
+            tail_special_genes,
+            collection_title
+        FROM axies_full_info
+    """
+    filter = AxieSalesSearch()
+    raw_data = await get_all_data(query_select, filter)
 
-    # filter_mystic = filters["collection_parts"] = [{"Mystic": {"num_parts": [1, 6]}}]
-    
+    d1_data = format_data_line_graph_by_collection(raw_data, "days", 1)
+    d7_data = format_data_line_graph_by_collection(raw_data, "days", 7)
+    d30_data = format_data_line_graph_by_collection(raw_data, "days", 30)
+
     data = {
-        "normal": "",
-        "mystic": "",
-        "origin_data": "",
-        "meo_data": "",
-        "xmas": "",
-        "shiny": "",
-        "japan": "",
-        "nightmare": "",
-        "summer": "",
+        "1d": d1_data,
+        "7d": d7_data,
+        "30d": d30_data,
     }
-
     return data
 
 @router.get("/graph/breed_count")

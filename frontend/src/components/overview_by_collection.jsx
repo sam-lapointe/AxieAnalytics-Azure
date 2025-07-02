@@ -10,16 +10,13 @@ import {
     CarouselPrevious,
   } from "@/components/ui/carousel";
 
-export function OverviewByCollection({data}) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [timeframe, setTimeframe] =useState("24h")
-
+export function OverviewByCollection({data, timeframe, setTimeframe}) {
     // Set the variables for the data of each collection.
-
+    console.log(data)
     return (
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
             <div className="row-span-2">
-                <TitleAndDefaultTimerange title="Overall By Collection"/>
+                <TitleAndDefaultTimerange title="Sales By Collection" timeframe={timeframe} setTimeframe={setTimeframe}/>
             </div>
 
             <div className="flex justify-center w-full max-w-full relative overflow-hidden">
@@ -30,9 +27,12 @@ export function OverviewByCollection({data}) {
                     className="w-full"
                     >
                     <CarouselContent>
-                        {Array.from({ length: 9 }).map((_, index) => (
-                        <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                            <CardCollection label=""/>
+                        {Object.entries(data).map(([key, value]) => (
+                        <CarouselItem key={key} className="md:basis-1/2 lg:basis-1/3">
+                            <CardCollection
+                                data={value}
+                                collection={key}
+                            />
                         </CarouselItem>
                         ))}
                     </CarouselContent>

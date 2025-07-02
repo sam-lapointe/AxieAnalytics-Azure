@@ -12,23 +12,8 @@ import {
 } from "@/components/ui/card"
 
 
-const chartData = [
-  { key: "Jan", value: 4000 },
-  { key: "Feb", value: 3000 },
-  { key: "Mar", value: 2000 },
-  { key: "Apr", value: 2780 },
-  { key: "May", value: 1890 },
-  { key: "Jun", value: 2390 },
-  { key: "Jul", value: 3490 },
-  { key: "Aug", value: 2000 },
-  { key: "Sep", value: 2780 },
-  { key: "Oct", value: 1890 },
-  { key: "Nov", value: 2390 },
-  { key: "Dec", value: 3490 },
-];
-
-
-export function CardCollection({collection="Collection", label = "Total Sales", data}) {
+export function CardCollection({data, collection="Collection"}) {
+    console.log(data)
     return (
         <div className="">
             <Card className="pt-2 pb-0 gap-0">
@@ -38,9 +23,9 @@ export function CardCollection({collection="Collection", label = "Total Sales", 
                 <CardContent className="px-0 py-0">
                     <div className="[&_.bg-card]:rounded-none [&_.bg-card]:border-0">
                         <OverviewLineChart
-                        data={chartData}
-                        label={label}
+                        data={data}
                         keyName="Axies Sold"
+                        keyValue="sales"
                         className="px-0"
                     />
                     </div>
@@ -48,13 +33,13 @@ export function CardCollection({collection="Collection", label = "Total Sales", 
                 <CardFooter className="grid grid-cols-2 border-t-2 py-2">
                     <div className="grid grid-rows-2">
                         <p>Total Sales</p>
-                        <p>123</p>
+                        <p>{data["total_sales"]}</p>
                     </div>
                     <div className="grid grid-rows-2">
                         <p>Average Price</p>
                         <div className="flex">
                             <img src={eth_logo} className="w-4 h-4 my-auto mr-1"/>
-                            <p>0.0018</p>
+                            <p>{data["avg_price_eth"]}</p>
                         </div>
                     </div>
                 </CardFooter>

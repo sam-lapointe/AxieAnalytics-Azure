@@ -58,14 +58,16 @@ const test_parts = {
 }
 
 
-export function FilterSection({timeframe, setTimeframe}) {
-    const [parts, setParts] = useState(test_parts)
-    const [selectedParts, setSelectedParts] = useState({})
-    const [selectedClasses, setSelectedClasses] = useState([])
-    const [levelRange, setLevelRange] = useState([1, 60])
-    const [breedCountRange, setBreedCountRange] = useState([0, 7])
-    const [evolvedPartsRange, setEvolvedPartsRange] = useState([0, 6])
-    const [selectedCollections, setSelectedCollections] = useState({})
+export function FilterSection({
+    timeframe, setTimeframe,
+    parts, setParts,
+    selectedParts, setSelectedParts,
+    selectedClasses, setSelectedClasses,
+    levelRange, setLevelRange,
+    breedCountRange, setBreedCountRange,
+    evolvedPartsRange, setEvolvedPartsRange,
+    selectedCollections, setSelectedCollections,
+}) {
 
     console.log(Object.keys(selectedCollections).map((collection) => {
         console.log(selectedCollections[collection])
@@ -278,6 +280,7 @@ export function FilterSection({timeframe, setTimeframe}) {
             {Object.keys(selectedCollections).map((collection) => {
                 return (
                     <SelectedFilter
+                        key={collection}
                         text={
                             selectedCollections[collection]["numParts"]
                                 ? `${collection} ${selectedCollections[collection]["numParts"][0]}-${selectedCollections[collection]["numParts"][1]}`

@@ -24,9 +24,12 @@ export function Home() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [responseOverview, responseBreedCount] = await Promise.all([
+                const [responseOverview, responseCollection, responseBreedCount] = await Promise.all([
                     axios.get(
                         "http://127.0.0.1:8000/axies/graph/overview"
+                    ),
+                    axios.get(
+                        "http://127.0.0.1:8000/axies/graph/collection",
                     ),
                     axios.get(
                         "http://127.0.0.1:8000/axies/graph/breed_count"
@@ -34,6 +37,7 @@ export function Home() {
                 ])
 
                 setOverviewData(responseOverview.data)
+                setCollectionData(responseCollection.data)
                 setBreedCountData(responseBreedCount.data)
                 setIsLoading(false)
             } catch (err) {
@@ -51,7 +55,11 @@ export function Home() {
                 timeframe={overviewTime}
                 setTimeframe={setOverviewTime}
             />
-            <OverviewByCollection data={collectionData}/>
+            <OverviewByCollection
+                data={isLoading ? collectionData : collectionData[`${collectionTime[0]}${collectionTime[1][0]}`]}
+                timeframe={collectionTime}
+                setTimeframe={setCollectionTime}
+            />
             <OverviewByBreedCount
                 data={isLoading ? breedCountData : breedCountData[`${breedCountTime[0]}${breedCountTime[1][0]}`]}
                 timeframe={breedCountTime}

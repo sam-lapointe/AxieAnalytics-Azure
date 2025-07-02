@@ -5,7 +5,7 @@ import { TitleAndDefaultTimerange } from "./title_and_default_timerange";
 import eth_logo from "../assets/eth_logo.svg"
 
 
-export function Overview({data, title="Overall Stats", timeframe, setTimeframe}) {
+export function Overview({data, title="Overall Sales", timeframe, setTimeframe}) {
     const tempData = {
         "total_sales": 0,
         "total_volume_eth": 0,
