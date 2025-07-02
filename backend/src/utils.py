@@ -152,7 +152,7 @@ def format_data_line_graph_by_collection(raw_data: list[dict], time_unit: str, t
                         sale_collections.pop(key)
                         break
 
-    # Calculate average and totals for each collection
+    # Calculate average and totals for each collection and buckets.
     for key in data:
         for bucket in data[key]["chart"]:
             if bucket["sales"] > 0:
