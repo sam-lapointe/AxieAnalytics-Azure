@@ -212,7 +212,7 @@ function ChartTooltipContent({
                     </div>
                     {item.value && (
                       <span className="text-foreground font-mono font-medium tabular-nums">
-                        {item.value.toLocaleString()}
+                        {item.value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 5})}
                       </span>
                     )}
                   </div>
