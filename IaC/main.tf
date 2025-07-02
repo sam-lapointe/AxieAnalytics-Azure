@@ -337,7 +337,7 @@ module "backend" {
   umi_key_vault           = azurerm_user_assigned_identity.umi_functionapp_internal.id
   user_managed_identities = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
   python_version          = "3.11"
-  startup_command         = "uvicorn src.app:app --host 0.0.0.0 --port 443 --workers 2"
+  startup_command         = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
 
   app_settings = {
     "KEY_VAULT_NAME"                 = module.key_vault_internal.key_vault_name
