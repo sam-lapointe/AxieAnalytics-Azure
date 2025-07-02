@@ -43,7 +43,7 @@ class Part:
 
     @staticmethod
     async def search_parts_update(
-        connection: asyncpg.Connection, days: int, current_version=None
+        connection: asyncpg.Connection, days: int = 90, current_version: str = None
     ) -> tuple[str | None, str | None, dict]:
         """
         This method should be used on demand to verify if there was an update to the parts from Axie Infinity today.
@@ -199,7 +199,7 @@ class Part:
                 latest_parts_url,
                 latest_version_date,
                 axie_parts,
-            ) = await Part.search_parts_update(connection, days=30)
+            ) = await Part.search_parts_update(connection, days=90)
             if latest_parts_url:
                 logging.info(
                     f"[get_and_update_parts_latest_version] Latest parts URL: {latest_parts_url}, Date: {latest_version_date}"
@@ -221,7 +221,7 @@ class Part:
                 latest_version_date,
                 axie_parts,
             ) = await Part.search_parts_update(
-                connection, days=30, current_version=current_version
+                connection, days=90, current_version=current_version
             )
             if latest_parts_url:
                 logging.info(
