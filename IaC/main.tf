@@ -336,7 +336,8 @@ module "backend" {
   service_plan_id         = azurerm_service_plan.web_app_service_plan.id
   umi_key_vault           = azurerm_user_assigned_identity.umi_functionapp_internal.id
   user_managed_identities = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
-  python_version          = "3.11"
+  language                = "python"
+  language_version        = "3.11"
   startup_command         = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
 
   app_settings = {
@@ -350,4 +351,17 @@ module "backend" {
     "AXIE_API_KEY_NAME"              = local.AXIE_API_KEY_NAME
     "SCM_DO_BUILD_DURING_DEPLOYMENT" = "true"
   }
+}
+
+module "frontend" {
+  source = "./modules/web-app"
+
+  web_app_name        = "${var.environment}-axie-web-frontend"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  tags                = local.tags
+  service_plan_id     = azurerm_service_plan.web_app_service_plan.id
+  language            = "node"
+  language_version    = "22-lts"
+  startup_command     = "npm start"
 }

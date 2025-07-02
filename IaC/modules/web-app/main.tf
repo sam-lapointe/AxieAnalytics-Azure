@@ -9,7 +9,8 @@ resource "azurerm_linux_web_app" "web_app" {
 
   site_config {
     application_stack {
-      python_version = var.python_version
+      python_version = var.language == "python" ? var.language_version : null
+      node_version   = var.language == "node" ? var.language_version : null
     }
 
     app_command_line = var.startup_command != "" ? var.startup_command : null

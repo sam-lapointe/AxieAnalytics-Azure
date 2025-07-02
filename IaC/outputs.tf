@@ -26,6 +26,10 @@ output "backend_web_app_name" {
   value = module.backend.web_app_name
 }
 
+output "frontend_web_app_name" {
+  value = module.frontend.web_app_name
+}
+
 output "database_hostname" {
   value = module.postgresql_server.hostname
 }

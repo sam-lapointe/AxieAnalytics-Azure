@@ -31,8 +31,17 @@ variable "user_managed_identities" {
   default     = []
 }
 
-variable "python_version" {
-  description = "The version of Python to use."
+variable "language" {
+    description = "The application language (e.g., python, node)."
+    type        = string
+    validation {
+        condition     = contains(["python", "node"], var.language)
+        error_message = "Invalid language. Allowed values are: python, node."
+    }
+}
+
+variable "language_version" {
+  description = "The version of the language to use."
   type = string
 }
 
