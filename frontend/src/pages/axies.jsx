@@ -66,7 +66,7 @@ export function Axies() {
             try {
                 const [responseOverview] = await Promise.all([
                     axios.get(
-                        "http://127.0.0.1:8000/axies/graph/overview"
+                        "https://dev.api.axieanalytics.com/axies/graph/overview"
                     ),
                 ])
 
