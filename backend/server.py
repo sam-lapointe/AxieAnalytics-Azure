@@ -1,6 +1,7 @@
 from src.app import app
 
 # Entrypoint for the FastAPI development server
+# This allows you to run the server with `uvicorn src.server:app --reload`
 if __name__ == "__main__":
     import uvicorn
 
