@@ -4,14 +4,10 @@ parameters:
   default: 'frontend'
 
 steps:
-- script: |
-    if ! node --version > /dev/null 2>&1; then
-      echo "❌ Node must be installed on the Self-Hosted Agent."
-      exit 1
-    else
-      node --version
-    fi
-  displayName: Check Node Version
+- task: NodeTool@1
+    inputs:
+      versionSpec: '22.17'
+  displayName: Install Node.js
 
 - script: |
     npm ci
