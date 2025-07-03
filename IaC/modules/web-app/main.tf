@@ -18,8 +18,11 @@ resource "azurerm_linux_web_app" "web_app" {
 
   app_settings = var.app_settings
 
-  identity {
-    type = "UserAssigned"
-    identity_ids = var.user_managed_identities
+  dynamic "identity" {
+    for_each = length(var.user_managed_identities) > 0 ? [1] : []
+    content {
+      type         = "UserAssigned"
+      identity_ids = var.user_managed_identities
+    }
   }
 }
