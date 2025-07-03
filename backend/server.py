@@ -1,6 +1,6 @@
 from src.app import app
 
-
+# Entrypoint for the FastAPI development server
 if __name__ == "__main__":
     import uvicorn
 

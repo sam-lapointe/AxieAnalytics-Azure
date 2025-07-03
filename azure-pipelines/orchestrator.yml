@@ -279,6 +279,7 @@ stages:
               --resource-group $(RESOURCE_GROUP_NAME) \
               --name "$(BACKEND_WEB_APP_NAME)" \
               --src-path "$(Pipeline.Workspace)/$(BACKEND_ARTIFACT_NAME)/$(BACKEND_ARTIFACT_NAME).zip" \
+              --timeout 500000 \
 
     - job: TestDev
       dependsOn:
