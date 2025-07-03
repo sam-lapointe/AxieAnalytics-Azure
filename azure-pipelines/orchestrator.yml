@@ -11,6 +11,7 @@ trigger:
       - store_axies/**
       - backend/**
       - frontend/**
+      - azure-pipelines/**
     exclude:
       - '**/README.md'
       - '**/docs/**'

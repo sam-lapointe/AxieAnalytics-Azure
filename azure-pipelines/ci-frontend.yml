@@ -10,6 +10,11 @@ steps:
   displayName: Install Node.js
 
 - script: |
+    node --version
+    npm --version
+  displayName: Check Node.js Version
+
+- script: |
     npm ci
   displayName: Install Dependencies
   workingDirectory: $(System.DefaultWorkingDirectory)/frontend
