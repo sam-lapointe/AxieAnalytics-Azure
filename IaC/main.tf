@@ -341,15 +341,15 @@ module "backend" {
   startup_command         = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
 
   app_settings = {
-    "KEY_VAULT_NAME"           = module.key_vault_internal.key_vault_name
-    "PG_HOST"                  = "${module.postgresql_server.hostname}.postgres.database.azure.com"
-    "PG_PORT"                  = 5432
-    "PG_DATABASE"              = local.AXIEMARKET_DATABASE
-    "KV_PG_USERNAME"           = local.POSTGRESQL_BACKEND_USERNAME_NAME
-    "KV_PG_PASSWORD"           = local.POSTGRESQL_BACKEND_PASSWORD_NAME
-    "AZURE_CLIENT_ID"          = azurerm_user_assigned_identity.umi_functionapp_internal.client_id
-    "AXIE_API_KEY_NAME"        = local.AXIE_API_KEY_NAME
-    "WEBSITE_RUN_FROM_PACKAGE" = "1"
+    "KEY_VAULT_NAME"                 = module.key_vault_internal.key_vault_name
+    "PG_HOST"                        = "${module.postgresql_server.hostname}.postgres.database.azure.com"
+    "PG_PORT"                        = 5432
+    "PG_DATABASE"                    = local.AXIEMARKET_DATABASE
+    "KV_PG_USERNAME"                 = local.POSTGRESQL_BACKEND_USERNAME_NAME
+    "KV_PG_PASSWORD"                 = local.POSTGRESQL_BACKEND_PASSWORD_NAME
+    "AZURE_CLIENT_ID"                = azurerm_user_assigned_identity.umi_functionapp_internal.client_id
+    "AXIE_API_KEY_NAME"              = local.AXIE_API_KEY_NAME
+    "SCM_DO_BUILD_DURING_DEPLOYMENT" = "true"
   }
 }
 

@@ -57,23 +57,21 @@ steps:
 #       -D sonar.token=$(SONARQUBE_TOKEN)
 #   displayName: SonarQube Scanner
 
-- script: |
-    echo "Building Backend Package"
-    python$(PYTHON_VERSION) -m venv venv
-    source venv/bin/activate
-    mkdir -p package
-    pip install --target package -r requirements.txt
-    cp -r src package/
-    ls
-    ls package
-    echo "Package built successfully."
-  displayName: "Build Backend Package"
-  workingDirectory: $(System.DefaultWorkingDirectory)/backend
+# - script: |
+#     echo "Building Backend Package"
+#     python$(PYTHON_VERSION) -m venv venv
+#     source venv/bin/activate
+#     mkdir -p package
+#     pip install --target package -r requirements.txt
+#     cp -r src package/
+#     echo "Package built successfully."
+#   displayName: "Build Backend Package"
+#   workingDirectory: $(System.DefaultWorkingDirectory)/backend
 
 - task: ArchiveFiles@2
   displayName: Build Zip Artifact
   inputs:
-    rootFolderOrFile: $(System.DefaultWorkingDirectory)/backend/package
+    rootFolderOrFile: $(System.DefaultWorkingDirectory)/backend
     includeRootFolder: false
     archiveType: "zip"
     archiveFile: "$(Build.ArtifactStagingDirectory)/backend.zip"
