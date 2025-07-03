@@ -275,10 +275,10 @@ stages:
           scriptType: bash
           scriptLocation: inlineScript
           inlineScript: |
-            az webapp deployment source config-zip \
+            az webapp deploy \
               --resource-group $(RESOURCE_GROUP_NAME) \
               --name "$(BACKEND_WEB_APP_NAME)" \
-              --src "$(Pipeline.Workspace)/$(BACKEND_ARTIFACT_NAME)/$(BACKEND_ARTIFACT_NAME).zip" \
+              --src-path "$(Pipeline.Workspace)/$(BACKEND_ARTIFACT_NAME)/$(BACKEND_ARTIFACT_NAME).zip" \
 
     - job: TestDev
       dependsOn:

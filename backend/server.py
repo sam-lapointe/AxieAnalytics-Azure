@@ -1,6 +1,6 @@
 from src.app import app
 
-# Entrypoint for the FastAPI development server
+# Entrypoint for the FastAPI development server with reload enabled
 if __name__ == "__main__":
     import uvicorn
 
