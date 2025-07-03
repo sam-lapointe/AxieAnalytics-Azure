@@ -64,6 +64,7 @@ stages:
     - group: Service-StoreSales
     - group: Service-StoreAxies
     - group: Service-Backend
+    - group: Service-Frontend
     jobs:
     - job: IaCCI
       condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runIACCI'], 'true')
@@ -223,6 +224,7 @@ stages:
       - group: Service-StoreSales
       - group: Service-StoreAxies
       - group: Service-Backend
+      - group: Service-Frontend
       - name: WEBHOOK_FUNCTION_APP_NAME
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.webhook_function_name']]
       - name: SALES_FUNCTION_APP_NAME
