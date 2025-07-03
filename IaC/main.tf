@@ -363,5 +363,5 @@ module "frontend" {
   service_plan_id     = azurerm_service_plan.web_app_service_plan.id
   language            = "node"
   language_version    = "22-lts"
-  startup_command     = "npm start"
+  startup_command     = "pm2 serve /home/site/wwwroot --no-daemon --spa"
 }
