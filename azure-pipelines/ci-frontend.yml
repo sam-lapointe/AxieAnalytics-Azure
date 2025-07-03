@@ -1,0 +1,40 @@
+parameters:
+- name: artifactName
+  type: string
+  default: 'frontend'
+
+steps:
+- script: |
+    if ! node --version > /dev/null 2>&1; then
+      echo "❌ Node must be installed on the Self-Hosted Agent."
+      exit 1
+    else
+      node --version
+    fi
+  displayName: Check Node Version
+
+- script: |
+    npm ci
+  displayName: Install Dependencies
+  workingDirectory: $(System.DefaultWorkingDirectory)/frontend
+
+- script: |
+    npm run build
+  displayName: Build Frontend
+  workingDirectory: $(System.DefaultWorkingDirectory)/frontend
+
+- task: ArchiveFiles@2
+  displayName: Build Zip Artifact
+  inputs:
+    rootFolderOrFile: $(System.DefaultWorkingDirectory)/frontend/dist
+    includeRootFolder: false
+    archiveType: "zip"
+    archiveFile: "$(Build.ArtifactStagingDirectory)/frontend.zip"
+    replaceExistingArchive: true
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifact
+  inputs:
+    PathtoPublish: "$(Build.ArtifactStagingDirectory)/frontend.zip"
+    ArtifactName: ${{ parameters.artifactName }}
+    publishLocation: Container

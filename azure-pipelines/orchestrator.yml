@@ -10,6 +10,7 @@ trigger:
       - store_sales/**
       - store_axies/**
       - backend/**
+      - frontend/**
     exclude:
       - '**/README.md'
       - '**/docs/**'
@@ -48,6 +49,8 @@ stages:
             echo "##vso[task.setvariable variable=runStoreAxiesCI;isOutput=true]$runStoreAxiesCI"
             if grep "backend/" changed.txt; then runBackendCI=true; else runBackendCI=false;fi
             echo "##vso[task.setvariable variable=runBackendCI;isOutput=true]$runBackendCI"
+            if grep "frontend/" changed.txt; then runFrontendCI=true; else runFrontendCI=false;fi
+            echo "##vso[task.setvariable variable=runFrontendCI;isOutput=true]$runFrontendCI"
             echo "##[endgroup]"
           displayName: Check Changes
           name: CheckChanges
@@ -93,6 +96,13 @@ stages:
         - template: ci-backend.yml
           parameters:
             artifactName: $(BACKEND_ARTIFACT_NAME)
+
+    - job: FrontendCI
+      condition: eq(stageDependencies.DetermineChangedDirs.DetermineChanges.outputs['CheckChanges.runFrontendCI'], 'true')
+      steps:
+        - template: ci-frontend.yml
+          parameters:
+            artifactName: $(FRONTEND_ARTIFACT_NAME)
 
   - stage: DeployDev
     displayName: Deployment to Dev
@@ -220,6 +230,8 @@ stages:
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.axies_function_name']]
       - name: BACKEND_WEB_APP_NAME
         value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.backend_web_app_name']]
+      - name: FRONTEND_WEB_APP_NAME
+        value: $[dependencies.DeployDevInfra.outputs['DeployDevInfra.SetTerraformOutputsVariables.frontend_web_app_name']]
       steps:
       - task: AzureCli@2
         displayName: Deploy store_axies to production slot
@@ -270,6 +282,7 @@ stages:
 
       - task: AzureCli@2
         displayName: Deploy backend to production slot
+        continueOnError: true # There is currently a timeout error when deploying the backend, event tough it is successful.
         inputs:
           azureSubscription: 'AxieMarket-Dev'
           scriptType: bash
@@ -279,6 +292,18 @@ stages:
               --resource-group $(RESOURCE_GROUP_NAME) \
               --name "$(BACKEND_WEB_APP_NAME)" \
               --src-path "$(Pipeline.Workspace)/$(BACKEND_ARTIFACT_NAME)/$(BACKEND_ARTIFACT_NAME).zip" \
+
+      - task: AzureCli@2
+        displayName: Deploy frontend to production slot
+        inputs:
+          azureSubscription: 'AxieMarket-Dev'
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az webapp deploy \
+              --resource-group $(RESOURCE_GROUP_NAME) \
+              --name "$(FRONTEND_WEB_APP_NAME)" \
+              --src-path "$(Pipeline.Workspace)/$(FRONTEND_ARTIFACT_NAME)/$(FRONTEND_ARTIFACT_NAME).zip" \
 
     - job: TestDev
       dependsOn:

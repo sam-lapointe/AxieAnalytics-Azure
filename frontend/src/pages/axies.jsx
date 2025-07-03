@@ -6,6 +6,7 @@ import { FilterSection } from "../features/axie_filter/components/filter_section
 import { ResultSection } from "../features/axie_sales/components/result_section.jsx"
 
 
+// Temporary data for testing
 const test_parts = {
     "Anemone": {
         "class": "Aquatic",
