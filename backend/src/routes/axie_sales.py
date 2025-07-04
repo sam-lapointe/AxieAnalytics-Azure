@@ -81,7 +81,7 @@ async def get_graph_breed_count():
 
 @router.post("/list")
 async def get_list_data(filters: AxieSalesSearch):
-    query_select = "SELECT * from axies_full_info"
+    query_select = "SELECT * from axies_full_info LIMIT 50"
     raw_data =  await get_all_data(query_select, filters)
     data = []
     for axie in raw_data:

@@ -65,7 +65,7 @@ export function Axies() {
         "avg_price_eth": 0,
         "chart": [{"sales": 0, "volume": 0, "avg_price_eth": 0}]
     })
-    const [listData, setListData] = useState({})
+    const [listData, setListData] = useState([])
     const [isLoading, setIsLoading] = useState({})
     const [error, setError] = useState(null)
 
