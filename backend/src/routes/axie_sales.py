@@ -90,6 +90,7 @@ async def get_list_data(filters: AxieSalesSearch):
                 "axie_id": axie["axie_id"],
                 "price_eth": axie["price_eth"],
                 "transaction_hash": axie["transaction_hash"],
+                "sale_date": axie["sale_date"],
                 "level": axie["level"],
                 "xp": axie["xp"],
                 "breed_count": axie["breed_count"],

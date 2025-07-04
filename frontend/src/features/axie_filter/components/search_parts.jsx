@@ -10,44 +10,6 @@ import {
 } from "@/components/ui/popover"
 
 
-const test_parts = {
-    "Anemone": {
-        "class": "Aquatic",
-        "partsIds": [
-            {"id": "anemone", "stage": 1},
-            {"id": "anemone-2", "stage": 2}
-        ]
-    },
-    "Arco": {
-        "class": "Beast",
-        "partsIds": [
-            {"id": "arco", "stage": 1},
-            {"id": "arco-2", "stage": 2}
-        ]
-    },
-    "Croc": {
-        "class": "Reptile",
-        "partsIds": [
-            {"id": "croc", "stage": 1},
-            {"id": "croc-2", "stage": 2}
-        ]
-    },
-    "Nimo": {
-        "class": "Aquatic",
-        "partsIds": [
-            {"id": "nimo", "stage": 1},
-            {"id": "nimo-2", "stage": 2}
-        ]
-    },
-    "Antenna": {
-        "class": "Bug",
-        "partsIds": [
-            {"id": "antenna", "stage": 1},
-            {"id": "antenna-2", "stage": 2}
-        ]
-    }
-}
-
 const partNameButton = "w-14 h-6 text-xs bg-white text-black border-1 border-grey hover:bg-white hover:border-black"
 const partStageButton = "w-10 h-4 border-1 bg-white text-black border-grey hover:bg-white hover:border-black"
 
@@ -64,12 +26,12 @@ export function SearchParts({selectedParts, onSelectPart, onUnselectPart, onClea
             parts[part]["partsIds"].length > 0
     )
 
-    const handleSelectPart = (partName, axieParts, action) => {
+    const handleSelectPart = (partName, partType, axieParts, action) => {
         if (inputRef.current) {
             inputRef.current.focus()
         }
 
-        onSelectPart(partName, axieParts, action)
+        onSelectPart(partName, partType, axieParts, action)
     }
 
     return (
@@ -128,14 +90,14 @@ export function SearchParts({selectedParts, onSelectPart, onUnselectPart, onClea
                                                     <Button
                                                         className={partNameButton}
                                                         size="icon"
-                                                        onClick={() => handleSelectPart(part, parts[part]["partsIds"], "include")}
+                                                        onClick={() => handleSelectPart(part, parts[part]["type"], parts[part]["partsIds"], "include")}
                                                     >
                                                         Include
                                                     </Button>
                                                     <Button
                                                         className={partNameButton}
                                                         size="icon"
-                                                        onClick={() => handleSelectPart(part, parts[part]["partsIds"], "exclude")}
+                                                        onClick={() => handleSelectPart(part, parts[part]["type"], parts[part]["partsIds"], "exclude")}
                                                     >
                                                         Exclude
                                                     </Button>
@@ -150,14 +112,14 @@ export function SearchParts({selectedParts, onSelectPart, onUnselectPart, onClea
                                                                 <Button
                                                                     className={partStageButton}
                                                                     size="icon"
-                                                                    onClick={() => handleSelectPart(part, [item], "include")}
+                                                                    onClick={() => handleSelectPart(part, parts[part]["type"], [item], "include")}
                                                                 >
                                                                     +
                                                                 </Button>
                                                                 <Button
                                                                     className={partStageButton}
                                                                     size="icon"
-                                                                    onClick={() => handleSelectPart(part, [item], "exclude")}
+                                                                    onClick={() => handleSelectPart(part, parts[part]["type"], [item], "exclude")}
                                                                 >
                                                                     -
                                                                 </Button>

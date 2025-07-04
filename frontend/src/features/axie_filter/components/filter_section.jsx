@@ -68,13 +68,8 @@ export function FilterSection({
     evolvedPartsRange, setEvolvedPartsRange,
     selectedCollections, setSelectedCollections,
 }) {
-
-    console.log(Object.keys(selectedCollections).map((collection) => {
-        console.log(selectedCollections[collection])
-    }))
-
-    const onSelectPart = (partName, axieParts, action) => {
-        if (partName && axieParts && action) {
+    const onSelectPart = (partName, partType, axieParts, action) => {
+        if (partName && partType && axieParts && action) {
             for (let p = 0; p < axieParts.length; p++) {
                 const displayName = `${partName}-${axieParts[p]["stage"]}`
 
@@ -84,6 +79,7 @@ export function FilterSection({
                             {
                                 ...prev,
                                 [displayName]: {
+                                    "type": partType,
                                     ...axieParts[p],
                                     "action": action
                                 }
@@ -171,7 +167,7 @@ export function FilterSection({
                             <SearchParts
                                 selectedParts={selectedParts}
                                 setSelectedParts={setSelectedParts}
-                                onSelectPart={(partName, axieParts, action) => onSelectPart(partName, axieParts, action)}
+                                onSelectPart={(partName, partType, axieParts, action) => onSelectPart(partName, partType, axieParts, action)}
                                 onUnselectPart={(displayName, partInfo) => onUnselectPart(displayName, partInfo)}
                                 onClearParts={onClearParts}
                                 parts={parts}
@@ -286,9 +282,16 @@ export function FilterSection({
                                 ? `${collection} ${selectedCollections[collection]["numParts"][0]}-${selectedCollections[collection]["numParts"][1]}`
                                 : `${collection}`
                         }
-                        removeFilter={() => Object.fromEntries(
-                            Object.entries(selectedCollections).filter(([c]) => c !== collection)
-                        )}
+                        removeFilter={() => {
+                            setSelectedCollections((prev) => {
+                                if (prev.hasOwnProperty(collection)) {
+                                    return Object.fromEntries(
+                                        Object.entries(prev).filter(([p]) => p !== collection)
+                                    )
+                                }
+                            })
+                        }
+                        }
                     />
                 )
             })}

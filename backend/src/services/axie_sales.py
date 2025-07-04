@@ -47,16 +47,24 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
                     query += f"{key.lower()}_id != ALL(${param_idx})"
                     first_iteration = False
                 else:
-                    query += f"{key.lower()}_id != ALL(${param_idx})"
+                    query += f" AND {key.lower()}_id != ALL(${param_idx})"
                 query_values[param_idx] = value
                 param_idx += 1
             query += ")"
 
         # Axie Classes
         if filter.axie_class:
-            query += " AND LOWER(class) = ANY(${param_idx})"
-            query_values[param_idx] = filter.axie_class
-            param_idx += 1
+            first_iteration = True
+            query += " AND ("
+            for axie_class in filter.axie_class:
+                if first_iteration:
+                    query += f"LOWER(class) = ${param_idx}"
+                    first_iteration = False
+                else:
+                    query += f" OR LOWER(class) = ${param_idx}"
+                query_values[param_idx] = axie_class.lower()
+                param_idx += 1
+            query += ")"
 
         # Axie Level
         query += f" AND level BETWEEN ${param_idx} AND ${param_idx + 1}"
@@ -85,10 +93,47 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
         param_idx += 2
 
         # Collection Parts
-        if filter.collection_parts:
-            for wrapper in filter.collection_parts:
-                for key, value in wrapper.root.items():
-                    numParts = value.numParts
+        if filter.collections:
+            titles = [c.title for c in filter.collections if c.title is not None]
+            if titles:
+                first_iteration = True
+                query += " AND ("
+                for title in titles:
+                    if first_iteration:
+                        query += f"LOWER(collection_title) LIKE ('%' || ${param_idx} || '%')"
+                        first_iteration = False
+                    else:
+                        query += f" OR LOWER(collection_title) LIKE ('%' || ${param_idx} || '%')"
+                    query_values[param_idx] = title.lower()
+                    param_idx += 1
+                query += ")"
+
+            for collection in filter.collections:
+                if collection.special == "Any Collection":
+                    query += f""" AND
+                        (CASE WHEN eyes_special_genes != '' THEN 1 ELSE 0 END +
+                        CASE WHEN ears_special_genes != '' THEN 1 ELSE 0 END +
+                        CASE WHEN mouth_special_genes != '' THEN 1 ELSE 0 END +
+                        CASE WHEN horn_special_genes != '' THEN 1 ELSE 0 END +
+                        CASE WHEN back_special_genes != '' THEN 1 ELSE 0 END +
+                        CASE WHEN tail_special_genes != '' THEN 1 ELSE 0 END +
+                        CASE WHEN collection_title != '' THEN 1 ELSE 0 END)
+                        > 0
+                    """
+                    break
+                elif collection.special == "No Collection":
+                    query += f""" AND
+                        (eyes_special_genes = '' AND
+                        ears_special_genes = '' AND
+                        mouth_special_genes = '' AND
+                        horn_special_genes = '' AND
+                        back_special_genes = '' AND
+                        tail_special_genes = '' AND
+                        collection_title = '')
+                    """
+                    break
+                if collection.partCollection:
+                    numParts = collection.numParts
                     query += f""" AND
                         (CASE WHEN eyes_special_genes LIKE ('%' || ${param_idx} || '%') THEN 1 ELSE 0 END +
                         CASE WHEN ears_special_genes LIKE ('%' || ${param_idx} || '%') THEN 1 ELSE 0 END +
@@ -98,17 +143,10 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
                         CASE WHEN tail_special_genes LIKE ('%' || ${param_idx} || '%') THEN 1 ELSE 0 END)
                         BETWEEN ${param_idx + 1} AND ${param_idx + 2}
                     """
-                    query_values[param_idx] = key.lower()
+                    query_values[param_idx] = collection.partCollection.lower()
                     query_values[param_idx + 1] = numParts[0]
                     query_values[param_idx + 2] = numParts[1]
                     param_idx += 3
-
-        # Collection Titles
-        if filter.collection_titles:
-            for title in filter.collection_titles:
-                query += f" AND LOWER(collection_title) LIKE ('%' || ${param_idx} || '%')"
-                query_values[param_idx] = title.lower()
-                param_idx +=1
 
         # Order By
         query += " ORDER BY sale_date DESC"

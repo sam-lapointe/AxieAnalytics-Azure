@@ -1,6 +1,6 @@
 import "react"
 import axios from "axios"
-import { useState, useEffect } from "react"
+import { useRef, useState, useEffect } from "react"
 import { Overview } from "../components/overview.jsx"
 import { FilterSection } from "../features/axie_filter/components/filter_section.jsx"
 import { ResultSection } from "../features/axie_sales/components/result_section.jsx"
@@ -9,6 +9,7 @@ import { ResultSection } from "../features/axie_sales/components/result_section.
 // Temporary data for testing only
 const test_parts = {
     "Anemone": {
+        "type": "Horn",
         "class": "Aquatic",
         "partsIds": [
             {"id": "anemone", "stage": 1},
@@ -16,6 +17,7 @@ const test_parts = {
         ]
     },
     "Arco": {
+        "type": "Horn",
         "class": "Beast",
         "partsIds": [
             {"id": "arco", "stage": 1},
@@ -23,6 +25,7 @@ const test_parts = {
         ]
     },
     "Croc": {
+        "type": "Mouth",
         "class": "Reptile",
         "partsIds": [
             {"id": "croc", "stage": 1},
@@ -30,6 +33,7 @@ const test_parts = {
         ]
     },
     "Nimo": {
+        "type": "Tail",
         "class": "Aquatic",
         "partsIds": [
             {"id": "nimo", "stage": 1},
@@ -37,6 +41,7 @@ const test_parts = {
         ]
     },
     "Antenna": {
+        "type": "Horn",
         "class": "Bug",
         "partsIds": [
             {"id": "antenna", "stage": 1},
@@ -60,26 +65,116 @@ export function Axies() {
         "avg_price_eth": 0,
         "chart": [{"sales": 0, "volume": 0, "avg_price_eth": 0}]
     })
+    const [listData, setListData] = useState({})
     const [isLoading, setIsLoading] = useState({})
+    const [error, setError] = useState(null)
+
+    const debounceTimeout = useRef(null)
+
+    console.log(selectedCollections)
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [responseOverview] = await Promise.all([
-                    axios.get(
-                        "https://dev.api.axieanalytics.com/axies/graph/overview"
-                    ),
-                ])
-
-                setOverviewData(responseOverview.data)
-                setIsLoading(false)
-            } catch (err) {
-                setError(err.message || "An error occured.")
-            }
+        // Clear previous timeout if it exists
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current)
         }
 
-        fetchData()
-    }, [])
+        // Set a new timeout
+        debounceTimeout.current = setTimeout(() => {
+            fetchData()
+        }, 2000)  // 2000ms debounce time
+
+        // Cleanup on unmount
+        return () => clearTimeout(debounceTimeout.current)
+    }, [
+        timeframe,
+        selectedParts,
+        selectedClasses,
+        levelRange,
+        breedCountRange,
+        evolvedPartsRange,
+        selectedCollections
+    ])
+
+    async function fetchData() {
+        try {
+            const body_data = {
+                "time_unit": timeframe[1],
+                        "time_num": timeframe[0],
+                        ...formatSelectedParts(selectedParts),
+                        "axie_class": selectedClasses,
+                        "level": levelRange,
+                        "breed_count": breedCountRange,
+                        "evolved_parts_count": evolvedPartsRange,
+                        "collections": formatSelectedCollections(selectedCollections)
+            }
+            const headers = {
+                "Content-Type": "application/json"
+            }
+
+            const [responseOverview, responseList] = await Promise.all([
+                axios.get(
+                    "https://dev.api.axieanalytics.com/axies/graph/overview"
+                ),
+                axios.post(
+                    "https://dev.api.axieanalytics.com/axies/list",
+                    body_data,
+                    headers
+                )
+            ])
+
+            setOverviewData(responseOverview.data)
+            setListData(responseList.data)
+            setIsLoading(false)
+        } catch (err) {
+            setError(err.message || "An error occured.")
+        }
+    }
+
+    function formatSelectedParts(selectedParts) {
+        const includeParts = {
+            "eyes": [],
+            "ears": [],
+            "mouth": [],
+            "horn": [],
+            "back": [],
+            "tail": []
+        }
+        const excludeParts = JSON.parse(JSON.stringify(includeParts))
+
+        for (const part in selectedParts) {
+            if (selectedParts[part]["action"] === "include") {
+                includeParts[selectedParts[part]["type"]].push(part)
+            } else if (selectedParts[part]["action"] === "exclude") {
+                excludeParts[part]["type"].push(part)
+            }
+        }
+        console.log("Formatted parts:", includeParts, excludeParts)
+        return { includeParts, excludeParts }
+    }
+
+    function formatSelectedCollections(selectedCollections) {
+        const formattedCollections = []
+        for (const collection in selectedCollections) {
+            if (collection === "Any Collection") {
+                formattedCollections.push({"special": "Any Collection"})
+                return formattedCollections
+            } else if (collection === "No Collection") {
+                formattedCollections.push({"special": "No Collection"})
+                return formattedCollections
+            } else if (selectedCollections[collection]["numParts"]) {
+                formattedCollections.push({
+                    "partCollection": collection,
+                    "numParts": selectedCollections[collection]["numParts"]
+                })
+            } else if (!selectedCollections[collection]["numParts"]) {
+                formattedCollections.push({
+                    "title": collection
+                })
+            }
+        }
+        return formattedCollections
+    }
 
     return (
         <>
@@ -113,7 +208,9 @@ export function Axies() {
                 </div>
 
                 <div className="">
-                    <ResultSection />
+                    <ResultSection 
+                        data={listData}
+                    />
                 </div>
             </div>
         </>
