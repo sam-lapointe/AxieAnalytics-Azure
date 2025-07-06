@@ -4,6 +4,15 @@ import { useRef, useState, useEffect } from "react"
 import { Overview } from "../components/overview.jsx"
 import { FilterSection } from "../features/axie_filter/components/filter_section.jsx"
 import { ResultSection } from "../features/axie_sales/components/result_section.jsx"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 
 // Temporary data for testing only
@@ -66,12 +75,12 @@ export function Axies() {
         "chart": [{"sales": 0, "volume": 0, "avg_price_eth": 0}]
     })
     const [listData, setListData] = useState([])
+    const [page, setPage] = useState(1)
     const [isLoading, setIsLoading] = useState({})
     const [error, setError] = useState(null)
 
     const debounceTimeout = useRef(null)
-
-    console.log(selectedCollections)
+    const axiesPerPage = 60 // Number of axies per page
 
     useEffect(() => {
         // Clear previous timeout if it exists
@@ -81,6 +90,7 @@ export function Axies() {
 
         // Set a new timeout
         debounceTimeout.current = setTimeout(() => {
+            setPage(1) // Reset to first page on filter change
             fetchData()
         }, 2000)  // 2000ms debounce time
 
@@ -113,11 +123,13 @@ export function Axies() {
             }
 
             const [responseOverview, responseList] = await Promise.all([
-                axios.get(
-                    "https://dev.api.axieanalytics.com/axies/graph/overview"
+                axios.post(
+                    "http://127.0.0.1:8000/axies/graph/overview",
+                    body_data,
+                    headers
                 ),
                 axios.post(
-                    "https://dev.api.axieanalytics.com/axies/list",
+                    "http://127.0.0.1:8000/axies/list",
                     body_data,
                     headers
                 )
@@ -149,7 +161,6 @@ export function Axies() {
                 excludeParts[part]["type"].push(part)
             }
         }
-        console.log("Formatted parts:", includeParts, excludeParts)
         return { includeParts, excludeParts }
     }
 
@@ -176,13 +187,15 @@ export function Axies() {
         return formattedCollections
     }
 
+
     return (
         <>
             <Overview
                 title="Search Overview"
-                data={isLoading ? overviewData : overviewData[`${timeframe[0]}${timeframe[1][0]}`]}
+                data={overviewData}
                 timeframe={timeframe}
                 setTimeframe={setTimeframe}
+                customTimeframe={true}
             />
 
             <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
@@ -211,6 +224,63 @@ export function Axies() {
                     <ResultSection 
                         data={listData}
                     />
+                </div>
+                <div>
+                    <Pagination>
+                        <PaginationContent>
+                            {page > 1 && (
+                                <PaginationItem>
+                                <PaginationPrevious href="#" onClick={() => setPage(page - 1)}/>
+                            </PaginationItem>
+                            )}
+                            {page > 2 && (
+                                <>
+                                <PaginationItem>
+                                    <PaginationLink href="#" onClick={() => setPage(1)}>
+                                        1
+                                    </PaginationLink>
+                                </PaginationItem>
+                                <PaginationItem>
+                                    <PaginationEllipsis />
+                                </PaginationItem>
+                                </>
+                            )}
+                            <PaginationItem>
+                                <PaginationLink
+                                    className="rounded-full border-1 pointer-events-none"
+                                >
+                                    {page}
+                                </PaginationLink>
+                            </PaginationItem>
+                            {page + 1 <= Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
+                                <PaginationItem>
+                                    <PaginationLink href="#" onClick={() => setPage(page + 1)}>{page + 1}</PaginationLink>
+                                </PaginationItem>
+                            )}
+                            {page + 2 <= Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
+                                <PaginationItem>
+                                    <PaginationLink href="#" onClick={() => setPage(page + 2)}>{page + 2}</PaginationLink>
+                                </PaginationItem>
+                            )}
+                            {page + 2 < Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
+                                <>
+                                <PaginationItem>
+                                    <PaginationEllipsis />
+                                </PaginationItem>
+                                <PaginationItem>
+                                    <PaginationLink href="#" onClick={() => setPage(Math.ceil(overviewData["total_sales"] / axiesPerPage))}>
+                                        {Math.ceil(overviewData["total_sales"] / axiesPerPage)}
+                                    </PaginationLink>
+                                </PaginationItem>
+                                </>
+                            )}
+                            {page < Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
+                                <PaginationItem>
+                                    <PaginationNext href="#" onClick={() => setPage(page + 1)}/>
+                                </PaginationItem>
+                            )}
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             </div>
         </>

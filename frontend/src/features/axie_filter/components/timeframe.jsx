@@ -1,7 +1,5 @@
 import "react"
-import { useState } from "react"
 import { NumberInput } from "./number_input";
-import { Input } from "@/components/ui/input"
 import {
     Select,
     SelectContent,

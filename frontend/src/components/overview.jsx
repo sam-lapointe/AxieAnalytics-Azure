@@ -5,7 +5,7 @@ import { TitleAndDefaultTimerange } from "./title_and_default_timerange";
 import eth_logo from "../assets/eth_logo.svg"
 
 
-export function Overview({data, title="Overall Sales", timeframe, setTimeframe}) {
+export function Overview({data, title="Overall Sales", timeframe, setTimeframe, customTimeframe}) {
     const tempData = {
         "total_sales": 0,
         "total_volume_eth": 0,
@@ -25,7 +25,7 @@ export function Overview({data, title="Overall Sales", timeframe, setTimeframe})
     return (
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
             <div className="row-span-2">
-                <TitleAndDefaultTimerange title={title} timeframe={timeframe} setTimeframe={setTimeframe}/>
+                <TitleAndDefaultTimerange title={title} timeframe={timeframe} setTimeframe={setTimeframe} customTimeframe={customTimeframe}/>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 col-span-full">

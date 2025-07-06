@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/select";
 
 
-export function TitleAndDefaultTimerange({title, timeframe=[1, "days"], setTimeframe="", customTimeframe=[]}) {
+export function TitleAndDefaultTimerange({title, timeframe = [1, "days"], setTimeframe = "", customTimeframe = false}) {
     return (
         <div className="flex items-baseline">
                 <h1 className="font-bold text-2xl">{title}</h1>
 
                 {
-                    customTimeframe.length === 0 ?
+                    !customTimeframe ?
                     (
                         <>
                             {/* Buttons for medium and up */}
@@ -57,7 +57,7 @@ export function TitleAndDefaultTimerange({title, timeframe=[1, "days"], setTimef
                         </>
                     ) : (
                         <div className="ml-auto">
-                            <p className="font-semibold">{`Last ${customTimeframe[0]} ${customTimeframe[1]}`}</p>
+                            <p className="font-semibold">Last {timeframe[0] > 1 ? `${timeframe[0]} ${timeframe[1]}` : timeframe[1].slice(0, -1)}</p>
                         </div>
                     )
                 }

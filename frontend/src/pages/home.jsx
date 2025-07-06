@@ -32,7 +32,7 @@ export function Home() {
                         "https://dev.api.axieanalytics.com/axies/graph/collection",
                     ),
                     axios.get(
-                        "https://dev.api.axieanalytics.com/axies/graph/breed_count"
+                        "http://127.0.0.1:8000/axies/graph/breed_count"
                     )
                 ])
 
