@@ -32,7 +32,7 @@ export function Home() {
                         "https://dev.api.axieanalytics.com/axies/graph/collection",
                     ),
                     axios.get(
-                        "http://dev.api.axieanalytics.com/axies/graph/breed_count"
+                        "https://dev.api.axieanalytics.com/axies/graph/breed_count"
                     )
                 ])
 
