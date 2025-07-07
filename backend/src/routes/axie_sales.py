@@ -27,6 +27,19 @@ async def get_graph():
     }
     return data
 
+@router.post("/graph/overview")
+async def get_graph_custom(filters: AxieSalesSearch):
+    """
+    Query all axies sales for the last 30 days and format the data into 3 timeframes: 24H, 7D and 30D.
+    This endpoint is used to get custom filters from the frontend.
+    """
+    query_select = "SELECT price_eth, sale_date FROM axies_full_info"
+    raw_data = await get_all_data(query_select, filters)
+
+    data = format_data_line_graph(raw_data, filters.time_unit, filters.time_num)
+
+    return data
+
 @router.get("/graph/collection")
 async def get_graph_collection():
     query_select = """
@@ -80,9 +93,9 @@ async def get_graph_breed_count():
     return data
 
 @router.post("/list")
-async def get_list_data(filters: AxieSalesSearch):
-    query_select = "SELECT * from axies_full_info LIMIT 50"
-    raw_data =  await get_all_data(query_select, filters)
+async def get_list_data(filters: AxieSalesSearch, offset: int = 0):
+    query_select = "SELECT * from axies_full_info"
+    raw_data =  await get_all_data(query_select, filters, 60, offset)
     data = []
     for axie in raw_data:
         data.append(

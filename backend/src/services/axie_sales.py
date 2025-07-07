@@ -4,7 +4,7 @@ from src.models.axie_sales_search import AxieSalesSearch
 from src.database import db
 
 
-async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
+async def get_all_data(query: str, filter: AxieSalesSearch, limit: int = None, offset: int = 0) -> list[dict]:
     logging.info(["[get_all_data] Retrieving data for graph..."])
     try:
         if db.database is None or not hasattr(db.database, "pool"):
@@ -100,17 +100,17 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
                 query += " AND ("
                 for title in titles:
                     if first_iteration:
-                        query += f"LOWER(collection_title) LIKE ('%' || ${param_idx} || '%')"
+                        query += f"LOWER(collection_title) = ${param_idx}"
                         first_iteration = False
                     else:
-                        query += f" OR LOWER(collection_title) LIKE ('%' || ${param_idx} || '%')"
+                        query += f" OR LOWER(collection_title) = ${param_idx}"
                     query_values[param_idx] = title.lower()
                     param_idx += 1
                 query += ")"
 
             for collection in filter.collections:
                 if collection.special == "Any Collection":
-                    query += f""" AND
+                    query += """ AND
                         (CASE WHEN eyes_special_genes != '' THEN 1 ELSE 0 END +
                         CASE WHEN ears_special_genes != '' THEN 1 ELSE 0 END +
                         CASE WHEN mouth_special_genes != '' THEN 1 ELSE 0 END +
@@ -122,7 +122,7 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
                     """
                     break
                 elif collection.special == "No Collection":
-                    query += f""" AND
+                    query += """ AND
                         (eyes_special_genes = '' AND
                         ears_special_genes = '' AND
                         mouth_special_genes = '' AND
@@ -150,6 +150,13 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
 
         # Order By
         query += " ORDER BY sale_date DESC"
+
+        # Limit and Offset
+        if limit is not None:
+            query += f" LIMIT ${param_idx} OFFSET ${param_idx + 1}"
+            query_values[param_idx] = limit
+            query_values[param_idx + 1] = offset
+            param_idx += 2
 
         # Prepare parameters in order for asyncpg
         params = [query_values[i] for i in range(1, param_idx)]
@@ -199,6 +206,16 @@ async def get_data_by_breed_count(time_unit: str, time_num: int) -> dict:
         query += f" WHERE sale_date >= ${param_idx}"
         query_values[param_idx] = start_time
         param_idx += 1
+
+        # Normal Axie (No Collection)
+        query += """ AND
+            (eyes_special_genes = '' AND
+            ears_special_genes = '' AND
+            mouth_special_genes = '' AND
+            horn_special_genes = '' AND
+            back_special_genes = '' AND
+            tail_special_genes = '' AND
+            collection_title = '')"""
 
         # Group By
         query += " GROUP BY breed_count_range"
