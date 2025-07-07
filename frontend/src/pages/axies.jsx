@@ -124,12 +124,12 @@ export function Axies() {
 
             const [responseOverview, responseList] = await Promise.all([
                 axios.post(
-                    "http://dev.api.axieanalytics.com/axies/graph/overview",
+                    "https://dev.api.axieanalytics.com/axies/graph/overview",
                     body_data,
                     headers
                 ),
                 axios.post(
-                    "http://dev.api.axieanalytics.com/axies/list",
+                    "https://dev.api.axieanalytics.com/axies/list",
                     body_data,
                     headers
                 )
