@@ -20,7 +20,7 @@ export function SearchParts({selectedParts, onSelectPart, onUnselectPart, onClea
 
     const inputRef = useRef(null)
 
-    const filteredParts = Object.keys(parts).filter(
+    const filteredParts = Object.keys(parts).sort().filter(
         (part) =>
             part.toLowerCase().startsWith(inputValue.toLowerCase()) &&
             parts[part]["partsIds"].length > 0

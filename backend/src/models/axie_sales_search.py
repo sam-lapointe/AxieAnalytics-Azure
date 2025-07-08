@@ -144,3 +144,10 @@ class AxieSalesSearch(BaseModel):
         if specials and len(self.collections) > 1:
             raise ValueError("If a special collection is set, no other collections can be set.")
         return self
+
+    @model_validator(mode="after")
+    def clean_empty_parts(self):
+        # Remove keys with empty lists
+        self.include_parts = {k: v for k, v in self.include_parts.items() if v}
+        self.exclude_parts = {k: v for k, v in self.exclude_parts.items() if v}
+        return self

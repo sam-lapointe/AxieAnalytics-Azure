@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from src.models.axie_sales_search import AxieSalesSearch, CollectionWrapper, CollectionDetail
-from src.services.axie_sales import get_all_data, get_data_by_breed_count
+from src.services.axie_sales import get_all_data, get_data_by_breed_count, get_axie_parts
 from src.utils import format_data_line_graph, format_data_line_graph_by_collection
 import copy
 import asyncio
@@ -159,3 +159,49 @@ async def get_list_data(filters: AxieSalesSearch):
         )
     
     return data
+
+@router.get("/parts")
+async def get_parts():
+    """
+    Get all parts from the database.
+    """
+    query_select = "SELECT id, class, name, stage, type, special_genes FROM axie_parts"
+    raw_data = await get_axie_parts(query_select)
+    
+    parts = {}
+    duplicate_part_names = set()
+    for part in raw_data:
+        if part["name"] not in parts:
+            parts[part["name"]] = {
+                "type": part["type"],
+                "class": part["class"],
+                "special_genes": part["special_genes"],
+                "partsIds": [
+                    {"id": part["id"], "stage": part["stage"]}
+                ]
+            }
+        else:
+            """
+            There are some parts that have the same name but different types (e.g. "eyes" and "back").
+            """
+            if parts[part["name"]]["type"] == part["type"]:
+                parts[part["name"]]["partsIds"].append({"id": part["id"], "stage": part["stage"]})
+            else:
+                if f"{part['name']} ({part['type'].capitalize()})" not in parts:
+                    parts[f"{part['name']} ({part['type'].capitalize()})"] = {
+                        "type": part["type"],
+                        "class": part["class"],
+                        "special_genes": part["special_genes"],
+                        "partsIds": [{"id": part["id"], "stage": part["stage"]}]
+                    }
+                    duplicate_part_names.add(part["name"])
+                else:
+                    parts[f"{part['name']} ({part['type'].capitalize()})"]["partsIds"].append({"id": part["id"], "stage": part["stage"]})
+
+    # Rename parts with duplicate names to include their type in the name
+    for duplicate_name in duplicate_part_names:
+        if duplicate_name in parts:
+            part_type = parts[duplicate_name]["type"]
+            parts[f"{duplicate_name} ({part_type.capitalize()})"] = parts.pop(duplicate_name)
+
+    return parts

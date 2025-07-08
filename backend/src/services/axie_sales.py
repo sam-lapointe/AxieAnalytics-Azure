@@ -29,6 +29,9 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
             first_iteration = True
             query += " AND ("
             for key, value in filter.include_parts.items():
+                if not value:
+                    continue
+
                 if first_iteration:
                     query += f"{key.lower()}_id = ANY(${param_idx})"
                     first_iteration = False
@@ -43,6 +46,9 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
             first_iteration = True
             query += " AND ("
             for key, value in filter.exclude_parts.items():
+                if not value:
+                    continue
+
                 if first_iteration:
                     query += f"{key.lower()}_id != ALL(${param_idx})"
                     first_iteration = False
@@ -242,4 +248,14 @@ async def get_data_by_breed_count(time_unit: str, time_num: int) -> dict:
         logging.error(
             f"[get_data_by_breed_count] An error occured while retrieving data by breed count for bar graph: {e}"
         )
+        raise e
+
+async def get_axie_parts(query: str) -> list:
+    logging.info(["[get_axie_parts] Retrieving axie parts..."])
+    try:
+        async with db.database.pool.acquire() as conn:
+            data = await conn.fetch(query)
+        return data
+    except Exception as e:
+        logging.error(f"[get_axie_parts] An error occurred while retrieving axie parts: {e}")
         raise e

@@ -28,45 +28,6 @@ import {
 } from "@/components/ui/select"
 
 
-const test_parts = {
-    "Anemone": {
-        "class": "Aquatic",
-        "partsIds": [
-            {"id": "anemone", "stage": 1},
-            {"id": "anemone-2", "stage": 2}
-        ]
-    },
-    "Arco": {
-        "class": "Beast",
-        "partsIds": [
-            {"id": "arco", "stage": 1},
-            {"id": "arco-2", "stage": 2}
-        ]
-    },
-    "Croc": {
-        "class": "Reptile",
-        "partsIds": [
-            {"id": "croc", "stage": 1},
-            {"id": "croc-2", "stage": 2}
-        ]
-    },
-    "Nimo": {
-        "class": "Aquatic",
-        "partsIds": [
-            {"id": "nimo", "stage": 1},
-            {"id": "nimo-2", "stage": 2}
-        ]
-    },
-    "Antenna": {
-        "class": "Bug",
-        "partsIds": [
-            {"id": "antenna", "stage": 1},
-            {"id": "antenna-2", "stage": 2}
-        ]
-    }
-}
-
-
 export function FilterSection({
     timeframe, setTimeframe,
     parts, setParts,
@@ -77,6 +38,7 @@ export function FilterSection({
     evolvedPartsRange, setEvolvedPartsRange,
     selectedCollections, setSelectedCollections,
     sortBy, setSortBy,
+    clearParts, clearAll,
 }) {
     const onSelectPart = (partName, partType, axieParts, action) => {
         if (partName && partType && axieParts && action) {
@@ -96,6 +58,7 @@ export function FilterSection({
                             }
                         )
                     }
+                    return prev
                 })
 
                 // Remove the part from the parts[partName][partsIds] list
@@ -143,21 +106,6 @@ export function FilterSection({
         }
     }
 
-    const onClearParts = () => {
-        setSelectedParts({})
-        setParts(test_parts)
-    }
-
-    const clearAll = () => {
-        setTimeframe([1, "days"])
-        onClearParts()
-        setSelectedClasses([])
-        setLevelRange([1, 60])
-        setBreedCountRange([0, 7])
-        setEvolvedPartsRange([0, 6])
-        setSelectedCollections({})
-    }
-
     return (
         <div className="flex flex-wrap items-center gap-2">
             <Dialog>
@@ -179,7 +127,7 @@ export function FilterSection({
                                 setSelectedParts={setSelectedParts}
                                 onSelectPart={(partName, partType, axieParts, action) => onSelectPart(partName, partType, axieParts, action)}
                                 onUnselectPart={(displayName, partInfo) => onUnselectPart(displayName, partInfo)}
-                                onClearParts={onClearParts}
+                                onClearParts={clearParts}
                                 parts={parts}
                                 setParts={setParts}
                             />

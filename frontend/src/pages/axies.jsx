@@ -15,53 +15,9 @@ import {
 } from "@/components/ui/pagination"
 
 
-// Temporary data for testing only
-const test_parts = {
-    "Anemone": {
-        "type": "Horn",
-        "class": "Aquatic",
-        "partsIds": [
-            {"id": "anemone", "stage": 1},
-            {"id": "anemone-2", "stage": 2}
-        ]
-    },
-    "Arco": {
-        "type": "Horn",
-        "class": "Beast",
-        "partsIds": [
-            {"id": "arco", "stage": 1},
-            {"id": "arco-2", "stage": 2}
-        ]
-    },
-    "Croc": {
-        "type": "Mouth",
-        "class": "Reptile",
-        "partsIds": [
-            {"id": "croc", "stage": 1},
-            {"id": "croc-2", "stage": 2}
-        ]
-    },
-    "Nimo": {
-        "type": "Tail",
-        "class": "Aquatic",
-        "partsIds": [
-            {"id": "nimo", "stage": 1},
-            {"id": "nimo-2", "stage": 2}
-        ]
-    },
-    "Antenna": {
-        "type": "Horn",
-        "class": "Bug",
-        "partsIds": [
-            {"id": "antenna", "stage": 1},
-            {"id": "antenna-2", "stage": 2}
-        ]
-    }
-}
-
 export function Axies() {
     const [timeframe, setTimeframe] = useState([1, "days"])
-    const [parts, setParts] = useState(test_parts)
+    const [parts, setParts] = useState({})
     const [selectedParts, setSelectedParts] = useState({})
     const [selectedClasses, setSelectedClasses] = useState([])
     const [levelRange, setLevelRange] = useState([1, 60])
@@ -82,8 +38,11 @@ export function Axies() {
 
     const debounceTimeout = useRef(null)
     const firstLoad = useRef(true) // To prevent initial fetch on mount
+    const axiePartsOriginal = useRef({}) // Original parts data fetched from the backend and deep copied by parts
 
     const axiesPerPage = 60 // Number of axies per page
+
+    console.log("Selected Parts:", selectedParts)
 
     useEffect(() => {
         if (firstLoad.current) {
@@ -121,6 +80,7 @@ export function Axies() {
         if (firstLoad.current) {
             fetchOverviewOnly()
             fetchListOnly()
+            fetchParts()
             firstLoad.current = false
             return
         }
@@ -129,10 +89,12 @@ export function Axies() {
 
     async function fetchOverviewOnly() {
         try {
+            const { includeParts, excludeParts } = formatSelectedParts(selectedParts)
             const body_data = {
                 "time_unit": timeframe[1],
                 "time_num": timeframe[0],
-                ...formatSelectedParts(selectedParts),
+                "include_parts": includeParts,
+                "exclude_parts": excludeParts,
                 "axie_class": selectedClasses,
                 "level": levelRange,
                 "breed_count": breedCountRange,
@@ -150,18 +112,20 @@ export function Axies() {
             setOverviewData(responseOverview.data)
             setIsLoading(false)
         } catch (err) {
-            setError(err.message || "An error occured.")
+            setError(err.message || "An error occured while fetching overview data.")
         }
     }
 
     async function fetchListOnly() {
         try {
+            const { includeParts, excludeParts } = formatSelectedParts(selectedParts)
             const body_data = {
                 "time_unit": timeframe[1],
                 "time_num": timeframe[0],
                 "limit": axiesPerPage,
                 "offset": (page - 1) * axiesPerPage,
-                ...formatSelectedParts(selectedParts),
+                "include_parts": includeParts,
+                "exclude_parts": excludeParts,
                 "axie_class": selectedClasses,
                 "level": levelRange,
                 "breed_count": breedCountRange,
@@ -180,11 +144,25 @@ export function Axies() {
             setListData(responseList.data)
             setIsLoading(false)
         } catch (err) {
-            setError(err.message || "An error occured.")
+            setError(err.message || "An error occured while fetching the list of axies.")
+        }
+    }
+
+    async function fetchParts() {
+        try {
+            const responseParts = await axios.get(
+                "https://dev.api.axieanalytics.com/axies/parts"
+            )
+
+            axiePartsOriginal.current = responseParts.data
+            setParts(structuredClone(axiePartsOriginal.current)) // Deep copy to avoid mutation
+        } catch (err) {
+            setError(err.message || "An error occurred while fetching parts.")
         }
     }
 
     function formatSelectedParts(selectedParts) {
+        console.log("Formatting selected parts...")
         const includeParts = {
             "eyes": [],
             "ears": [],
@@ -193,15 +171,24 @@ export function Axies() {
             "back": [],
             "tail": []
         }
-        const excludeParts = JSON.parse(JSON.stringify(includeParts))
+        const excludeParts = {
+            "eyes": [],
+            "ears": [],
+            "mouth": [],
+            "horn": [],
+            "back": [],
+            "tail": []
+        }
 
         for (const part in selectedParts) {
             if (selectedParts[part]["action"] === "include") {
-                includeParts[selectedParts[part]["type"]].push(part)
+                includeParts[selectedParts[part]["type"]].push(selectedParts[part]["id"])
             } else if (selectedParts[part]["action"] === "exclude") {
-                excludeParts[part]["type"].push(part)
+                excludeParts[selectedParts[part]["type"]].push(selectedParts[part]["id"])
             }
         }
+        console.log("Include Parts:", includeParts)
+        console.log("Exclude Parts:", excludeParts)
         return { includeParts, excludeParts }
     }
 
@@ -236,6 +223,21 @@ export function Axies() {
         setPage(newPage);
     }
 
+    function clearParts() {
+        setSelectedParts({})
+        setParts(structuredClone(axiePartsOriginal.current)) // Reset to original parts data
+    }
+
+    function clearAll() {
+        setTimeframe([1, "days"])
+        clearParts()
+        setSelectedClasses([])
+        setLevelRange([1, 60])
+        setBreedCountRange([0, 7])
+        setEvolvedPartsRange([0, 6])
+        setSelectedCollections({})
+    }
+
 
     return (
         <>
@@ -268,6 +270,8 @@ export function Axies() {
                         setSelectedCollections={setSelectedCollections}
                         sortBy={sortBy}
                         setSortBy={setSortBy}
+                        clearParts={clearParts}
+                        clearAll={clearAll}
                     />
                 </div>
 
