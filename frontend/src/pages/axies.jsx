@@ -177,7 +177,7 @@ export function Axies() {
             console.log(`Page: ${page}, Offset: ${(page - 1) * axiesPerPage}`)
 
             const responseList = await axios.post(
-                "http://127.0.0.1:8000/axies/list",
+                "https://dev.api.axieanalytics.com/axies/list",
                 body_data,
                 headers
             )
