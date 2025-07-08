@@ -80,9 +80,16 @@ export function Axies() {
     const [error, setError] = useState(null)
 
     const debounceTimeout = useRef(null)
+    const firstLoad = useRef(true) // To prevent initial fetch on mount
+
     const axiesPerPage = 60 // Number of axies per page
 
     useEffect(() => {
+        if (firstLoad.current) {
+            console.log("First load: Skipping debounce logic")
+            return
+        }
+
         // Clear previous timeout if it exists
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current)
@@ -90,9 +97,15 @@ export function Axies() {
 
         // Set a new timeout
         debounceTimeout.current = setTimeout(() => {
-            setPage(1) // Reset to first page on filter change
-            fetchData()
-        }, 2000)  // 2000ms debounce time
+            if (page !== 1 && !firstLoad.current) {
+                setPage(1)  // Reset to first page on filter change
+            } else {
+                console.log("Fetching list data for new filters")
+                fetchListOnly()
+            }
+            console.log("Fetching overview data for new filters")
+            fetchOverviewOnly()
+        }, 500)  // 500ms debounce time
 
         // Cleanup on unmount
         return () => clearTimeout(debounceTimeout.current)
@@ -103,39 +116,72 @@ export function Axies() {
         levelRange,
         breedCountRange,
         evolvedPartsRange,
-        selectedCollections
+        selectedCollections,
     ])
 
-    async function fetchData() {
+    useEffect(() => {
+        if (firstLoad.current) {
+            console.log("First load: Fetching overview and list data")
+            fetchOverviewOnly()
+            fetchListOnly()
+            firstLoad.current = false
+            return
+        }
+        console.log("Page change detected: Fetching list data for page ", page)
+        fetchListOnly(page)
+    }, [page])
+
+    async function fetchOverviewOnly() {
         try {
             const body_data = {
                 "time_unit": timeframe[1],
-                        "time_num": timeframe[0],
-                        ...formatSelectedParts(selectedParts),
-                        "axie_class": selectedClasses,
-                        "level": levelRange,
-                        "breed_count": breedCountRange,
-                        "evolved_parts_count": evolvedPartsRange,
-                        "collections": formatSelectedCollections(selectedCollections)
+                "time_num": timeframe[0],
+                ...formatSelectedParts(selectedParts),
+                "axie_class": selectedClasses,
+                "level": levelRange,
+                "breed_count": breedCountRange,
+                "evolved_parts_count": evolvedPartsRange,
+                "collections": formatSelectedCollections(selectedCollections)
             }
-            const headers = {
-                "Content-Type": "application/json"
-            }
+            const headers = { "Content-Type": "application/json" }
 
-            const [responseOverview, responseList] = await Promise.all([
-                axios.post(
+            const responseOverview = await axios.post(
                     "https://dev.api.axieanalytics.com/axies/graph/overview",
                     body_data,
                     headers
-                ),
-                axios.post(
-                    "https://dev.api.axieanalytics.com/axies/list",
-                    body_data,
-                    headers
                 )
-            ])
 
             setOverviewData(responseOverview.data)
+            setIsLoading(false)
+        } catch (err) {
+            setError(err.message || "An error occured.")
+        }
+    }
+
+    async function fetchListOnly() {
+        try {
+            const body_data = {
+                "time_unit": timeframe[1],
+                "time_num": timeframe[0],
+                "limit": axiesPerPage,
+                "offset": (page - 1) * axiesPerPage,
+                ...formatSelectedParts(selectedParts),
+                "axie_class": selectedClasses,
+                "level": levelRange,
+                "breed_count": breedCountRange,
+                "evolved_parts_count": evolvedPartsRange,
+                "collections": formatSelectedCollections(selectedCollections)
+            }
+            const headers = { "Content-Type": "application/json" }
+
+            console.log(`Page: ${page}, Offset: ${(page - 1) * axiesPerPage}`)
+
+            const responseList = await axios.post(
+                "http://127.0.0.1:8000/axies/list",
+                body_data,
+                headers
+            )
+
             setListData(responseList.data)
             setIsLoading(false)
         } catch (err) {
@@ -187,6 +233,14 @@ export function Axies() {
         return formattedCollections
     }
 
+    function handlePageChange(newPage) {
+        if (newPage < 1 || newPage > Math.ceil(overviewData["total_sales"] / axiesPerPage)) {
+            return; // Prevent invalid page change
+        }
+        setListData([]); // Clear previous data
+        setPage(newPage);
+    }
+
 
     return (
         <>
@@ -230,13 +284,13 @@ export function Axies() {
                         <PaginationContent>
                             {page > 1 && (
                                 <PaginationItem>
-                                <PaginationPrevious href="#" onClick={() => setPage(page - 1)}/>
+                                <PaginationPrevious href="#" onClick={() => handlePageChange(page - 1)}/>
                             </PaginationItem>
                             )}
                             {page > 2 && (
                                 <>
                                 <PaginationItem>
-                                    <PaginationLink href="#" onClick={() => setPage(1)}>
+                                    <PaginationLink href="#" onClick={() => handlePageChange(1)}>
                                         1
                                     </PaginationLink>
                                 </PaginationItem>
@@ -254,12 +308,12 @@ export function Axies() {
                             </PaginationItem>
                             {page + 1 <= Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
                                 <PaginationItem>
-                                    <PaginationLink href="#" onClick={() => setPage(page + 1)}>{page + 1}</PaginationLink>
+                                    <PaginationLink href="#" onClick={() => handlePageChange(page + 1)}>{page + 1}</PaginationLink>
                                 </PaginationItem>
                             )}
                             {page + 2 <= Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
                                 <PaginationItem>
-                                    <PaginationLink href="#" onClick={() => setPage(page + 2)}>{page + 2}</PaginationLink>
+                                    <PaginationLink href="#" onClick={() => handlePageChange(page + 2)}>{page + 2}</PaginationLink>
                                 </PaginationItem>
                             )}
                             {page + 2 < Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
@@ -268,7 +322,7 @@ export function Axies() {
                                     <PaginationEllipsis />
                                 </PaginationItem>
                                 <PaginationItem>
-                                    <PaginationLink href="#" onClick={() => setPage(Math.ceil(overviewData["total_sales"] / axiesPerPage))}>
+                                    <PaginationLink href="#" onClick={() => handlePageChange(Math.ceil(overviewData["total_sales"] / axiesPerPage))}>
                                         {Math.ceil(overviewData["total_sales"] / axiesPerPage)}
                                     </PaginationLink>
                                 </PaginationItem>
@@ -276,7 +330,7 @@ export function Axies() {
                             )}
                             {page < Math.ceil(overviewData["total_sales"] / axiesPerPage) && (
                                 <PaginationItem>
-                                    <PaginationNext href="#" onClick={() => setPage(page + 1)}/>
+                                    <PaginationNext href="#" onClick={() => handlePageChange(page + 1)}/>
                                 </PaginationItem>
                             )}
                         </PaginationContent>

@@ -104,6 +104,8 @@ class CollectionWrapper(RootModel[Dict[Axie_Collection_Parts, CollectionDetail]]
 class AxieSalesSearch(BaseModel):
     time_unit: Literal["days", "hours"] = "days"
     time_num: Annotated[int, Field(default=30, gt=0, lt=366)]
+    limit: Annotated[Optional[int], Field(default=None, ge=1, le=250)]
+    offset: Annotated[Optional[int], Field(default=0, ge=0)]
     include_parts: Annotated[Dict[Axie_Parts, List[str]], Field(default_factory=list)]
     exclude_parts: Annotated[Dict[Axie_Parts, List[str]], Field(default_factory=list)]
     axie_class: Annotated[List[Axie_Classes], Field(default_factory=list)]

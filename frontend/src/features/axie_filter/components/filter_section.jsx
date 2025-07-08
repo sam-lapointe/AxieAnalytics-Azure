@@ -139,7 +139,7 @@ export function FilterSection({
     }
 
     const clearAll = () => {
-        setTimeframe([30, "days"])
+        setTimeframe([1, "days"])
         onClearParts()
         setSelectedClasses([])
         setLevelRange([1, 60])

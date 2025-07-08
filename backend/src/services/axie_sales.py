@@ -4,7 +4,7 @@ from src.models.axie_sales_search import AxieSalesSearch
 from src.database import db
 
 
-async def get_all_data(query: str, filter: AxieSalesSearch, limit: int = None, offset: int = 0) -> list[dict]:
+async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
     logging.info(["[get_all_data] Retrieving data for graph..."])
     try:
         if db.database is None or not hasattr(db.database, "pool"):
@@ -152,10 +152,10 @@ async def get_all_data(query: str, filter: AxieSalesSearch, limit: int = None, o
         query += " ORDER BY sale_date DESC"
 
         # Limit and Offset
-        if limit is not None:
+        if filter.limit is not None:
             query += f" LIMIT ${param_idx} OFFSET ${param_idx + 1}"
-            query_values[param_idx] = limit
-            query_values[param_idx + 1] = offset
+            query_values[param_idx] = filter.limit
+            query_values[param_idx + 1] = filter.offset
             param_idx += 2
 
         # Prepare parameters in order for asyncpg
