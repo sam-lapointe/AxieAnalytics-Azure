@@ -149,7 +149,16 @@ async def get_all_data(query: str, filter: AxieSalesSearch) -> list[dict]:
                     param_idx += 3
 
         # Order By
-        query += " ORDER BY sale_date DESC"
+        if filter.sort_by == "latest":
+            query += " ORDER BY sale_date DESC"
+        elif filter.sort_by == "lowest_price":
+            query += " ORDER BY price_eth ASC"
+        elif filter.sort_by == "highest_price":
+            query += " ORDER BY price_eth DESC"
+        elif filter.sort_by == "lowest_level":
+            query += " ORDER BY level ASC, xp ASC"
+        elif filter.sort_by == "highest_level":
+            query += " ORDER BY level DESC, xp DESC"
 
         # Limit and Offset
         if filter.limit is not None:

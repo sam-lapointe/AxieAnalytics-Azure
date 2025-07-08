@@ -39,6 +39,14 @@ Axie_Parts = Literal[
     "body",
 ]
 
+Sort_By = Literal[
+    "latest",
+    "lowest_price",
+    "highest_price",
+    "lowest_level",
+    "highest_level",
+]
+
 
 def validate_two_number_range(
     v: List[int], 
@@ -113,6 +121,7 @@ class AxieSalesSearch(BaseModel):
     breed_count: Annotated[List[int], Field(default_factory=lambda: [0, 7])]
     evolved_parts_count: Annotated[List[int], Field(default_factory=lambda: [0, 6])]
     collections: Annotated[List[CollectionFilter], Field(default_factory=list)]
+    sort_by: Annotated[Sort_By, Field(default="latest")]
 
     @field_validator("level")
     @classmethod

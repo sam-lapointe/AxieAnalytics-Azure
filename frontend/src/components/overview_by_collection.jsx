@@ -11,8 +11,6 @@ import {
   } from "@/components/ui/carousel";
 
 export function OverviewByCollection({data, timeframe, setTimeframe}) {
-    // Set the variables for the data of each collection.
-    console.log(data)
     return (
         <div className="grid grid-rows-2 gap-6 m-5 p-6 border-2 rounded-lg">
             <div className="row-span-2">

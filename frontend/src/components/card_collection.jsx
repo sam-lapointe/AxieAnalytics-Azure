@@ -13,7 +13,6 @@ import {
 
 
 export function CardCollection({data, collection="Collection"}) {
-    console.log(data)
     return (
         <div className="">
             <Card className="pt-2 pb-0 gap-0">

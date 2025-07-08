@@ -68,6 +68,7 @@ export function Axies() {
     const [breedCountRange, setBreedCountRange] = useState([0, 7])
     const [evolvedPartsRange, setEvolvedPartsRange] = useState([0, 6])
     const [selectedCollections, setSelectedCollections] = useState({})
+    const [sortBy, setSortBy] = useState("latest")
     const [overviewData, setOverviewData] = useState({
         "total_sales": 0,
         "total_volume_eth": 0,
@@ -86,7 +87,6 @@ export function Axies() {
 
     useEffect(() => {
         if (firstLoad.current) {
-            console.log("First load: Skipping debounce logic")
             return
         }
 
@@ -100,10 +100,8 @@ export function Axies() {
             if (page !== 1 && !firstLoad.current) {
                 setPage(1)  // Reset to first page on filter change
             } else {
-                console.log("Fetching list data for new filters")
                 fetchListOnly()
             }
-            console.log("Fetching overview data for new filters")
             fetchOverviewOnly()
         }, 500)  // 500ms debounce time
 
@@ -121,15 +119,13 @@ export function Axies() {
 
     useEffect(() => {
         if (firstLoad.current) {
-            console.log("First load: Fetching overview and list data")
             fetchOverviewOnly()
             fetchListOnly()
             firstLoad.current = false
             return
         }
-        console.log("Page change detected: Fetching list data for page ", page)
         fetchListOnly(page)
-    }, [page])
+    }, [page, sortBy])
 
     async function fetchOverviewOnly() {
         try {
@@ -170,11 +166,10 @@ export function Axies() {
                 "level": levelRange,
                 "breed_count": breedCountRange,
                 "evolved_parts_count": evolvedPartsRange,
-                "collections": formatSelectedCollections(selectedCollections)
+                "collections": formatSelectedCollections(selectedCollections),
+                "sort_by": sortBy
             }
             const headers = { "Content-Type": "application/json" }
-
-            console.log(`Page: ${page}, Offset: ${(page - 1) * axiesPerPage}`)
 
             const responseList = await axios.post(
                 "https://dev.api.axieanalytics.com/axies/list",
@@ -271,6 +266,8 @@ export function Axies() {
                         setEvolvedPartsRange={setEvolvedPartsRange}
                         selectedCollections={selectedCollections}
                         setSelectedCollections={setSelectedCollections}
+                        sortBy={sortBy}
+                        setSortBy={setSortBy}
                     />
                 </div>
 

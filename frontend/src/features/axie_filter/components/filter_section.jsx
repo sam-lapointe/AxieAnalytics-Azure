@@ -17,6 +17,15 @@ import {
     DialogTitle,
     DialogTrigger,
   } from "@/components/ui/dialog"
+  import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 
 const test_parts = {
@@ -67,6 +76,7 @@ export function FilterSection({
     breedCountRange, setBreedCountRange,
     evolvedPartsRange, setEvolvedPartsRange,
     selectedCollections, setSelectedCollections,
+    sortBy, setSortBy,
 }) {
     const onSelectPart = (partName, partType, axieParts, action) => {
         if (partName && partType && axieParts && action) {
@@ -302,6 +312,23 @@ export function FilterSection({
             >
                 Clear All
             </Button>
+            <Select
+                value={sortBy}
+                onValueChange={(e) => setSortBy(e)}
+            >
+                <SelectTrigger className="font-medium">
+                    <SelectValue/>
+                </SelectTrigger>
+                <SelectContent className="font-medium">
+                    <SelectGroup>
+                    <SelectItem value={"latest"}>Latest</SelectItem>
+                    <SelectItem value={"lowest_price"}>Lowest Price</SelectItem>
+                    <SelectItem value={"highest_price"}>Highest Price</SelectItem>
+                    <SelectItem value={"lowest_level"}>Lowest Level</SelectItem>
+                    <SelectItem value={"highest_level"}>Highest Level</SelectItem>
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
         </div>
     )
 }
