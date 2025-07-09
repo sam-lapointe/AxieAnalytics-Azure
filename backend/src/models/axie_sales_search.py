@@ -148,6 +148,8 @@ class AxieSalesSearch(BaseModel):
     @model_validator(mode="after")
     def clean_empty_parts(self):
         # Remove keys with empty lists
-        self.include_parts = {k: v for k, v in self.include_parts.items() if v}
-        self.exclude_parts = {k: v for k, v in self.exclude_parts.items() if v}
+        if self.include_parts:
+            self.include_parts = {k: v for k, v in self.include_parts.items() if v}
+        if self.exclude_parts:
+            self.exclude_parts = {k: v for k, v in self.exclude_parts.items() if v}
         return self
