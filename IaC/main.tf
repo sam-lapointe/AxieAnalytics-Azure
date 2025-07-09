@@ -350,7 +350,7 @@ resource "azurerm_subnet" "webapp_subnet" {
 }
 
 resource "azurerm_subnet" "redis_subnet" {
-  name = "redis-subnet"
+  name                 = "redis-subnet"
   resource_group_name  = data.azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.6.0/24"]
@@ -369,7 +369,7 @@ module "backend" {
   language                  = "python"
   language_version          = "3.11"
   startup_command           = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
-  virtual_network_subnet_id = azurerm_subnet.default_subnet.id
+  virtual_network_subnet_id = azurerm_subnet.webapp_subnet.id
 
   app_settings = {
     "KEY_VAULT_NAME"                 = module.key_vault_internal.key_vault_name
