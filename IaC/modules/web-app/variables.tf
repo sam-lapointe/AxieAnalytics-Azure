@@ -56,3 +56,9 @@ variable "startup_command" {
   type        = string
   default     = ""
 }
+
+variable "virtual_network_subnet_id" {
+  description = "The ID of the Virtual Network Subnet to integrate with the Web App."
+  type        = string
+  default     = ""
+}

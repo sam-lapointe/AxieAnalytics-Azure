@@ -326,19 +326,35 @@ resource "azurerm_service_plan" "web_app_service_plan" {
   sku_name = "B1"
 }
 
+resource "azurerm_virtual_network" "vnet" {
+  name                = "${var.environment}-axie-vnet"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  tags                = local.tags
+  address_space       = ["10.0.0.0/16"]
+}
+
+resource "azurerm_subnet" "default_subnet" {
+  name                 = "default"
+  resource_group_name  = data.azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.5.0/24"]
+}
+
 module "backend" {
   source = "./modules/web-app"
 
-  web_app_name            = "${var.environment}-axie-web-backend"
-  resource_group_name     = data.azurerm_resource_group.rg.name
-  location                = data.azurerm_resource_group.rg.location
-  tags                    = local.tags
-  service_plan_id         = azurerm_service_plan.web_app_service_plan.id
-  umi_key_vault           = azurerm_user_assigned_identity.umi_functionapp_internal.id
-  user_managed_identities = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
-  language                = "python"
-  language_version        = "3.11"
-  startup_command         = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
+  web_app_name              = "${var.environment}-axie-web-backend"
+  resource_group_name       = data.azurerm_resource_group.rg.name
+  location                  = data.azurerm_resource_group.rg.location
+  tags                      = local.tags
+  service_plan_id           = azurerm_service_plan.web_app_service_plan.id
+  umi_key_vault             = azurerm_user_assigned_identity.umi_functionapp_internal.id
+  user_managed_identities   = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
+  language                  = "python"
+  language_version          = "3.11"
+  startup_command           = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
+  virtual_network_subnet_id = azurerm_subnet.default_subnet.id
 
   app_settings = {
     "KEY_VAULT_NAME"                 = module.key_vault_internal.key_vault_name
@@ -364,4 +380,28 @@ module "frontend" {
   language            = "node"
   language_version    = "22-lts"
   startup_command     = "pm2 serve /home/site/wwwroot --no-daemon --spa"
+}
+
+resource "azurerm_redis_cache" "redis_cache" {
+  name                = "${var.environment}-axie-redis"
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  tags                = local.tags
+
+  capacity                           = 0
+  family                             = "C"
+  sku_name                           = "Basic"
+  minimum_tls_version                = "1.2"
+  access_keys_authentication_enabled = false
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.umi_functionapp_internal.id
+    ]
+  }
+
+  redis_configuration {
+    active_directory_authentication_enabled = true
+  }
 }

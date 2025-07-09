@@ -17,6 +17,7 @@ resource "azurerm_linux_web_app" "web_app" {
   }
 
   app_settings = var.app_settings
+  virtual_network_subnet_id = var.virtual_network_subnet_id != "" ? var.virtual_network_subnet_id : null
 
   dynamic "identity" {
     for_each = length(var.user_managed_identities) > 0 ? [1] : []
