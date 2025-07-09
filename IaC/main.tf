@@ -334,8 +334,8 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.0.0.0/16"]
 }
 
-resource "azurerm_subnet" "default_subnet" {
-  name                 = "default"
+resource "azurerm_subnet" "webapp_subnet" {
+  name                 = "web-app-subnet"
   resource_group_name  = data.azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.5.0/24"]
@@ -347,6 +347,13 @@ resource "azurerm_subnet" "default_subnet" {
       actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
     }
   }
+}
+
+resource "azurerm_subnet" "redis_subnet" {
+  name = "redis-subnet"
+  resource_group_name  = data.azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.6.0/24"]
 }
 
 module "backend" {
