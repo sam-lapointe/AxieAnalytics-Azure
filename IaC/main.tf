@@ -334,6 +334,19 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.0.0.0/16"]
 }
 
+resource "azurerm_private_dns_zone" "private_dns_zone" {
+  name                = "privatelink.azurewebsites.net"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  tags                = local.tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "webapp_dns_link" {
+  name                  = "${var.environment}-axie-webapp-dns-link"
+  resource_group_name   = data.azurerm_resource_group.rg.name
+  private_dns_zone_name = azurerm_private_dns_zone.private_dns_zone.name
+  virtual_network_id    = azurerm_virtual_network.vnet.id
+}
+
 resource "azurerm_subnet" "webapp_subnet" {
   name                 = "web-app-subnet"
   resource_group_name  = data.azurerm_resource_group.rg.name
@@ -418,5 +431,19 @@ resource "azurerm_redis_cache" "redis_cache" {
 
   redis_configuration {
     active_directory_authentication_enabled = true
+  }
+}
+
+resource "azurerm_private_endpoint" "redis_private_endpoint" {
+  name                = "${var.environment}-axie-redis-pe"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  subnet_id           = azurerm_subnet.redis_subnet.id
+
+  private_service_connection {
+    name                           = "backend-privateserviceconnection"
+    is_manual_connection           = false
+    private_connection_resource_id = module.backend.web_app_id
+    subresource_names              = ["sites"]
   }
 }
