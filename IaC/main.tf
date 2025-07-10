@@ -446,4 +446,9 @@ resource "azurerm_private_endpoint" "redis_private_endpoint" {
     private_connection_resource_id = azurerm_redis_cache.redis_cache.id
     subresource_names              = ["redisCache"]
   }
+
+  private_dns_zone_group {
+    name                 = "redis-private-dns-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.private_dns_zone.id]
+  }
 }
