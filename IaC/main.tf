@@ -335,12 +335,12 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 resource "azurerm_private_dns_zone" "private_dns_zone" {
-  name                = "privatelink.azurewebsites.net"
+  name                = "privatelink.redis.cache.windows.net"
   resource_group_name = data.azurerm_resource_group.rg.name
   tags                = local.tags
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "webapp_dns_link" {
+resource "azurerm_private_dns_zone_virtual_network_link" "redis_dns_link" {
   name                  = "${var.environment}-axie-webapp-dns-link"
   resource_group_name   = data.azurerm_resource_group.rg.name
   private_dns_zone_name = azurerm_private_dns_zone.private_dns_zone.name
@@ -441,9 +441,9 @@ resource "azurerm_private_endpoint" "redis_private_endpoint" {
   subnet_id           = azurerm_subnet.redis_subnet.id
 
   private_service_connection {
-    name                           = "backend-privateserviceconnection"
+    name                           = "redis-privateserviceconnection"
     is_manual_connection           = false
-    private_connection_resource_id = module.backend.web_app_id
-    subresource_names              = ["sites"]
+    private_connection_resource_id = azurerm_redis_cache.redis_cache.id
+    subresource_names              = ["redisCache"]
   }
 }
