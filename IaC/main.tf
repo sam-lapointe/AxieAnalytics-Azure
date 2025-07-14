@@ -394,11 +394,11 @@ resource "azurerm_redis_cache" "redis_cache" {
 }
 
 resource "azurerm_redis_cache_access_policy_assignment" "redis_access_assignment" {
-  name = "${var.environment}-managed-identity-access"
-  redis_cache_id = azurerm_redis_cache.redis_cache.id
+  name               = "${var.environment}-managed-identity-access"
+  redis_cache_id     = azurerm_redis_cache.redis_cache.id
   access_policy_name = "Data Contributor"
-  object_id = azurerm_user_assigned_identity.umi_functionapp_internal.principal_id
-  object_id_alias = "ManagedIdentity"
+  object_id          = azurerm_user_assigned_identity.umi_functionapp_internal.principal_id
+  object_id_alias    = "ManagedIdentity"
 }
 
 resource "azurerm_private_endpoint" "redis_private_endpoint" {

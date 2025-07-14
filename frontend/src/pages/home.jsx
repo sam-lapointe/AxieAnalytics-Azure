@@ -26,13 +26,13 @@ export function Home() {
             try {
                 const [responseOverview, responseCollection, responseBreedCount] = await Promise.all([
                     axios.get(
-                        "http://127.0.0.1:8000/axies/graph/overview"
+                        "https://dev.api.axieanalytics.com/axies/graph/overview"
                     ),
                     axios.get(
-                        "http://127.0.0.1:8000/axies/graph/collection",
+                        "https://dev.api.axieanalytics.com/axies/graph/collection",
                     ),
                     axios.get(
-                        "http://127.0.0.1:8000/axies/graph/breed_count"
+                        "https://dev.api.axieanalytics.com/axies/graph/breed_count"
                     )
                 ])
 
