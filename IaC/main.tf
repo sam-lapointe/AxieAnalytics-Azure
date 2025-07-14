@@ -369,47 +369,6 @@ resource "azurerm_subnet" "redis_subnet" {
   address_prefixes     = ["10.0.6.0/24"]
 }
 
-module "backend" {
-  source = "./modules/web-app"
-
-  web_app_name              = "${var.environment}-axie-web-backend"
-  resource_group_name       = data.azurerm_resource_group.rg.name
-  location                  = data.azurerm_resource_group.rg.location
-  tags                      = local.tags
-  service_plan_id           = azurerm_service_plan.web_app_service_plan.id
-  umi_key_vault             = azurerm_user_assigned_identity.umi_functionapp_internal.id
-  user_managed_identities   = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
-  language                  = "python"
-  language_version          = "3.11"
-  startup_command           = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
-  virtual_network_subnet_id = azurerm_subnet.webapp_subnet.id
-
-  app_settings = {
-    "KEY_VAULT_NAME"                 = module.key_vault_internal.key_vault_name
-    "PG_HOST"                        = "${module.postgresql_server.hostname}.postgres.database.azure.com"
-    "PG_PORT"                        = 5432
-    "PG_DATABASE"                    = local.AXIEMARKET_DATABASE
-    "KV_PG_USERNAME"                 = local.POSTGRESQL_BACKEND_USERNAME_NAME
-    "KV_PG_PASSWORD"                 = local.POSTGRESQL_BACKEND_PASSWORD_NAME
-    "AZURE_CLIENT_ID"                = azurerm_user_assigned_identity.umi_functionapp_internal.client_id
-    "AXIE_API_KEY_NAME"              = local.AXIE_API_KEY_NAME
-    "SCM_DO_BUILD_DURING_DEPLOYMENT" = "true"
-  }
-}
-
-module "frontend" {
-  source = "./modules/web-app"
-
-  web_app_name        = "${var.environment}-axie-web-frontend"
-  resource_group_name = data.azurerm_resource_group.rg.name
-  location            = data.azurerm_resource_group.rg.location
-  tags                = local.tags
-  service_plan_id     = azurerm_service_plan.web_app_service_plan.id
-  language            = "node"
-  language_version    = "22-lts"
-  startup_command     = "pm2 serve /home/site/wwwroot --no-daemon --spa"
-}
-
 resource "azurerm_redis_cache" "redis_cache" {
   name                = "${var.environment}-axie-redis"
   location            = data.azurerm_resource_group.rg.location
@@ -434,6 +393,14 @@ resource "azurerm_redis_cache" "redis_cache" {
   }
 }
 
+resource "azurerm_redis_cache_access_policy_assignment" "redis_access_assignment" {
+  name = "${var.environment}-managed-identity-access"
+  redis_cache_id = azurerm_redis_cache.redis_cache.id
+  access_policy_name = "Data Contributor"
+  object_id = azurerm_user_assigned_identity.umi_functionapp_internal.principal_id
+  object_id_alias = "ManagedIdentity"
+}
+
 resource "azurerm_private_endpoint" "redis_private_endpoint" {
   name                = "${var.environment}-axie-redis-pe"
   resource_group_name = data.azurerm_resource_group.rg.name
@@ -451,4 +418,46 @@ resource "azurerm_private_endpoint" "redis_private_endpoint" {
     name                 = "redis-private-dns-zone-group"
     private_dns_zone_ids = [azurerm_private_dns_zone.private_dns_zone.id]
   }
+}
+
+module "backend" {
+  source = "./modules/web-app"
+
+  web_app_name              = "${var.environment}-axie-web-backend"
+  resource_group_name       = data.azurerm_resource_group.rg.name
+  location                  = data.azurerm_resource_group.rg.location
+  tags                      = local.tags
+  service_plan_id           = azurerm_service_plan.web_app_service_plan.id
+  umi_key_vault             = azurerm_user_assigned_identity.umi_functionapp_internal.id
+  user_managed_identities   = [azurerm_user_assigned_identity.umi_functionapp_internal.id]
+  language                  = "python"
+  language_version          = "3.11"
+  startup_command           = "gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app"
+  virtual_network_subnet_id = azurerm_subnet.webapp_subnet.id
+
+  app_settings = {
+    "KEY_VAULT_NAME"                 = module.key_vault_internal.key_vault_name
+    "PG_HOST"                        = "${module.postgresql_server.hostname}.postgres.database.azure.com"
+    "PG_PORT"                        = 5432
+    "PG_DATABASE"                    = local.AXIEMARKET_DATABASE
+    "REDIS_HOST"                     = azurerm_redis_cache.redis_cache.hostname
+    "KV_PG_USERNAME"                 = local.POSTGRESQL_BACKEND_USERNAME_NAME
+    "KV_PG_PASSWORD"                 = local.POSTGRESQL_BACKEND_PASSWORD_NAME
+    "AZURE_CLIENT_ID"                = azurerm_user_assigned_identity.umi_functionapp_internal.client_id
+    "AXIE_API_KEY_NAME"              = local.AXIE_API_KEY_NAME
+    "SCM_DO_BUILD_DURING_DEPLOYMENT" = "true"
+  }
+}
+
+module "frontend" {
+  source = "./modules/web-app"
+
+  web_app_name        = "${var.environment}-axie-web-frontend"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  tags                = local.tags
+  service_plan_id     = azurerm_service_plan.web_app_service_plan.id
+  language            = "node"
+  language_version    = "22-lts"
+  startup_command     = "pm2 serve /home/site/wwwroot --no-daemon --spa"
 }

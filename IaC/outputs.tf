@@ -33,3 +33,7 @@ output "frontend_web_app_name" {
 output "database_hostname" {
   value = module.postgresql_server.hostname
 }
+
+output "redis_hostname" {
+  value = azurerm_redis_cache.redis_cache.hostname
+}

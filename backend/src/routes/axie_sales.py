@@ -1,9 +1,9 @@
 from fastapi import APIRouter
-from src.models.axie_sales_search import AxieSalesSearch, CollectionWrapper, CollectionDetail
+from src.models.axie_sales_search import AxieSalesSearch
 from src.services.axie_sales import get_all_data, get_data_by_breed_count, get_axie_parts
 from src.utils import format_data_line_graph, format_data_line_graph_by_collection
-import copy
-import asyncio
+from src.database import db
+import json
 
 router = APIRouter()
 
@@ -12,6 +12,10 @@ async def get_graph():
     """
     Query all axies sales for the last 30 days and format the data into 3 timeframes: 24H, 7D and 30D.
     """
+    cached = await db.redis_client.client.get("axie_graph_overview")
+    if cached:
+        print("Using cached data.")
+        return json.loads(cached)
     query_select = "SELECT price_eth, sale_date FROM axies_full_info"
     filter = AxieSalesSearch()
     raw_data = await get_all_data(query_select, filter)
@@ -25,6 +29,7 @@ async def get_graph():
         "7d": d7_data,
         "30d": d30_data,
     }
+    await db.redis_client.client.set("axie_graph_overview", json.dumps(data), ex=120)
     return data
 
 @router.post("/graph/overview")
@@ -42,6 +47,9 @@ async def get_graph_custom(filters: AxieSalesSearch):
 
 @router.get("/graph/collection")
 async def get_graph_collection():
+    cached = await db.redis_client.client.get("axie_graph_collection")
+    if cached:
+        return json.loads(cached)
     query_select = """
         SELECT
             price_eth,
@@ -67,10 +75,14 @@ async def get_graph_collection():
         "7d": d7_data,
         "30d": d30_data,
     }
+    await db.redis_client.client.set("axie_graph_collection", json.dumps(data), ex=120)
     return data
 
 @router.get("/graph/breed_count")
 async def get_graph_breed_count():
+    cached = await db.redis_client.client.get("axie_graph_breed_count")
+    if cached:
+        return json.loads(cached)
     d1_data = await get_data_by_breed_count("days", 1)
     d7_data = await get_data_by_breed_count("days", 7)
     d30_data = await get_data_by_breed_count("days", 30)
@@ -90,6 +102,8 @@ async def get_graph_breed_count():
             d["avg_price_eth"] = round(d["avg_price_eth"], 5)
             new_list.append(d)
         data[key] = new_list
+    
+    await db.redis_client.client.set("axie_graph_breed_count", json.dumps(data), ex=120)
     return data
 
 @router.post("/list")
@@ -165,6 +179,9 @@ async def get_parts():
     """
     Get all parts from the database.
     """
+    cached = await db.redis_client.client.get("axie_parts")
+    if cached:
+        return json.loads(cached)
     query_select = "SELECT id, class, name, stage, type, special_genes FROM axie_parts"
     raw_data = await get_axie_parts(query_select)
     
@@ -204,4 +221,5 @@ async def get_parts():
             part_type = parts[duplicate_name]["type"]
             parts[f"{duplicate_name} ({part_type.capitalize()})"] = parts.pop(duplicate_name)
 
+    await db.redis_client.client.set("axie_parts", json.dumps(parts), ex=43200)
     return parts

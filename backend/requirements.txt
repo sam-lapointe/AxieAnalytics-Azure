@@ -5,4 +5,6 @@ pydantic
 asyncpg
 azure-identity
 azure-keyvault-secrets
+redis
 aiohttp
+apscheduler

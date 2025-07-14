@@ -83,7 +83,14 @@ class Config:
         except Exception as e:
             logging.error("Error retrieving the Axie API key.")
             raise e
-        
+
+    @staticmethod
+    def get_redis_hostname() -> str:
+        redis_host = os.getenv("REDIS_HOST")
+        if not redis_host:
+            logging.critical("REDIS_HOST is not set.")
+            raise ValueError("REDIS_HOST environment variable is required.")
+        return redis_host
 
     @staticmethod
     async def init_secrets() -> None:
