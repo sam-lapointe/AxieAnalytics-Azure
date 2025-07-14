@@ -16,13 +16,17 @@ class Postgres:
 
 
     async def connect(self):
-        self.pool = await asyncpg.create_pool(
-            dsn=self.db_connection_string,
-            ssl="require",
-            min_size=1,
-            max_size=10,
-        )
-
+        try:
+            self.pool = await asyncpg.create_pool(
+                dsn=self.db_connection_string,
+                ssl="require",
+                min_size=1,
+                max_size=10,
+            )
+            logging.info("[Postgres.connect] Connected to Postgres successfully.")
+        except Exception as e:
+            logging.error(f"[Postgres.connect] Error connecting to Postgres: {e}")
+            raise e
 
     async def disconnect(self):
         await self.pool.close()
@@ -38,17 +42,22 @@ class Redis:
         self.client = None
 
     async def connect(self):
-        if not self.password or not self.username:
-            await self.refresh_token()
+        try:
+            if not self.password or not self.username:
+                await self.refresh_token()
 
-        self.client = redis.Redis(
-            host=self.host,
-            port=self.port,
-            ssl=True,
-            username=self.username,
-            password=self.password,
-            decode_responses=True,
-        )
+            self.client = redis.Redis(
+                host=self.host,
+                port=self.port,
+                ssl=True,
+                username=self.username,
+                password=self.password,
+                decode_responses=True,
+            )
+            logging.info("[Redis.connect] Connected to Redis successfully.")
+        except Exception as e:
+            logging.error(f"[Redis.connect] Error connecting to Redis: {e}")
+            raise e
 
     async def refresh_token(self) -> None:
         try:

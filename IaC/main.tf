@@ -380,6 +380,7 @@ resource "azurerm_redis_cache" "redis_cache" {
   sku_name                           = "Basic"
   minimum_tls_version                = "1.2"
   access_keys_authentication_enabled = false
+  public_network_access_enabled      = false
 
   identity {
     type = "UserAssigned"

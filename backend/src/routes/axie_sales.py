@@ -4,6 +4,7 @@ from src.services.axie_sales import get_all_data, get_data_by_breed_count, get_a
 from src.utils import format_data_line_graph, format_data_line_graph_by_collection
 from src.database import db
 import json
+import logging
 
 router = APIRouter()
 
@@ -14,8 +15,9 @@ async def get_graph():
     """
     cached = await db.redis_client.client.get("axie_graph_overview")
     if cached:
-        print("Using cached data.")
+        logging.info("Returning cached data for axie_graph_overview")
         return json.loads(cached)
+    logging.info("Data is not cached for axie_graph_overview")
     query_select = "SELECT price_eth, sale_date FROM axies_full_info"
     filter = AxieSalesSearch()
     raw_data = await get_all_data(query_select, filter)
