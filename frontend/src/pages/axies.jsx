@@ -42,7 +42,6 @@ export function Axies() {
 
     const axiesPerPage = 60 // Number of axies per page
 
-    console.log("Selected Parts:", selectedParts)
 
     useEffect(() => {
         if (firstLoad.current) {
@@ -162,7 +161,6 @@ export function Axies() {
     }
 
     function formatSelectedParts(selectedParts) {
-        console.log("Formatting selected parts...")
         const includeParts = {
             "eyes": [],
             "ears": [],
@@ -187,8 +185,6 @@ export function Axies() {
                 excludeParts[selectedParts[part]["type"]].push(selectedParts[part]["id"])
             }
         }
-        console.log("Include Parts:", includeParts)
-        console.log("Exclude Parts:", excludeParts)
         return { includeParts, excludeParts }
     }
 

@@ -15,9 +15,7 @@ async def get_graph():
     """
     cached = await db.redis_client.client.get("axie_graph_overview")
     if cached:
-        logging.info("Returning cached data for axie_graph_overview")
         return json.loads(cached)
-    logging.info("Data is not cached for axie_graph_overview")
     query_select = "SELECT price_eth, sale_date FROM axies_full_info"
     filter = AxieSalesSearch()
     raw_data = await get_all_data(query_select, filter)

@@ -467,7 +467,7 @@ class Axie:
                     axie_data["axie"]["axpInfo"]["level"],
                     axie_data["axie"]["axpInfo"]["xp"],
                     axie_data["axie"]["breedCount"],
-                    axie_data["axie"]["image"],
+                    f"https://axiecdn.axieinfinity.com/axies/{self.__axie_id}/axie/axie-full-transparent.png",
                     axie_data["axie"]["class"],
                     axie_data["axie"]["parts"]["Eyes"]["id"],
                     axie_data["axie"]["parts"]["Ears"]["id"],
