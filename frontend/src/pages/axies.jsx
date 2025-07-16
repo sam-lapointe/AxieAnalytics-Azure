@@ -150,7 +150,8 @@ export function Axies() {
     async function fetchParts() {
         try {
             const responseParts = await axios.get(
-                "https://dev.api.axieanalytics.com/axies/parts"
+                "https://dev.api.axieanalytics.com/axies/parts",
+                { headers: { "Content-Type": "application/json" } }
             )
 
             axiePartsOriginal.current = responseParts.data

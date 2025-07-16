@@ -23,16 +23,20 @@ export function Home() {
 
     useEffect(() => {
         const fetchData = async () => {
+            const headers = { "Content-Type": "application/json" }
             try {
                 const [responseOverview, responseCollection, responseBreedCount] = await Promise.all([
                     axios.get(
-                        "https://dev.api.axieanalytics.com/axies/graph/overview"
+                        "https://dev.api.axieanalytics.com/axies/graph/overview",
+                        { headers: headers}
                     ),
                     axios.get(
                         "https://dev.api.axieanalytics.com/axies/graph/collection",
+                        { headers: headers }
                     ),
                     axios.get(
-                        "https://dev.api.axieanalytics.com/axies/graph/breed_count"
+                        "https://dev.api.axieanalytics.com/axies/graph/breed_count",
+                        { headers: headers }
                     )
                 ])
 
