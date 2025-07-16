@@ -43,7 +43,7 @@ async def init_dependencies():
         logging.info("Initializing dependencies...")
 
         if not servicebus_client:
-            # Initialize Service Bus client and sender
+            # Initialize Service Bus client and sender.
             servicebus_namespace = Config.get_servicebus_full_namespace()
             servicebus_client = ServiceBusClient(
                 fully_qualified_namespace=servicebus_namespace,

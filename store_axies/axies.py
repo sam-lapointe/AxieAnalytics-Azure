@@ -127,7 +127,7 @@ class Axie:
         body = {"query": query, "operationName": "GetAxieData", "variables": {}}
 
         retries = 3
-        delay = 5  # Initial delay of 5 seconds before retrying
+        delay = 5  # Initial delay of 5 seconds before retrying.
         for attempt in range(1, retries + 1):
             try:
                 async with aiohttp.ClientSession() as http_client:

@@ -154,7 +154,7 @@ export function Axies() {
             )
 
             axiePartsOriginal.current = responseParts.data
-            setParts(structuredClone(axiePartsOriginal.current)) // Deep copy to avoid mutation
+            setParts(structuredClone(axiePartsOriginal.current)) // Deep copy to avoid mutation.
         } catch (err) {
             setError(err.message || "An error occurred while fetching parts.")
         }

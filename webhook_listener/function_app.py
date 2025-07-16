@@ -18,7 +18,7 @@ key_vault_client = SecretClient(Config.get_key_vault_url(), credential)
 SIGNING_KEY = None
 
 
-# Asynchronous function to retrieve the signing key
+# Asynchronous function to retrieve the signing key.
 async def get_signing_key():
     global SIGNING_KEY
     if SIGNING_KEY is None:

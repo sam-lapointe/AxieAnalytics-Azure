@@ -40,7 +40,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://axieanalytics.com"],  # Only allow axieanalytics.com to access the API
+    allow_origins=["https://axieanalytics.com"],  # Only allow axieanalytics.com to access the API.
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
