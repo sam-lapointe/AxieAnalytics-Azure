@@ -6,6 +6,7 @@ from src.core import config
 from src.database import db
 from src.routes import axie_sales
 from src.database.refresh_cache import refresh_graph_overview, refresh_graph_collection, refresh_graph_breed_count, refresh_axie_parts
+from src.middleware.token_check import TokenCheckMiddleware
 
 
 scheduler = AsyncIOScheduler()
@@ -23,7 +24,7 @@ async def lifespan(app: FastAPI):
     await db.redis_client.connect()
 
     # Start the scheduler
-    scheduler.add_job(db.redis_client.refresh_token, "interval", minutes=60)
+    scheduler.add_job(db.redis_client.refresh_token, "interval", minutes=50)
     scheduler.add_job(refresh_graph_overview, "interval", minutes=1)
     scheduler.add_job(refresh_graph_collection, "interval", minutes=1)
     scheduler.add_job(refresh_graph_breed_count, "interval", minutes=1)
@@ -37,6 +38,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+# Add token check middleware (should be added before CORS middleware)
+app.add_middleware(TokenCheckMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
