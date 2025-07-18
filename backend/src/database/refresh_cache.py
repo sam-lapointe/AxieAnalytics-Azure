@@ -1,4 +1,6 @@
 import json
+import time
+import logging
 from src.models.axie_sales_search import AxieSalesSearch
 from src.services.axie_sales import get_all_data, get_data_by_breed_count, get_axie_parts
 from src.utils import format_data_line_graph, format_data_line_graph_by_collection
@@ -8,6 +10,8 @@ async def refresh_graph_overview():
     """
     Refresh the graph overview data in Redis.
     """
+    start_time = time.time()
+    logging.info("Starting refresh_graph_overview...")
     query_select = "SELECT price_eth, sale_date FROM axies_full_info"
     filter = AxieSalesSearch()
     raw_data = await get_all_data(query_select, filter)
@@ -22,6 +26,8 @@ async def refresh_graph_overview():
         "30d": d30_data,
     }
     await db.redis_client.client.set("axie_graph_overview", json.dumps(data), ex=120)
+    end_time = time.time()
+    logging.info(f"Finished refresh_graph_overview in {end_time - start_time:.2f} seconds")
 
 async def refresh_graph_collection():
     """
