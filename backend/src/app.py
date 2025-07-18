@@ -26,16 +26,16 @@ async def lifespan(app: FastAPI):
     # Start the scheduler
     scheduler.add_job(db.redis_client.refresh_token, "interval", minutes=50)
     # Delay the cache refresh to avoid DB overload
-    scheduler.add_job(
-        refresh_graph_overview,"interval", minutes=1, coalesce=True, next_run_time=None
-    )
+    # scheduler.add_job(
+    #     refresh_graph_overview,"interval", minutes=1, coalesce=True, next_run_time=None
+    # )
     # scheduler.add_job(
     #     refresh_graph_collection, "interval", minutes=1, coalesce=True, next_run_time=datetime.now() + timedelta(seconds=20)
     # )
     # scheduler.add_job(
     #     refresh_graph_breed_count, "interval", minutes=1, coalesce=True, next_run_time=datetime.now() + timedelta(seconds=40)
     # )
-    scheduler.add_job(refresh_axie_parts, "interval", hours=12)
+    # scheduler.add_job(refresh_axie_parts, "interval", hours=12)
     scheduler.start()
     
     yield
