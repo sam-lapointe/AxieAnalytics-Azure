@@ -13,7 +13,12 @@ async def get_graph():
     """
     Query all axies sales for the last 30 days and format the data into 3 timeframes: 24H, 7D and 30D.
     """
-    cached = await db.redis_client.client.get("axie_graph_overview")
+    try:
+        cached = await db.redis_client.client.get("axie_graph_overview")
+    except Exception as e:
+        logging.error(f"Error fetching cached data: {e}")
+        cached = None
+
     if cached:
         return json.loads(cached)
     query_select = "SELECT price_eth, sale_date FROM axies_full_info"
@@ -29,7 +34,6 @@ async def get_graph():
         "7d": d7_data,
         "30d": d30_data,
     }
-    await db.redis_client.client.set("axie_graph_overview", json.dumps(data), ex=120)
     return data
 
 @router.post("/graph/overview")
@@ -47,7 +51,12 @@ async def get_graph_custom(filters: AxieSalesSearch):
 
 @router.get("/graph/collection")
 async def get_graph_collection():
-    cached = await db.redis_client.client.get("axie_graph_collection")
+    try:
+        cached = await db.redis_client.client.get("axie_graph_collection")
+    except Exception as e:
+        logging.error(f"Error fetching cached data: {e}")
+        cached = None
+
     if cached:
         return json.loads(cached)
     query_select = """
@@ -75,12 +84,17 @@ async def get_graph_collection():
         "7d": d7_data,
         "30d": d30_data,
     }
-    await db.redis_client.client.set("axie_graph_collection", json.dumps(data), ex=120)
+
     return data
 
 @router.get("/graph/breed_count")
 async def get_graph_breed_count():
-    cached = await db.redis_client.client.get("axie_graph_breed_count")
+    try:
+        cached = await db.redis_client.client.get("axie_graph_breed_count")
+    except Exception as e:
+        logging.error(f"Error fetching cached data: {e}")
+        cached = None
+
     if cached:
         return json.loads(cached)
     d1_data = await get_data_by_breed_count("days", 1)
@@ -103,7 +117,6 @@ async def get_graph_breed_count():
             new_list.append(d)
         data[key] = new_list
     
-    await db.redis_client.client.set("axie_graph_breed_count", json.dumps(data), ex=120)
     return data
 
 @router.post("/list")
@@ -179,7 +192,12 @@ async def get_parts():
     """
     Get all parts from the database.
     """
-    cached = await db.redis_client.client.get("axie_parts")
+    try:
+        cached = await db.redis_client.client.get("axie_parts")
+    except Exception as e:
+        logging.error(f"Error fetching cached data: {e}")
+        cached = None
+
     if cached:
         return json.loads(cached)
     query_select = "SELECT id, class, name, stage, type, special_genes FROM axie_parts"
@@ -221,5 +239,4 @@ async def get_parts():
             part_type = parts[duplicate_name]["type"]
             parts[f"{duplicate_name} ({part_type.capitalize()})"] = parts.pop(duplicate_name)
 
-    await db.redis_client.client.set("axie_parts", json.dumps(parts), ex=43200)
     return parts
