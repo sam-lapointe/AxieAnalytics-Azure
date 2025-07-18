@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from datetime import datetime, timedelta
 from src.core import config
 from src.database import db
 from src.routes import axie_sales
@@ -24,9 +25,16 @@ async def lifespan(app: FastAPI):
 
     # Start the scheduler
     scheduler.add_job(db.redis_client.refresh_token, "interval", minutes=50)
-    scheduler.add_job(refresh_graph_overview, "interval", minutes=1)
-    scheduler.add_job(refresh_graph_collection, "interval", minutes=1)
-    scheduler.add_job(refresh_graph_breed_count, "interval", minutes=1)
+    # Delay the cache refresh to avoid DB overload
+    scheduler.add_job(
+        refresh_graph_overview,"interval", minutes=1, coalesce=True, next_run_time=None
+    )
+    scheduler.add_job(
+        refresh_graph_collection, "interval", minutes=1, coalesce=True, next_run_time=datetime.now() + timedelta(seconds=20)
+    )
+    scheduler.add_job(
+        refresh_graph_breed_count, "interval", minutes=1, coalesce=True, next_run_time=datetime.now() + timedelta(seconds=40)
+    )
     scheduler.add_job(refresh_axie_parts, "interval", hours=12)
     scheduler.start()
     
