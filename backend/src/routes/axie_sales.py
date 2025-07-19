@@ -5,6 +5,7 @@ from src.utils import format_data_line_graph, format_data_line_graph_by_collecti
 from src.database import db
 import json
 import logging
+import time
 
 router = APIRouter()
 
@@ -14,6 +15,8 @@ async def get_graph():
     Query all axies sales for the last 30 days and format the data into 3 timeframes: 24H, 7D and 30D.
     """
     try:
+        if db.redis_client.token_expiration - time.time() < 0:
+            await db.redis_client.refresh_token()
         cached = await db.redis_client.client.get("axie_graph_overview")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
@@ -53,6 +56,8 @@ async def get_graph_custom(filters: AxieSalesSearch):
 @router.get("/graph/collection")
 async def get_graph_collection():
     try:
+        if db.redis_client.token_expiration - time.time() < 0:
+            await db.redis_client.refresh_token()
         cached = await db.redis_client.client.get("axie_graph_collection")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
@@ -91,6 +96,8 @@ async def get_graph_collection():
 @router.get("/graph/breed_count")
 async def get_graph_breed_count():
     try:
+        if db.redis_client.token_expiration - time.time() < 0:
+            await db.redis_client.refresh_token()
         cached = await db.redis_client.client.get("axie_graph_breed_count")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
@@ -195,6 +202,8 @@ async def get_parts():
     Get all parts from the database.
     """
     try:
+        if db.redis_client.token_expiration - time.time() < 0:
+            await db.redis_client.refresh_token()
         cached = await db.redis_client.client.get("axie_parts")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
