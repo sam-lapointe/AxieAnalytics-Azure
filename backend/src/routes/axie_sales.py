@@ -18,7 +18,7 @@ async def get_graph():
         cached = await db.redis_client.client.get("axie_graph_overview")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
-        await db.redis_client.refresh_token()
+        await db.redis_client.connect()
         cached = None
 
     if cached:
@@ -58,7 +58,7 @@ async def get_graph_collection():
         cached = await db.redis_client.client.get("axie_graph_collection")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
-        await db.redis_client.refresh_token()
+        await db.redis_client.connect()
         cached = None
 
     if cached:
@@ -97,7 +97,7 @@ async def get_graph_breed_count():
         cached = await db.redis_client.client.get("axie_graph_breed_count")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
-        await db.redis_client.refresh_token()
+        await db.redis_client.connect()
         cached = None
 
     if cached:
@@ -202,7 +202,7 @@ async def get_parts():
         cached = await db.redis_client.client.get("axie_parts")
     except Exception as e:
         logging.error(f"Error fetching cached data: {e}")
-        await db.redis_client.refresh_token()
+        await db.redis_client.connect()
         cached = None
 
     if cached:
